@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مراقبة نظام Cloudflare Hybrid</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 3px solid #486b65;
+            padding-bottom: 10px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.syncing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .icon {
+            font-size: 24px;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid transparent;
+        }
+
+        .log-entry.success {
+            border-color: #28a745;
+            color: #28a745;
+        }
+
+        .log-entry.error {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .log-entry.warning {
+            border-color: #ffc107;
+            color: #ffc107;
+        }
+
+        .log-entry.info {
+            border-color: #17a2b8;
+            color: #17a2b8;
+        }
+
+        button {
+            background: #486b65;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            margin: 5px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #3a5651;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin: 8px 0;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #486b65;
+            font-size: 1.2rem;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .syncing-indicator {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard">
+        <h1>⚡ Cloudflare Hybrid Monitor</h1>
+
+        <div class="grid">
+            <!-- System Status -->
+            <div class="card">
+                <h2>📊 حالة النظام</h2>
+                <div id="system-status"></div>
+            </div>
+
+            <!-- Sync Stats -->
+            <div class="card">
+                <h2>📈 إحصائيات المزامنة</h2>
+                <div id="sync-stats"></div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <h2>⚡ إجراءات سريعة</h2>
+                <button onclick="testCloudflareConnection()">🔗 اختبار Cloudflare</button>
+                <button onclick="syncNow()">🔄 مزامنة فورية</button>
+                <button onclick="viewCloudProducts()">☁️ عرض منتجات Cloud</button>
+                <button onclick="clearLogs()">🗑️ مسح السجل</button>
+            </div>
+        </div>
+
+        <!-- Live Logs -->
+        <div class="card">
+            <h2>📝 سجل الأحداث المباشر</h2>
+            <div id="live-logs" class="log-container"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/hybrid-adapter_v2.js"></script>
+    <script src="js/data_v2.js"></script>
+
+    <script>
+        let syncCount = 0;
+        let errorCount = 0;
+        let lastSyncTime = null;
+
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('live-logs');
+            const time = new Date().toLocaleTimeString('ar-EG');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${time}] ${message}`;
+            logsDiv.insertBefore(entry, logsDiv.firstChild);
+
+            // Keep only last 50 entries
+            while (logsDiv.children.length > 50) {
+                logsDiv.removeChild(logsDiv.lastChild);
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('live-logs').innerHTML = '';
+            log('تم مسح السجل', 'info');
+        }
+
+        function updateSystemStatus() {
+            const statusDiv = document.getElementById('system-status');
+            const isEnabled = HYBRID_CONFIG.enabled;
+
+            statusDiv.innerHTML = `
+                <div class="status ${isEnabled ? 'active' : 'inactive'}">
+                    <span class="icon">${isEnabled ? '✅' : '❌'}</span>
+                    <div>
+                        <strong>Cloudflare Hybrid</strong>
+                        <div>${isEnabled ? 'مفعّل ونشط' : 'معطل'}</div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <span>Worker URL:</span>
+                    <span>${HYBRID_CONFIG.workerUrl ? '✅' : '❌'}</span>
+                </div>
+                <div class="metric">
+                    <span>Firebase:</span>
+                    <span>${typeof firebase !== 'undefined' ? '✅ متصل' : '❌ غير متصل'}</span>
+                </div>
+                <div class="metric">
+                    <span>Local Storage:</span>
+                    <span>${localStorage.getItem('products') ? '✅ يعمل' : '⚠️ فارغ'}</span>
+                </div>
+            `;
+        }
+
+        function updateSyncStats() {
+            const statsDiv = document.getElementById('sync-stats');
+            const products = db.getProducts();
+
+            statsDiv.innerHTML = `
+                <div class="metric">
+                    <span>عدد المنتجات المحلية</span>
+                    <span class="metric-value">${products.length}</span>
+                </div>
+                <div class="metric">
+                    <span>عمليات المزامنة الناجحة</span>
+                    <span class="metric-value">${syncCount}</span>
+                </div>
+                <div class="metric">
+                    <span>الأخطاء</span>
+                    <span class="metric-value" style="color: ${errorCount > 0 ? '#dc3545' : '#28a745'}">${errorCount}</span>
+                </div>
+                <div class="metric">
+                    <span>آخر مزامنة</span>
+                    <span class="metric-value" style="font-size: 0.9rem">${lastSyncTime || 'لم تتم بعد'}</span>
+                </div>
+            `;
+        }
+
+        async function testCloudflareConnection() {
+            log('🔍 جاري اختبار الاتصال بـ Cloudflare...', 'info');
+
+            try {
+                const res = await fetch(`${HYBRID_CONFIG.workerUrl}/api/products`);
+
+                if (res.ok) {
+                    const products = await res.json();
+                    log(`✅ الاتصال ناجح! تم العثور على ${products.length} منتج في Cloudflare`, 'success');
+                    syncCount++;
+                } else {
+                    log(`⚠️ الاتصال فشل: ${res.status} ${res.statusText}`, 'warning');
+                    errorCount++;
+                }
+            } catch (e) {
+                log(`❌ خطأ في الاتصال: ${e.message}`, 'error');
+                errorCount++;
+            }
+
+            updateSyncStats();
+        }
+
+        async function syncNow() {
+            log('🔄 بدء المزامنة الفورية...', 'info');
+
+            const products = db.getProducts();
+            log(`📦 جاري مزامنة ${products.length} منتج...`, 'info');
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const product of products) {
+                try {
+                    const success = await HybridSystem.saveProduct(product);
+                    if (success) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                } catch (e) {
+                    failCount++;
+                    log(`❌ فشل مزامنة: ${product.name}`, 'error');
+                }
+            }
+
+            log(`✅ اكتملت المزامنة: ${successCount} نجح، ${failCount} فشل`, successCount > 0 ? 'success' : 'error');
+            syncCount += successCount;
+            errorCount += failCount;
+            lastSyncTime = new Date().toLocaleTimeString('ar-EG');
+            updateSyncStats();
+        }
+
+        async function viewCloudProducts() {
+            log('☁️ جاري جلب المنتجات من Cloudflare...', 'info');
+
+            try {
+                const products = await HybridSystem.getProducts();
+                log(`✅ تم جلب ${products.length} منتج من السحابة`, 'success');
+
+                if (products.length > 0) {
+                    products.slice(0, 5).forEach((p, i) => {
+                        const discount = p.oldPrice && p.oldPrice > p.price
+                            ? ` (خصم ${Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100)}%)`
+                            : '';
+                        log(`${i + 1}. ${p.name} - ${p.price} ج.م${discount}`, 'info');
+                    });
+                }
+            } catch (e) {
+                log(`❌ فشل جلب المنتجات: ${e.message}`, 'error');
+                errorCount++;
+            }
+
+            updateSyncStats();
+        }
+
+        // Override console.log to capture system logs
+        const originalLog = console.log;
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+
+            if (message.includes('💾')) log(message, 'info');
+            if (message.includes('✅')) log(message, 'success');
+            if (message.includes('☁️')) log(message, 'info');
+            if (message.includes('🔥')) log(message, 'info');
+            if (message.includes('⚠️')) log(message, 'warning');
+        };
+
+        const originalWarn = console.warn;
+        console.warn = function (...args) {
+            originalWarn.apply(console, args);
+            log(args.join(' '), 'warning');
+            errorCount++;
+            updateSyncStats();
+        };
+
+        const originalError = console.error;
+        console.error = function (...args) {
+            originalError.apply(console, args);
+            log(args.join(' '), 'error');
+            errorCount++;
+            updateSyncStats();
+        };
+
+        // Initialize
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                updateSystemStatus();
+                updateSyncStats();
+                log('🚀 نظام المراقبة جاهز', 'success');
+                log(`📡 Cloudflare Hybrid: ${HYBRID_CONFIG.enabled ? 'مفعّل ✅' : 'معطل ❌'}`, 'info');
+
+                // Auto-test connection
+                setTimeout(testCloudflareConnection, 1000);
+            }, 500);
+        });
+
+        // Auto-refresh stats every 10 seconds
+        setInterval(() => {
+            updateSystemStatus();
+            updateSyncStats();
+        }, 10000);
+    </script>
+</body>
+
+</html>

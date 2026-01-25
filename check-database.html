@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فحص قاعدة البيانات</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .status-box {
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 5px solid #ccc;
+        }
+
+        .status-box.success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .status-box.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .status-box.warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .status-box.info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .icon {
+            font-size: 24px;
+            margin-left: 10px;
+        }
+
+        button {
+            background: #486b65;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #3a5651;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #486b65;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .details {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 فحص قاعدة البيانات</h1>
+
+        <div id="results"></div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="runTests()">🔄 إعادة الفحص</button>
+            <button onclick="testWrite()">✍️ اختبار الكتابة</button>
+            <button onclick="testRead()">📖 اختبار القراءة</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+
+        function showLoading() {
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>جاري الفحص...</p></div>';
+        }
+
+        function addResult(title, status, message, details = null) {
+            const icon = status === 'success' ? '✅' : status === 'error' ? '❌' : status === 'warning' ? '⚠️' : 'ℹ️';
+            const detailsHtml = details ? `<div class="details">${details}</div>` : '';
+
+            resultsDiv.innerHTML += `
+                <div class="status-box ${status}">
+                    <strong><span class="icon">${icon}</span>${title}</strong>
+                    <p>${message}</p>
+                    ${detailsHtml}
+                </div>
+            `;
+        }
+
+        async function runTests() {
+            resultsDiv.innerHTML = '';
+            showLoading();
+
+            setTimeout(async () => {
+                resultsDiv.innerHTML = '';
+
+                // Test 1: Firebase SDK
+                if (typeof firebase !== 'undefined') {
+                    addResult(
+                        'Firebase SDK',
+                        'success',
+                        'مكتبة Firebase محملة بنجاح',
+                        `الإصدار: ${firebase.SDK_VERSION}`
+                    );
+                } else {
+                    addResult(
+                        'Firebase SDK',
+                        'error',
+                        'مكتبة Firebase غير محملة!',
+                        'تأكد من اتصالك بالإنترنت'
+                    );
+                    return;
+                }
+
+                // Test 2: Firebase App
+                try {
+                    const app = firebase.app();
+                    addResult(
+                        'Firebase App',
+                        'success',
+                        'تم تهيئة Firebase بنجاح',
+                        `Project ID: ${app.options.projectId}`
+                    );
+                } catch (e) {
+                    addResult(
+                        'Firebase App',
+                        'error',
+                        'فشل تهيئة Firebase',
+                        e.message
+                    );
+                    return;
+                }
+
+                // Test 3: Database Connection
+                try {
+                    const connectedRef = database.ref('.info/connected');
+                    connectedRef.on('value', (snap) => {
+                        if (snap.val() === true) {
+                            addResult(
+                                'اتصال قاعدة البيانات',
+                                'success',
+                                'متصل بقاعدة البيانات بنجاح',
+                                `URL: ${database.ref().toString()}`
+                            );
+                        } else {
+                            addResult(
+                                'اتصال قاعدة البيانات',
+                                'warning',
+                                'غير متصل حالياً',
+                                'تحقق من اتصال الإنترنت'
+                            );
+                        }
+                    });
+                } catch (e) {
+                    addResult(
+                        'اتصال قاعدة البيانات',
+                        'error',
+                        'فشل الاتصال',
+                        e.message
+                    );
+                }
+
+                // Test 4: Local Storage
+                try {
+                    const products = JSON.parse(localStorage.getItem('products') || '[]');
+                    addResult(
+                        'التخزين المحلي',
+                        'success',
+                        `يوجد ${products.length} منتج في التخزين المحلي`,
+                        products.length > 0 ? `آخر منتج: ${products[products.length - 1].name}` : 'لا توجد منتجات'
+                    );
+                } catch (e) {
+                    addResult(
+                        'التخزين المحلي',
+                        'error',
+                        'فشل قراءة التخزين المحلي',
+                        e.message
+                    );
+                }
+
+                // Test 5: Hybrid System
+                if (typeof HYBRID_CONFIG !== 'undefined') {
+                    addResult(
+                        'نظام Hybrid',
+                        HYBRID_CONFIG.enabled ? 'warning' : 'info',
+                        HYBRID_CONFIG.enabled ? 'مفعّل (يستخدم Cloudflare)' : 'معطل (يستخدم Firebase فقط)',
+                        `Worker URL: ${HYBRID_CONFIG.workerUrl}`
+                    );
+                } else {
+                    addResult(
+                        'نظام Hybrid',
+                        'info',
+                        'غير محمل',
+                        'سيتم استخدام Firebase فقط'
+                    );
+                }
+            }, 500);
+        }
+
+        async function testWrite() {
+            showLoading();
+
+            try {
+                const testData = {
+                    timestamp: Date.now(),
+                    message: 'اختبار الكتابة',
+                    random: Math.random()
+                };
+
+                await database.ref('test_connection').set(testData);
+
+                resultsDiv.innerHTML = '';
+                addResult(
+                    'اختبار الكتابة',
+                    'success',
+                    'تم الكتابة إلى Firebase بنجاح! ✅',
+                    JSON.stringify(testData, null, 2)
+                );
+            } catch (e) {
+                resultsDiv.innerHTML = '';
+                addResult(
+                    'اختبار الكتابة',
+                    'error',
+                    'فشل الكتابة إلى Firebase',
+                    `الخطأ: ${e.message}\n\nتحقق من:\n1. قواعد Firebase (Rules)\n2. اتصال الإنترنت\n3. صلاحيات المشروع`
+                );
+            }
+        }
+
+        async function testRead() {
+            showLoading();
+
+            try {
+                const snapshot = await database.ref('products').once('value');
+                const data = snapshot.val();
+
+                resultsDiv.innerHTML = '';
+
+                if (data) {
+                    const productsArray = Array.isArray(data) ? data : Object.values(data);
+                    addResult(
+                        'اختبار القراءة',
+                        'success',
+                        `تم قراءة ${productsArray.length} منتج من Firebase`,
+                        productsArray.slice(0, 3).map(p => `- ${p.name || 'بدون اسم'} (${p.price || 0} ج.م)`).join('\n')
+                    );
+                } else {
+                    addResult(
+                        'اختبار القراءة',
+                        'warning',
+                        'لا توجد منتجات في Firebase',
+                        'قاعدة البيانات فارغة أو القواعد تمنع القراءة'
+                    );
+                }
+            } catch (e) {
+                resultsDiv.innerHTML = '';
+                addResult(
+                    'اختبار القراءة',
+                    'error',
+                    'فشل القراءة من Firebase',
+                    `الخطأ: ${e.message}\n\nتحقق من قواعد Firebase (Rules)`
+                );
+            }
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+
+</html>

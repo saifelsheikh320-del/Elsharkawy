@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hybrid Sync Test</title>
+</head>
+
+<body>
+    <h1>Hybrid Sync Test</h1>
+    <div id="result">Running...</div>
+    <script src="js/hybrid-adapter_v2.js"></script>
+    <script>
+        // Mock DB and LocalStorage
+        const mockLocalProduct = {
+            id: '123',
+            name: 'Test Product',
+            price: 200, // Processed Price
+            lastUpdated: Date.now() // JUST UPDATED
+        };
+
+        localStorage.setItem('products', JSON.stringify([mockLocalProduct]));
+
+        // Mock Fetch for HybridSystem
+        const originalFetch = window.fetch;
+        window.fetch = async (url) => {
+            if (url.includes('/api/products')) {
+                return {
+                    ok: true,
+                    json: async () => [
+                        {
+                            id: '123',
+                            name: 'Test Product',
+                            price: 100, // OLD Price from server
+                            // No lastUpdated OR old lastUpdated
+                            lastUpdated: Date.now() - 10000
+                        }
+                    ]
+                };
+            }
+        };
+
+        async function runTest() {
+            try {
+                const products = await HybridSystem.getProducts();
+                const p = products[0];
+                const resDiv = document.getElementById('result');
+
+                if (p.price === 200) {
+                    resDiv.innerHTML = '<span style="color:green">PASS: Local Price (200) preserved over Cloud Price (100)</span>';
+                    console.log('PASS');
+                } else {
+                    resDiv.innerHTML = `<span style="color:red">FAIL: Price reverted to ${p.price}</span>`;
+                    console.error('FAIL');
+                }
+            } catch (e) {
+                document.getElementById('result').innerText = 'Error: ' + e.message;
+            }
+        }
+
+        runTest();
+    </script>
+</body>
+
+</html>
