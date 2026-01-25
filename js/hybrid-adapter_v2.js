@@ -4,8 +4,8 @@
  * Bridges the gap between Client Layouts & Cloud Infrastructure
  */
 const HYBRID_CONFIG = {
-    workerUrl: "https://elsharkwy.saifelsheikh320.workers.dev",
-    enabled: false // ❌ معطّل مؤقتاً - الاعتماد على Firebase فقط
+    workerUrl: "https://elsharkawy-products.saifelsheikh320.workers.dev",
+    enabled: true // ✅ مفعّل مع الـ Worker الجديد
 };
 
 class HybridSystem {
