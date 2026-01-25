@@ -25,7 +25,7 @@ const debouncedRefreshOrders = debounce(() => {
 }, 250);
 
 // Toast Notification System for Admin
-function showToast(message, type = 'info') {
+function showToast(message, type = 'info', title = '') {
     let container = document.querySelector('.toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -33,10 +33,27 @@ function showToast(message, type = 'info') {
         document.body.appendChild(container);
     }
 
+    const icons = {
+        success: '<i class="fas fa-check-circle"></i>',
+        error: '<i class="fas fa-exclamation-circle"></i>',
+        info: '<i class="fas fa-info-circle"></i>',
+        warning: '<i class="fas fa-exclamation-triangle"></i>'
+    };
+
+    if (!title) {
+        const lang = localStorage.getItem('forto_lang') || 'ar';
+        if (type === 'success') title = lang === 'ar' ? 'تم بنجاح' : 'Success';
+        if (type === 'error') title = lang === 'ar' ? 'خطأ' : 'Error';
+        if (type === 'info') title = lang === 'ar' ? 'تنبيه' : 'Info';
+        if (type === 'warning') title = lang === 'ar' ? 'تحذير' : 'Warning';
+    }
+
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || icons.info}</div>
         <div class="toast-content">
+            <div class="toast-title">${title}</div>
             <div class="toast-message">${message}</div>
         </div>
         <button onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer; color:#999; margin-right:10px;">&times;</button>
@@ -50,10 +67,176 @@ function showToast(message, type = 'info') {
 }
 window.showToast = showToast;
 
-function showAlert(message, type = 'info') {
-    alert(type.toUpperCase() + ': ' + message);
+function injectConfirmModal() {
+    if (document.getElementById('custom-confirm-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'custom-confirm-modal';
+    modal.style.cssText = `
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 100000;
+        align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;
+    `;
+    modal.innerHTML = `
+        <div class="confirm-content" style="
+            background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px;
+            text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.2); transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: 'Cairo', sans-serif;
+        ">
+            <div style="width: 60px; height: 60px; background: #fdf2f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: #e74c3c; font-size: 1.8rem;">
+                <i class="fas fa-question"></i>
+            </div>
+            <h3 id="confirm-title" style="margin-bottom: 15px; color: #2c3e50; font-size: 1.4rem;">تأكيد</h3>
+            <p id="confirm-message" style="margin-bottom: 20px; color: #555; font-size: 1.15rem; line-height: 1.6; font-weight: 800;">Message here</p>
+            <input type="number" id="confirm-input" style="display: none; width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #ddd; margin-bottom: 20px; font-family: inherit; font-size: 1rem; text-align: center; outline: none; transition: border-color 0.3s;" placeholder="...">
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="confirm-yes" style="background: #2c3e50; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; font-family: inherit; transition: all 0.2s;">نعم</button>
+                <button id="confirm-no" style="background: transparent; color: #7f8c8d; border: 1px solid #dfe6e9; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; font-family: inherit; transition: all 0.2s;">إلغاء</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
 }
-window.showAlert = showAlert;
+
+function closeConfirm() {
+    const modal = document.getElementById('custom-confirm-modal');
+    const content = modal?.querySelector('.confirm-content');
+    if (modal && content) {
+        modal.style.opacity = '0';
+        content.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+            modal.style.display = 'none';
+            const btnNo = modal.querySelector('#confirm-no');
+            if (btnNo) btnNo.style.display = 'block';
+        }, 300);
+    }
+}
+
+window.showAlert = function (message, type = 'info', onOk) {
+    injectConfirmModal();
+    const modal = document.getElementById('custom-confirm-modal');
+    const content = modal.querySelector('.confirm-content');
+    const msgEl = modal.querySelector('#confirm-message');
+    const btnYes = modal.querySelector('#confirm-yes');
+    const btnNo = modal.querySelector('#confirm-no');
+    const iconContainer = modal.querySelector('.confirm-content > div:first-child');
+
+    const lang = localStorage.getItem('forto_lang') || 'ar';
+    const t = { title: lang === 'ar' ? 'تنبيه' : 'Alert', ok: lang === 'ar' ? 'موافق' : 'OK' };
+
+    modal.querySelector('#confirm-title').innerText = t.title;
+    btnYes.innerText = t.ok;
+    btnNo.style.display = 'none';
+    msgEl.innerText = message;
+
+    if (type === 'error') {
+        iconContainer.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+        iconContainer.style.background = '#fdeaea'; iconContainer.style.color = '#e74c3c';
+    } else if (type === 'success') {
+        iconContainer.innerHTML = '<i class="fas fa-check-circle"></i>';
+        iconContainer.style.background = '#eafaf1'; iconContainer.style.color = '#2ecc71';
+    } else {
+        iconContainer.innerHTML = '<i class="fas fa-info-circle"></i>';
+        iconContainer.style.background = '#eaf4fa'; iconContainer.style.color = '#3498db';
+    }
+
+    modal.style.display = 'flex';
+    requestAnimationFrame(() => { modal.style.opacity = '1'; content.style.transform = 'scale(1)'; });
+
+    const newYes = btnYes.cloneNode(true);
+    btnYes.parentNode.replaceChild(newYes, btnYes);
+    newYes.onclick = () => { closeConfirm(); if (onOk) onOk(); };
+    modal.onclick = (e) => { if (e.target === modal) { closeConfirm(); if (onOk) onOk(); } };
+};
+
+window.showConfirm = function (message) {
+    return new Promise((resolve) => {
+        injectConfirmModal();
+        const modal = document.getElementById('custom-confirm-modal');
+        const content = modal.querySelector('.confirm-content');
+        const msgEl = modal.querySelector('#confirm-message');
+        const btnYes = modal.querySelector('#confirm-yes');
+        const btnNo = modal.querySelector('#confirm-no');
+        const iconContainer = modal.querySelector('.confirm-content > div:first-child');
+
+        const lang = localStorage.getItem('forto_lang') || 'ar';
+        const t = { title: lang === 'ar' ? 'تأكيد الإجراء' : 'Confirm', yes: lang === 'ar' ? 'نعم، متأكد' : 'Yes', no: lang === 'ar' ? 'إلغاء' : 'Cancel' };
+
+        iconContainer.innerHTML = '<i class="fas fa-question-circle"></i>';
+        iconContainer.style.background = '#fff8e1'; iconContainer.style.color = '#f39c12';
+
+        modal.querySelector('#confirm-title').innerText = t.title;
+        btnYes.innerText = t.yes; btnNo.innerText = t.no;
+        btnNo.style.display = 'block'; msgEl.innerText = message;
+
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => { modal.style.opacity = '1'; content.style.transform = 'scale(1)'; });
+
+        const handleResponse = (result) => { closeConfirm(); resolve(result); };
+        const newYes = btnYes.cloneNode(true); const newNo = btnNo.cloneNode(true);
+        btnYes.parentNode.replaceChild(newYes, btnYes); btnNo.parentNode.replaceChild(newNo, btnNo);
+        newYes.onclick = () => handleResponse(true); newNo.onclick = () => handleResponse(false);
+        modal.onclick = (e) => { if (e.target === modal) handleResponse(false); };
+    });
+};
+
+window.showPrompt = function (message, defaultValue = '') {
+    return new Promise((resolve) => {
+        injectConfirmModal();
+        const modal = document.getElementById('custom-confirm-modal');
+        const content = modal.querySelector('.confirm-content');
+        const msgEl = modal.querySelector('#confirm-message');
+        const inputEl = modal.querySelector('#confirm-input');
+        const btnYes = modal.querySelector('#confirm-yes');
+        const btnNo = modal.querySelector('#confirm-no');
+        const iconContainer = modal.querySelector('.confirm-content > div:first-child');
+
+        const lang = localStorage.getItem('forto_lang') || 'ar';
+        const t = {
+            title: lang === 'ar' ? 'إدخال بيانات' : 'User Input',
+            yes: lang === 'ar' ? 'تأكيد' : 'Confirm',
+            no: lang === 'ar' ? 'إلغاء' : 'Cancel'
+        };
+
+        if (iconContainer) {
+            iconContainer.innerHTML = '<i class="fas fa-edit"></i>';
+            iconContainer.style.background = '#e3f2fd';
+            iconContainer.style.color = '#2196f3';
+        }
+
+        modal.querySelector('#confirm-title').innerText = t.title;
+        btnYes.innerText = t.yes;
+        btnYes.style.background = '#2c3e50';
+        btnNo.innerText = t.no;
+        btnNo.style.display = 'block';
+        msgEl.innerText = message;
+
+        // Show and setup input
+        inputEl.style.display = 'block';
+        inputEl.value = defaultValue;
+
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => { modal.style.opacity = '1'; content.style.transform = 'scale(1)'; });
+
+        const handleResponse = (result) => {
+            const val = inputEl.value;
+            inputEl.style.display = 'none';
+            closeConfirm();
+            resolve(result ? val : null);
+        };
+
+        const newYes = btnYes.cloneNode(true);
+        const newNo = btnNo.cloneNode(true);
+        btnYes.parentNode.replaceChild(newYes, btnYes);
+        btnNo.parentNode.replaceChild(newNo, btnNo);
+
+        newYes.onclick = () => handleResponse(true);
+        newNo.onclick = () => handleResponse(false);
+        modal.onclick = (e) => { if (e.target === modal) handleResponse(false); };
+
+        inputEl.focus();
+        inputEl.onkeyup = (e) => { if (e.key === 'Enter') handleResponse(true); };
+    });
+};
 
 // Status Definitions & Helpers
 const ORDER_STATUSES = [
@@ -231,21 +414,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isChecking = status === "checking";
 
             const color = isOnline ? '#27ae60' : (status === "error" || status === "offline") ? '#e74c3c' : '#f39c12';
-            const bg = isOnline ? 'rgba(39, 174, 96, 0.1)' : 'rgba(231, 76, 60, 0.1)';
-            const icon = isOnline ? 'fa-check-circle' : isChecking ? 'fa-spinner fa-spin' : 'fa-exclamation-triangle';
+            const bg = isOnline ? '#f1fcf6' : (status === "checking" ? '#fffaf0' : '#fff5f5');
+            const icon = isOnline ? 'fa-check-circle' : isChecking ? 'fa-sync fa-spin' : 'fa-times-circle';
 
-            return `<div style="display: flex; flex-direction: column; gap: 2px;">
-                <span class="status-badge" style="color: ${color}; font-weight: bold; display: inline-flex; align-items: center; gap: 6px; background: ${bg}; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; border: 1px solid ${color}33;">
-                    <i class="fas ${icon}"></i>
-                    ${label}: ${isOnline ? 'متصل' : isChecking ? 'جاري الفحص...' : 'مفصول'}
-                </span>
-                ${error && !isOnline ? `<small style="color: #e74c3c; font-size: 0.7rem; margin-right: 15px;">${error}</small>` : ''}
+            return `<div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                <div class="status-pill" style="display: flex; align-items: center; gap: 8px; background: ${bg}; color: ${color}; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 900; border: 1px solid ${color}30; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                    <i class="fas ${icon}" style="font-size: 0.85rem;"></i>
+                    <span>${label}:</span>
+                    <span style="border-right: 1px solid ${color}30; height: 10px; margin: 0 4px;"></span>
+                    <span>${isOnline ? 'متصل' : isChecking ? 'جارِ الفحص' : 'فشل الاتصال'}</span>
+                </div>
+                ${error && !isOnline ? `<div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.6rem; color: #e74c3c; padding-right: 10px;">${error}</div>` : ''}
             </div>`;
         };
 
         statusEl.style.display = 'flex';
-        statusEl.style.gap = '12px';
+        statusEl.style.gap = '10px';
         statusEl.style.flexWrap = 'wrap';
+        statusEl.style.direction = 'rtl';
         statusEl.innerHTML = `
             ${getStatusBadge(fbStatus, 'الطلبات (Firebase)', fbError)}
             ${getStatusBadge(cfStatus, 'المنتجات (Cloudflare)', cfError)}
@@ -478,7 +664,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // SMART SYNC: If user explicitly set Total Qty to 0, force all variants to 0
             if (globalQty === 0 && hasVariants) {
-                if (confirm('هل تريد تصفير كمية جميع المقاسات لأنك جعلت الكمية الكلية 0؟')) {
+                if (await showConfirm('هل تريد تصفير كمية جميع المقاسات لأنك جعلت الكمية الكلية 0؟')) {
                     variants.forEach(v => v.quantity = 0);
                     totalVariantQty = 0;
                 } else {
@@ -687,9 +873,11 @@ function applyPermissions() {
     });
 }
 
-function logout() {
-    db.logoutAdmin();
-    window.location.href = '../admin-login';
+async function logout() {
+    if (await showConfirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        db.logoutAdmin();
+        window.location.href = '../admin-login';
+    }
 }
 
 function toggleSidebar() {
@@ -873,7 +1061,7 @@ function refreshProducts() {
     if (mainCb) mainCb.checked = false;
 
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #999;">${searchQuery ? 'لا توجد نتائج بحث' : (showArchivedOnly ? 'لا توجد منتجات مؤرشفة' : 'لا توجد منتجات')}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #999;">${searchQuery ? 'لا توجد نتائج بحث' : (showArchivedOnly ? 'لا توجد منتجات مؤرشفة' : 'لا توجد منتجات')}</td></tr>`;
         const pagContainer = document.getElementById('products-pagination');
         if (pagContainer) pagContainer.innerHTML = '';
         return;
@@ -942,7 +1130,7 @@ function refreshProducts() {
                         <i class="fas fa-box-open"></i>
                     </button>` : `
                     <button onclick="adminArchiveProduct('${p.id}')" class="btn-icon btn-archive" title="أرشفة">
-                        <i class="fas fa-archive"></i>
+                        <i class="fas fa-box"></i>
                     </button>`}
                     <button onclick="deleteProduct('${p.id}')" class="btn-icon btn-trash" title="حذف نهائي">
                         <i class="fas fa-trash"></i>
@@ -1091,7 +1279,7 @@ async function quickUpdateImage(id, input) {
 
         // Limit size to 1MB to protect LocalStorage/Sync
         if (file.size > 1024 * 1024) {
-            alert('حجم الصورة كبير جداً. يرجى اختيار صورة أقل من 1 ميجابايت.');
+            showAlert('حجم الصورة كبير جداً. يرجى اختيار صورة أقل من 1 ميجابايت.', 'error');
             return;
         }
 
@@ -1145,7 +1333,7 @@ async function moveProductToPage(targetId = null) {
 
     if (selectedIds.length === 0) return;
 
-    const pageNum = prompt('أدخل رقم الصفحة التي تريد نقل المنتجات إليها:');
+    const pageNum = await showPrompt('أدخل رقم الصفحة التي تريد نقل المنتجات إليها:');
     if (!pageNum || isNaN(pageNum)) return;
 
     const targetPage = parseInt(pageNum);
@@ -1236,7 +1424,7 @@ function changeProductPage(page) {
 }
 
 async function adminArchiveProduct(id) {
-    if (confirm('هل أنت متأكد من أرشفة هذا المنتج؟')) {
+    if (await showConfirm('هل أنت متأكد من أرشفة هذا المنتج؟')) {
         await db.archiveProduct(id);
         refreshProducts();
         showToast('تم أرشفة المنتج بنجاح', 'success');
@@ -1250,7 +1438,7 @@ async function adminUnarchiveProduct(id) {
 }
 
 async function deleteProduct(id) {
-    if (confirm('هل أنت متأكد من حذف هذا المنتج نهائياً؟')) {
+    if (await showConfirm('هل أنت متأكد من حذف هذا المنتج نهائياً؟')) {
         await db.deleteProduct(id);
         refreshProducts();
         showToast('تم حذف المنتج بنجاح', 'success');
@@ -1258,11 +1446,11 @@ async function deleteProduct(id) {
 }
 
 async function adminClearAllProducts() {
-    showConfirm('تحذير: هل أنت متأكد من حذف جميع المنتجات نهائياً؟ لا يمكن التراجع عن هذه الخطوة.', async () => {
+    if (await showConfirm('تحذير: هل أنت متأكد من حذف جميع المنتجات نهائياً؟ لا يمكن التراجع عن هذه الخطوة.')) {
         await db.clearAllProducts();
         refreshProducts();
         showToast('تم حذف جميع المنتجات بنجاح', 'success');
-    });
+    }
 }
 
 function refreshOrders() {
@@ -1368,14 +1556,14 @@ function updateBulkActionsUI(type) {
     }
 }
 
-function bulkDelete(type) {
+async function bulkDelete(type) {
     const checked = document.querySelectorAll(`.select-${type}:checked`);
     if (checked.length === 0) return;
 
     const count = checked.length;
     const msg = type === 'products' ? `هل أنت متأكد من حذف ${count} منتج نهائياً؟` : `هل أنت متأكد من حذف ${count} طلب نهائياً؟`;
 
-    showConfirm(msg, () => {
+    if (await showConfirm(msg)) {
         checked.forEach(cb => {
             const id = cb.value;
             if (type === 'products') {
@@ -1386,17 +1574,17 @@ function bulkDelete(type) {
         });
         type === 'products' ? refreshProducts() : refreshOrders();
         showToast(`تم حذف ${count} عنصر بنجاح`, 'success');
-    });
+    }
 }
 
-function bulkArchive(type) {
+async function bulkArchive(type) {
     const checked = document.querySelectorAll(`.select-${type}:checked`);
     if (checked.length === 0) return;
 
     const count = checked.length;
     const msg = type === 'products' ? `هل أنت متأكد من أرشفة ${count} منتج؟` : `هل أنت متأكد من أرشفة ${count} طلب؟`;
 
-    showConfirm(msg, () => {
+    if (await showConfirm(msg)) {
         checked.forEach(cb => {
             const id = cb.value;
             if (type === 'products') {
@@ -1407,23 +1595,23 @@ function bulkArchive(type) {
         });
         type === 'products' ? refreshProducts() : refreshOrders();
         showToast(`تم أرشفة ${count} عنصر بنجاح`, 'success');
-    });
+    }
 }
 
-function adminArchiveOrder(id) {
-    showConfirm('هل أنت متأكد من أرشفة هذا الطلب؟ سيختفي من القائمة النشطة.', () => {
+async function adminArchiveOrder(id) {
+    if (await showConfirm('هل أنت متأكد من أرشفة هذا الطلب؟ سيختفي من القائمة النشطة.')) {
         db.updateOrderStatus(id, 'Archived');
         refreshOrders();
         showToast('تم أرشفة الطلب بنجاح', 'success');
-    });
+    }
 }
 
-function adminDeleteOrder(id) {
-    showConfirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟ لا يمكن التراجع.', () => {
+async function adminDeleteOrder(id) {
+    if (await showConfirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟ لا يمكن التراجع.')) {
         db.cancelOrder(id);
         refreshOrders();
         showToast('تم حذف الطلب نهائياً', 'success');
-    });
+    }
 }
 
 function updateStatus(id, status) {
@@ -1551,12 +1739,12 @@ function getStatusColor(status) {
     return getStatusInfo(status).color;
 }
 
-function adminCancelOrder(id) {
-    showConfirm('هل أنت متأكد من إلغاء هذا الطلب نهائياً؟', () => {
+async function adminCancelOrder(id) {
+    if (await showConfirm('هل أنت متأكد من إلغاء هذا الطلب نهائياً؟')) {
         db.cancelOrder(id);
         refreshOrders();
         showToast('تم حذف الطلب نهائياً بنجاح', 'success');
-    });
+    }
 }
 
 function refreshCustomers() {
@@ -1783,8 +1971,107 @@ async function openProductModal(productId = null) {
         document.getElementById('product-form').reset();
     }
 
+    populateCategoryDropdown();
     modal.classList.add('active');
 }
+
+// Support for dynamic categories
+function populateCategoryDropdown() {
+    const catSelect = document.getElementById('p-category');
+    if (!catSelect) return;
+
+    // Get current value to preserve it
+    const currentVal = catSelect.value;
+
+    // Clear and add dynamic options from site_settings.collections
+    catSelect.innerHTML = '';
+
+    const settings = db.getSettings();
+    const categories = settings.collections || [];
+
+    if (categories.length === 0) {
+        // Fallback to defaults if none exist
+        const defaults = ['أوكر وكوالين', 'ديكورات', 'إكسسوارات'];
+        defaults.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.innerText = c;
+            catSelect.appendChild(opt);
+        });
+    } else {
+        categories.forEach(c => {
+            const opt = document.createElement('option');
+            const value = c.nameAr || c.nameEn;
+            opt.value = value;
+            opt.innerText = value;
+            catSelect.appendChild(opt);
+        });
+    }
+
+    // Try to restore previous value
+    if (currentVal) catSelect.value = currentVal;
+}
+
+// --- Custom Category Modal Logic ---
+function addNewCategoryPrompt() {
+    const modal = document.getElementById('category-modal');
+    if (modal) {
+        document.getElementById('category-form').reset();
+        modal.classList.add('active');
+        setTimeout(() => document.getElementById('new-cat-name').focus(), 100);
+    }
+}
+window.addNewCategoryPrompt = addNewCategoryPrompt;
+
+function closeCategoryModal() {
+    const modal = document.getElementById('category-modal');
+    if (modal) modal.classList.remove('active');
+}
+window.closeCategoryModal = closeCategoryModal;
+
+async function handleCategorySubmit(event) {
+    if (event) event.preventDefault();
+
+    const input = document.getElementById('new-cat-name');
+    const name = input.value.trim();
+
+    if (!name) return;
+
+    const settings = db.getSettings();
+
+    // Check if exists
+    const exists = (settings.collections || []).some(c => (c.nameAr === name || c.nameEn === name));
+    if (exists) {
+        showToast('هذه المجموعة موجودة بالفعل', 'info');
+        const pCat = document.getElementById('p-category');
+        if (pCat) pCat.value = name;
+        closeCategoryModal();
+        return;
+    }
+
+    // Add to collections
+    if (!settings.collections) settings.collections = [];
+    settings.collections.push({
+        id: Date.now(),
+        nameAr: name,
+        nameEn: name,
+        image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400", // Default generic image
+        link: "products?category=" + encodeURIComponent(name)
+    });
+
+    // Save
+    db.saveSettings(settings);
+
+    // Refresh UI
+    populateCategoryDropdown();
+    const pCatId = document.getElementById('p-category');
+    if (pCatId) pCatId.value = name;
+
+    closeCategoryModal();
+    showToast('تمت إضافة المجموعة الجديدة بنجاح ✨', 'success');
+}
+window.handleCategorySubmit = handleCategorySubmit;
+window.addNewCategoryPrompt = addNewCategoryPrompt;
 
 function closeProductModal() {
     const modal = document.getElementById('product-modal');
@@ -3573,62 +3860,52 @@ async function syncCloudData() {
 
 // --- HARD RESET & FIX TOOL ---
 async function hardResetAndFix() {
-    if (!confirm('⚠️ تحذير نهائي (Nuclear Option)!\n\nسيتم مسح قاعدة البيانات السحابية (Cloudflare & Firebase) بالكامل وحذف كل شيء.\n\nثم سيتم رفع المنتجات الموجودة أمامك الآن كأنها بداية جديدة.\n\nهل أنت متأكد؟')) return;
+    showConfirm('⚠️ تحذير نهائي (Nuclear Option)!\n\nسيتم مسح قاعدة البيانات السحابية (Cloudflare & Firebase) بالكامل وحذف كل شيء.\n\nثم سيتم رفع المنتجات الموجودة أمامك الآن كأنها بداية جديدة.\n\nهل أنت متأكد؟', async () => {
+        const btn = document.getElementById('reset-btn') || document.activeElement;
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-biohazard fa-spin"></i> جاري المسح الشامل...';
 
-    const btn = document.getElementById('reset-btn') || document.activeElement;
-    const originalText = btn.innerText;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-biohazard fa-spin"></i> جاري المسح الشامل...';
+        try {
+            const localProducts = db.getProducts(); // Backup current products
 
-    try {
-        const localProducts = db.getProducts(); // Backup current products
+            showToast('جاري تدمير البيانات القديمة على السحاب...', 'warning');
 
-        // 1. Wipe Cloudflare via API (The Worker must support DELETE /api/products for bulk or we loop)
-        // Since we don't have a bulk delete endpoint exposed usually, we will try a reset signal or just overwrite.
-        // BUT, to be "Nuclear", we will loop and delete EVERY ID we know about first.
-
-        showToast('جاري تدمير البيانات القديمة على السحاب...', 'warning');
-
-        if (typeof HybridSystem !== 'undefined' && HYBRID_CONFIG.enabled) {
-            // Fetch all cloud IDs first to kill them
-            try {
-                const currentCloud = await HybridSystem.getProducts();
-                for (const p of currentCloud) {
-                    await HybridSystem.deleteProduct(p.id);
-                }
-            } catch (e) { console.log('Cleaning cloud failed, proceeding to overwrite'); }
-        }
-
-        // 2. Wipe Firebase Products
-        if (typeof database !== 'undefined') {
-            await database.ref('products').remove();
-        }
-
-        showToast(`تم المسح! جاري رفع ${localProducts.length} منتج من الصفر...`, 'info');
-
-        // 3. Force Re-upload to Cloudflare as NEW data
-        if (typeof HybridSystem !== 'undefined' && HYBRID_CONFIG.enabled) {
-            for (const p of localProducts) {
-                p.lastUpdated = Date.now(); // Fresh timestamp
-                await HybridSystem.saveProduct(p);
+            if (typeof HybridSystem !== 'undefined' && HYBRID_CONFIG.enabled) {
+                try {
+                    const currentCloud = await HybridSystem.getProducts();
+                    for (const p of currentCloud) {
+                        await HybridSystem.deleteProduct(p.id);
+                    }
+                } catch (e) { console.log('Cleaning cloud failed, proceeding to overwrite'); }
             }
+
+            if (typeof database !== 'undefined') {
+                await database.ref('products').remove();
+            }
+
+            showToast(`تم المسح! جاري رفع ${localProducts.length} منتج من الصفر...`, 'info');
+
+            if (typeof HybridSystem !== 'undefined' && HYBRID_CONFIG.enabled) {
+                for (const p of localProducts) {
+                    p.lastUpdated = Date.now(); // Fresh timestamp
+                    await HybridSystem.saveProduct(p);
+                }
+            }
+
+            await db.updateCloud('products');
+
+            showAlert('✅ تمت العملية بنجاح!\n\nتم مسح القواعد القديمة وإنشاء نسخة جديدة نظيفة تماماً.\nسيتم إعادة تحميل الصفحة الآن.', 'success', () => {
+                window.location.reload(true);
+            });
+
+        } catch (e) {
+            console.error("Hard Reset Failed:", e);
+            showToast("فشلت العملية: " + e.message, 'error');
+            btn.disabled = false;
+            btn.innerText = originalText;
         }
-
-        // 4. Force Re-upload to Firebase
-        await db.updateCloud('products');
-
-        alert('✅ تمت العملية بنجاح!\n\nتم مسح القواعد القديمة وإنشاء نسخة جديدة نظيفة تماماً.\nسيتم إعادة تحميل الصفحة الآن.');
-
-        // Force reload ensuring no cache
-        window.location.reload(true);
-
-    } catch (e) {
-        console.error("Hard Reset Failed:", e);
-        showToast("فشلت العملية: " + e.message, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerText = originalText;
-    }
+    });
 }
 window.hardResetAndFix = hardResetAndFix;
 

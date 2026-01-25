@@ -318,7 +318,8 @@ function injectConfirmModal() {
                 <i class="fas fa-question"></i>
             </div>
             <h3 id="confirm-title" style="margin-bottom: 15px; color: #2c3e50; font-size: 1.4rem;">تأكيد الإجراء</h3>
-            <p id="confirm-message" style="margin-bottom: 30px; color: #555; font-size: 1.15rem; line-height: 1.6; font-weight: 800;">Message text here</p>
+            <p id="confirm-message" style="margin-bottom: 20px; color: #555; font-size: 1.15rem; line-height: 1.6; font-weight: 800;">Message text here</p>
+            <input type="number" id="confirm-input" style="display: none; width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #ddd; margin-bottom: 20px; font-family: inherit; font-size: 1rem; text-align: center; outline: none; transition: border-color 0.3s;" placeholder="...">
             <div style="display: flex; gap: 15px; justify-content: center;">
                 <button id="confirm-yes" style="
                     background: #2c3e50; 
@@ -362,63 +363,62 @@ function injectConfirmModal() {
     btnNo.onmouseout = () => { btnNo.style.background = 'transparent'; btnNo.style.color = '#7f8c8d'; };
 }
 
-window.showConfirm = function (message, onYes, onNo) {
-    injectConfirmModal();
-    const modal = document.getElementById('custom-confirm-modal');
-    const content = modal.querySelector('.confirm-content');
-    const msgEl = modal.querySelector('#confirm-message');
-    const btnYes = modal.querySelector('#confirm-yes');
-    const btnNo = modal.querySelector('#confirm-no');
+window.showConfirm = function (message) {
+    return new Promise((resolve) => {
+        injectConfirmModal();
+        const modal = document.getElementById('custom-confirm-modal');
+        const content = modal.querySelector('.confirm-content');
+        const msgEl = modal.querySelector('#confirm-message');
+        const btnYes = modal.querySelector('#confirm-yes');
+        const btnNo = modal.querySelector('#confirm-no');
+        const iconContainer = modal.querySelector('.confirm-content > div:first-child');
 
-    const lang = localStorage.getItem('forto_lang') || 'ar';
-    const t = {
-        title: lang === 'ar' ? 'تأكيد' : 'Confirm',
-        yes: lang === 'ar' ? 'نعم' : 'Yes',
-        no: lang === 'ar' ? 'إلغاء' : 'Cancel'
-    };
+        const lang = localStorage.getItem('forto_lang') || 'ar';
+        const t = {
+            title: lang === 'ar' ? 'تأكيد الإجراء' : 'Confirm Action',
+            yes: lang === 'ar' ? 'نعم، متأكد' : 'Yes, Confirm',
+            no: lang === 'ar' ? 'إلغاء' : 'Cancel'
+        };
 
-    modal.querySelector('#confirm-title').innerText = t.title;
-    btnYes.innerText = t.yes;
-    btnNo.innerText = t.no;
-    msgEl.innerText = message;
-
-    modal.style.display = 'flex';
-    // Small delay to trigger transition
-    requestAnimationFrame(() => {
-        modal.style.opacity = '1';
-        content.style.transform = 'scale(1)';
-    });
-
-    // Clean up old listeners
-    const newYes = btnYes.cloneNode(true);
-    const newNo = btnNo.cloneNode(true);
-    btnYes.parentNode.replaceChild(newYes, btnYes);
-    btnNo.parentNode.replaceChild(newNo, btnNo);
-
-    // Re-attach hover effects manually if lost during cloning (they are lost)
-    newYes.onmouseover = () => { newYes.style.transform = 'translateY(-2px)'; newYes.style.boxShadow = '0 8px 20px rgba(44, 62, 80, 0.3)'; };
-    newYes.onmouseout = () => { newYes.style.transform = 'translateY(0)'; newYes.style.boxShadow = '0 5px 15px rgba(44, 62, 80, 0.2)'; };
-    newNo.onmouseover = () => { newNo.style.background = '#f8f9fa'; newNo.style.color = '#2c3e50'; };
-    newNo.onmouseout = () => { newNo.style.background = 'transparent'; newNo.style.color = '#7f8c8d'; };
-
-
-    newYes.onclick = () => {
-        closeConfirm();
-        if (onYes) onYes();
-    };
-
-    newNo.onclick = () => {
-        closeConfirm();
-        if (onNo) onNo();
-    };
-
-    modal.onclick = (e) => {
-        if (e.target === modal) {
-            closeConfirm();
-            if (onNo) onNo();
+        if (iconContainer) {
+            iconContainer.innerHTML = '<i class="fas fa-question-circle"></i>';
+            iconContainer.style.background = '#fff8e1';
+            iconContainer.style.color = '#f39c12';
         }
-    };
-}
+
+        modal.querySelector('#confirm-title').innerText = t.title;
+        btnYes.innerText = t.yes;
+        btnYes.style.background = '#2c3e50';
+        btnNo.innerText = t.no;
+        btnNo.style.display = 'block';
+        msgEl.innerText = message;
+
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => {
+            modal.style.opacity = '1';
+            content.style.transform = 'scale(1)';
+        });
+
+        const handleResponse = (result) => {
+            closeConfirm();
+            resolve(result);
+        };
+
+        const newYes = btnYes.cloneNode(true);
+        const newNo = btnNo.cloneNode(true);
+        btnYes.parentNode.replaceChild(newYes, btnYes);
+        btnNo.parentNode.replaceChild(newNo, btnNo);
+
+        newYes.onmouseover = () => { newYes.style.transform = 'translateY(-2px)'; newYes.style.filter = 'brightness(1.1)'; };
+        newYes.onmouseout = () => { newYes.style.transform = 'translateY(0)'; newYes.style.filter = 'none'; };
+        newNo.onmouseover = () => { newNo.style.background = '#f1f2f6'; };
+        newNo.onmouseout = () => { newNo.style.background = 'transparent'; };
+
+        newYes.onclick = () => handleResponse(true);
+        newNo.onclick = () => handleResponse(false);
+        modal.onclick = (e) => { if (e.target === modal) handleResponse(false); };
+    });
+};
 
 window.showAlert = function (message, type = 'info', onOk) {
     injectConfirmModal();
@@ -475,6 +475,69 @@ window.showAlert = function (message, type = 'info', onOk) {
             if (onOk) onOk();
         }
     };
+};
+
+window.showPrompt = function (message, defaultValue = '') {
+    return new Promise((resolve) => {
+        injectConfirmModal();
+        const modal = document.getElementById('custom-confirm-modal');
+        const content = modal.querySelector('.confirm-content');
+        const msgEl = modal.querySelector('#confirm-message');
+        const inputEl = modal.querySelector('#confirm-input');
+        const btnYes = modal.querySelector('#confirm-yes');
+        const btnNo = modal.querySelector('#confirm-no');
+        const iconContainer = modal.querySelector('.confirm-content > div:first-child');
+
+        const lang = localStorage.getItem('forto_lang') || 'ar';
+        const t = {
+            title: lang === 'ar' ? 'إدخال بيانات' : 'User Input',
+            yes: lang === 'ar' ? 'تأكيد' : 'Confirm',
+            no: lang === 'ar' ? 'إلغاء' : 'Cancel'
+        };
+
+        if (iconContainer) {
+            iconContainer.innerHTML = '<i class="fas fa-edit"></i>';
+            iconContainer.style.background = '#e3f2fd';
+            iconContainer.style.color = '#2196f3';
+        }
+
+        modal.querySelector('#confirm-title').innerText = t.title;
+        btnYes.innerText = t.yes;
+        btnYes.style.background = '#2c3e50';
+        btnNo.innerText = t.no;
+        btnNo.style.display = 'block';
+        msgEl.innerText = message;
+        inputEl.style.display = 'block';
+        inputEl.value = defaultValue;
+        inputEl.focus();
+
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => {
+            modal.style.opacity = '1';
+            content.style.transform = 'scale(1)';
+        });
+
+        const handleResponse = (result) => {
+            const val = inputEl.value;
+            inputEl.style.display = 'none';
+            closeConfirm();
+            resolve(result ? val : null);
+        };
+
+        const newYes = btnYes.cloneNode(true);
+        const newNo = btnNo.cloneNode(true);
+        btnYes.parentNode.replaceChild(newYes, btnYes);
+        btnNo.parentNode.replaceChild(newNo, btnNo);
+
+        newYes.onclick = () => handleResponse(true);
+        newNo.onclick = () => handleResponse(false);
+        modal.onclick = (e) => { if (e.target === modal) handleResponse(false); };
+
+        // Handle Enter key
+        inputEl.onkeyup = (e) => {
+            if (e.key === 'Enter') handleResponse(true);
+        };
+    });
 };
 
 function closeConfirm() {

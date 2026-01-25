@@ -2,7 +2,8 @@
 // --- Coupon Logic ---
 if (typeof showToast !== 'function') {
     window.showToast = function (msg, type = 'info') {
-        alert(msg);
+        if (typeof showAlert !== 'undefined') showAlert(msg, type);
+        else console.log(msg);
     };
 }
 
@@ -46,14 +47,14 @@ function saveCoupon(e) {
     showToast('تم إضافة الكوبون بنجاح', 'success');
 }
 
-function adminDeleteCoupon(code) {
-    if (!confirm('هل أنت متأكد من حذف هذا الكوبون؟')) return;
+async function adminDeleteCoupon(code) {
+    if (await showConfirm('هل أنت متأكد من حذف هذا الكوبون؟')) {
+        // Use StoreDB method to delete
+        db.deleteCoupon(code);
 
-    // Use StoreDB method to delete
-    db.deleteCoupon(code);
-
-    refreshDiscounts();
-    showToast('تم حذف الكوبون', 'success');
+        refreshDiscounts();
+        showToast('تم حذف الكوبون', 'success');
+    }
 }
 
 // --- Special Offers Logic ---

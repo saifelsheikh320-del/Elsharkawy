@@ -157,7 +157,7 @@ class StoreDB {
                     if (typeof showAlert !== 'undefined') {
                         showAlert(`تنبيه: فشل الاتصال بقاعدة البيانات لقراءة المنتجات.\nالسبب: ${error.message}\nتأكد من إعدادات القواعد (Rules) في Firebase.`, 'error');
                     } else {
-                        alert(`تنبيه: فشل الاتصال بقاعدة البيانات لقراءة المنتجات.\nالسبب: ${error.message}\nتأكد من إعدادات القواعد (Rules) في Firebase.`);
+                        console.error(`Database Connection Error: ${error.message}`);
                     }
                 }
             });
@@ -197,7 +197,7 @@ class StoreDB {
                 }
                 const msg = `خطأ في المزامنة: ${error.message}\nتأكد من إعدادات قواعد البيانات (Rules) في Firebase Console وتغييرها لـ true.`;
                 if (typeof showAlert !== 'undefined') showAlert(msg, 'error');
-                else alert(msg);
+                else showAlert(msg, 'success');
                 throw error;
             }
         }
@@ -1006,7 +1006,7 @@ if (typeof HybridSystem !== 'undefined' && HYBRID_CONFIG.enabled) {
     };
 
     db.clearAllProducts = async function () {
-        if (confirm('هل أنت متأكد من مسح جميع المنتجات من السحاب والمحلي؟')) {
+        if (await showConfirm('هل أنت متأكد من مسح جميع المنتجات من السحاب والمحلي؟')) {
             // This is a special bulk operation, for simplicity we rely on manual D1 clear if needed
             // but for safety we just clear local and update cloud.
             localStorage.setItem('products', JSON.stringify([]));

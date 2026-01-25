@@ -563,6 +563,9 @@
             const searchQuery = document.getElementById('store-search').value.toLowerCase().trim();
 
             filteredProducts = allProducts.filter(p => {
+                // Filter out archived products from storefront
+                if (p.archived === true) return false;
+
                 // Search filter
                 if (searchQuery && !p.name.toLowerCase().includes(searchQuery)) return false;
 

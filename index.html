@@ -569,7 +569,7 @@
                 return orderA - orderB;
             });
 
-            const featuredProducts = allProducts.filter(p => featuredIds.includes(p.id));
+            const featuredProducts = allProducts.filter(p => featuredIds.includes(p.id) && !p.archived);
 
             // Fallback if none selected
             const displayProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 3);
