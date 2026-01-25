@@ -5,7 +5,7 @@
  */
 const HYBRID_CONFIG = {
     workerUrl: "https://elsharkawy-products.saifelsheikh320.workers.dev",
-    enabled: true // ✅ مفعّل مع الـ Worker الجديد
+    enabled: true // ✅ النظام الآن مفعّل بالكامل وجاهز لاستقبال بيانات الإكسيل
 };
 
 class HybridSystem {
@@ -63,6 +63,10 @@ class HybridSystem {
             return mergedProducts;
         } catch (e) {
             console.warn("Hybrid Fallback:", e);
+            // 🚨 自動التنبيه بالبريد عند حدوث فشل في Cloudflare
+            if (typeof emailService !== 'undefined') {
+                emailService.sendErrorReport("فشل جلب المنتجات من Cloudflare (Visitor Mode)", e.message);
+            }
             // Fallback to local if Edge fails
             return JSON.parse(localStorage.getItem('products') || '[]');
         }
