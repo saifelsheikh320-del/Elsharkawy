@@ -363,7 +363,7 @@ function injectConfirmModal() {
     btnNo.onmouseout = () => { btnNo.style.background = 'transparent'; btnNo.style.color = '#7f8c8d'; };
 }
 
-window.showConfirm = function (message) {
+window.showConfirm = function (message, callback) {
     return new Promise((resolve) => {
         injectConfirmModal();
         const modal = document.getElementById('custom-confirm-modal');
@@ -402,6 +402,9 @@ window.showConfirm = function (message) {
         const handleResponse = (result) => {
             closeConfirm();
             resolve(result);
+            if (result && typeof callback === 'function') {
+                callback();
+            }
         };
 
         const newYes = btnYes.cloneNode(true);

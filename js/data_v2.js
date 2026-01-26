@@ -478,11 +478,47 @@ class StoreDB {
         this.updateCloud('abandoned_carts');
     }
 
-    updateOrderStatus(orderId, status) {
+    async updateOrderStatus(orderId, status) {
         let orders = this.getOrders();
         const order = orders.find(o => o.id === orderId);
         if (order) {
+            const oldStatus = order.status;
             order.status = status;
+
+            // Auto-create Bosta delivery when status changes to "Confirmed"
+            if (status === 'Confirmed' && oldStatus !== 'Confirmed') {
+                try {
+                    // Check if Bosta is configured and available
+                    if (typeof BostaIntegration !== 'undefined' && BostaIntegration.config.enabled && BostaIntegration.isConfigured()) {
+                        // Only create if not already created
+                        if (!order.bostaDeliveryId) {
+                            const result = await BostaIntegration.createDelivery(order);
+
+                            if (result.success) {
+                                // Save Bosta tracking info to order
+                                order.bostaDeliveryId = result.deliveryId;
+                                order.bostaTrackingNumber = result.trackingNumber;
+                                order.bostaStatus = result.state;
+                                order.bostaCreatedAt = Date.now();
+
+                                console.log('✅ Bosta Delivery Created:', result.trackingNumber);
+
+                                // Show success notification if showToast is available
+                                if (typeof showToast === 'function') {
+                                    showToast(`تم إرسال الطلب لبوسطة - رقم التتبع: ${result.trackingNumber}`, 'success', 'شحنة جديدة');
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Bosta Integration Error:', error);
+                    // Show error but don't prevent status update
+                    if (typeof showToast === 'function') {
+                        showToast(`تم تأكيد الطلب ولكن فشل الإرسال لبوسطة: ${error.message}`, 'warning');
+                    }
+                }
+            }
+
             localStorage.setItem('orders', JSON.stringify(orders));
             this.updateCloud('orders');
         }

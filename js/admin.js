@@ -148,7 +148,7 @@ window.showAlert = function (message, type = 'info', onOk) {
     modal.onclick = (e) => { if (e.target === modal) { closeConfirm(); if (onOk) onOk(); } };
 };
 
-window.showConfirm = function (message) {
+window.showConfirm = function (message, callback) {
     return new Promise((resolve) => {
         injectConfirmModal();
         const modal = document.getElementById('custom-confirm-modal');
@@ -171,7 +171,13 @@ window.showConfirm = function (message) {
         modal.style.display = 'flex';
         requestAnimationFrame(() => { modal.style.opacity = '1'; content.style.transform = 'scale(1)'; });
 
-        const handleResponse = (result) => { closeConfirm(); resolve(result); };
+        const handleResponse = (result) => {
+            closeConfirm();
+            resolve(result);
+            if (result && typeof callback === 'function') {
+                callback();
+            }
+        };
         const newYes = btnYes.cloneNode(true); const newNo = btnNo.cloneNode(true);
         btnYes.parentNode.replaceChild(newYes, btnYes); btnNo.parentNode.replaceChild(newNo, btnNo);
         newYes.onclick = () => handleResponse(true); newNo.onclick = () => handleResponse(false);
@@ -289,7 +295,7 @@ function toggleStatusDropdown(orderId, event, prefix = 'main') {
     if (dropdown) dropdown.classList.toggle('active');
 }
 
-function updateStatusWithAnimation(orderId, newStatus, event, prefix = 'main') {
+async function updateStatusWithAnimation(orderId, newStatus, event, prefix = 'main') {
     if (event) event.stopPropagation();
 
     const uniqueId = `dropdown-${prefix}-${orderId}`;
@@ -304,9 +310,9 @@ function updateStatusWithAnimation(orderId, newStatus, event, prefix = 'main') {
         trigger.style.transform = 'scale(0.95)';
     }
 
-    setTimeout(() => {
+    setTimeout(async () => {
         try {
-            db.updateOrderStatus(orderId, newStatus);
+            await db.updateOrderStatus(orderId, newStatus);
             showToast('تم تحديث حالة الطلب بنجاح', 'success');
 
             // Auto-refresh handled by database events generally, but manual refresh for speed
@@ -2301,6 +2307,11 @@ function refreshSettings() {
     (settings.collections || []).forEach((col, index) => {
         addCollectionField(col);
     });
+
+    // Load Bosta Settings
+    if (typeof loadBostaSettings === 'function') {
+        loadBostaSettings();
+    }
 }
 
 function addReviewField(data = null) {
@@ -2446,6 +2457,11 @@ document.getElementById('settings-form').addEventListener('submit', (e) => {
                 id: Date.now() + Math.random()
             }))
         };
+
+        // Save Bosta Settings
+        if (typeof saveBostaSettings === 'function') {
+            saveBostaSettings();
+        }
 
         // Handle Admin Credentials Update
         const newAdminEmail = document.getElementById('s-newAdminEmail').value;
