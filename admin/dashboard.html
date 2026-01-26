@@ -3077,6 +3077,10 @@
                                                 style="white-space: nowrap;">
                                                 <i class="fas fa-copy"></i> نسخ الرابط
                                             </button>
+                                            <button type="button" class="btn btn-outline-info"
+                                                onclick="testWebhookConnection(event)" style="white-space: nowrap;">
+                                                <i class="fas fa-satellite-dish"></i> اختبار الرد
+                                            </button>
                                         </div>
                                         <p class="text-muted small">
                                             <i class="fas fa-info-circle"></i> انسخ هذا الرابط وضعه في إعدادات الربط
@@ -3153,7 +3157,8 @@
                                 </div>
 
                                 <div class="mt-3">
-                                    <button type="button" class="btn btn-secondary" onclick="testBostaConnection()">
+                                    <button type="button" class="btn btn-secondary"
+                                        onclick="testBostaConnection(event)">
                                         <i class="fas fa-plug"></i> اختبار الاتصال
                                     </button>
                                     <span id="bosta-connection-status" class="mr-3"></span>

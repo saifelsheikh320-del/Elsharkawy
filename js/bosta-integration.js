@@ -81,8 +81,8 @@ const BostaIntegration = {
                 // Dropping off at customer's place
                 dropOffAddress: {
                     city: this.getCityCode(order.customer?.province || 'القاهرة'),
-                    firstLine: order.customer?.address || 'العنوان غير متوفر',
-                    buildingNumber: '', // Can be extracted if formatted
+                    firstLine: `${order.customer?.province || ''} - ${order.customer?.address || 'العنوان غير متوفر'}`,
+                    buildingNumber: '',
                     floor: '',
                     apartment: ''
                 },

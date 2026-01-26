@@ -43,9 +43,9 @@ function saveBostaSettings() {
 }
 
 // Test Bosta Connection
-async function testBostaConnection() {
+async function testBostaConnection(event) {
     const statusEl = document.getElementById('bosta-connection-status');
-    const btn = event.target;
+    const btn = event.currentTarget;
 
     // Save settings first
     saveBostaSettings();
@@ -106,11 +106,39 @@ function copyWebhookUrl() {
     }
 }
 
+// Test Webhook URL endpoint
+async function testWebhookConnection(event) {
+    const url = document.getElementById('s-bostaWebhookUrl').value;
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الفحص...';
+
+    try {
+        // We use a GET request just to see if the server responds at all
+        const response = await fetch(url);
+
+        // Even if it's 405 (Method Not Allowed), it means the server is UP and the URL is correct
+        if (response.status !== 404) {
+            showToast('الويب هوك نشط ومستعد لاستقبال البيانات ✅', 'success');
+        } else {
+            showToast('الرابط غير موجود (404) ❌', 'error');
+        }
+    } catch (error) {
+        showToast('لا يمكن الوصول للرابط حالياً ❌', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
 // Export functions
 window.loadBostaSettings = loadBostaSettings;
 window.saveBostaSettings = saveBostaSettings;
 window.testBostaConnection = testBostaConnection;
 window.copyWebhookUrl = copyWebhookUrl;
+window.testWebhookConnection = testWebhookConnection;
 
 // Auto-load settings when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
