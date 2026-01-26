@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار نقص المخزون</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            background: #486b65;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            background: #3a5651;
+        }
+
+        .log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .info {
+            color: #3498db;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-box">
+        <h1>🔍 اختبار نظام نقص المخزون</h1>
+        <p>هذه الصفحة بتفحص نظام خصم الكمية وبتوضح أي مشكلة موجودة</p>
+
+        <button onclick="testStockDeduction()">🧪 اختبار نقص المخزون</button>
+        <button onclick="checkFirebase()">🔥 فحص Firebase</button>
+        <button onclick="checkCloudflare()">☁️ فحص Cloudflare</button>
+        <button onclick="clearLog()">🗑️ مسح السجل</button>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/hybrid-adapter_v2.js"></script>
+    <script src="js/data_v2.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString('ar-EG');
+            logDiv.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function checkFirebase() {
+            log('جاري فحص اتصال Firebase...', 'info');
+
+            if (typeof firebase === 'undefined') {
+                log('❌ Firebase غير محمّل!', 'error');
+                return;
+            }
+
+            log('✅ Firebase SDK محمّل بنجاح', 'success');
+
+            if (typeof database === 'undefined') {
+                log('❌ Firebase Database غير متصل!', 'error');
+                return;
+            }
+
+            log('✅ Firebase Database متصل', 'success');
+
+            try {
+                const testRef = await database.ref('test_connection').set({ test: true, time: Date.now() });
+                log('✅ اختبار الكتابة في Firebase نجح!', 'success');
+            } catch (error) {
+                log('❌ فشل الكتابة في Firebase: ' + error.message, 'error');
+            }
+        }
+
+        async function checkCloudflare() {
+            log('جاري فحص اتصال Cloudflare...', 'info');
+
+            if (typeof HybridSystem === 'undefined') {
+                log('❌ HybridSystem غير محمّل!', 'error');
+                return;
+            }
+
+            log('✅ HybridSystem محمّل', 'success');
+
+            if (typeof HYBRID_CONFIG === 'undefined') {
+                log('❌ HYBRID_CONFIG غير موجود!', 'error');
+                return;
+            }
+
+            log(`ℹ️ Cloudflare ${HYBRID_CONFIG.enabled ? 'مفعّل' : 'غير مفعّل'}`, 'info');
+            log(`ℹ️ Worker URL: ${HYBRID_CONFIG.workerUrl}`, 'info');
+        }
+
+        async function testStockDeduction() {
+            clearLog();
+            log('🧪 بدء اختبار نقص المخزون...', 'info');
+
+            // 1. Get products
+            const products = db.getProducts();
+            if (!products || products.length === 0) {
+                log('❌ لا توجد منتجات في المخزن!', 'error');
+                return;
+            }
+
+            log(`✅ تم العثور على ${products.length} منتج`, 'success');
+
+            // 2. Pick first product with quantity
+            const testProduct = products.find(p => p.quantity > 0);
+            if (!testProduct) {
+                log('❌ لا توجد منتجات متوفرة للاختبار!', 'error');
+                return;
+            }
+
+            log(`📦 المنتج المختار: ${testProduct.name}`, 'info');
+            log(`📊 الكمية الحالية: ${testProduct.quantity}`, 'info');
+
+            // 3. Create test order
+            const testOrder = {
+                customer: {
+                    name: 'اختبار نظام',
+                    phone: '01000000000',
+                    address: 'عنوان اختبار',
+                    province: 'القاهرة',
+                    email: 'test@test.com'
+                },
+                items: [{
+                    ...testProduct,
+                    quantity: 1
+                }],
+                total: testProduct.price,
+                paymentMethod: 'cod'
+            };
+
+            log('📝 تم إنشاء طلب تجريبي...', 'info');
+
+            try {
+                // 4. Create order (this should deduct quantity)
+                log('⏳ جاري تنفيذ الطلب وخصم المخزون...', 'info');
+                await db.createOrder(testOrder);
+
+                log('✅ تم تنفيذ الطلب بنجاح!', 'success');
+
+                // 5. Check if quantity was deducted
+                setTimeout(() => {
+                    const updatedProducts = db.getProducts();
+                    const updatedProduct = updatedProducts.find(p => p.id === testProduct.id);
+
+                    if (!updatedProduct) {
+                        log('❌ لم يتم العثور على المنتج بعد التحديث!', 'error');
+                        return;
+                    }
+
+                    log(`📊 الكمية بعد الخصم: ${updatedProduct.quantity}`, 'info');
+
+                    if (updatedProduct.quantity === testProduct.quantity - 1) {
+                        log('🎉 نجح الاختبار! تم خصم الكمية بنجاح', 'success');
+                    } else if (updatedProduct.quantity === testProduct.quantity) {
+                        log('❌ فشل الاختبار! الكمية لم تتغير', 'error');
+                        log('💡 المشكلة: الكمية لم يتم خصمها من localStorage', 'error');
+                    } else {
+                        log(`⚠️ الكمية تغيرت بشكل غير متوقع: ${testProduct.quantity} -> ${updatedProduct.quantity}`, 'error');
+                    }
+
+                    // Check cloud sync
+                    log('\n🔍 فحص المزامنة السحابية...', 'info');
+                    checkCloudSync(testProduct.id);
+                }, 1000);
+
+            } catch (error) {
+                log('❌ حدث خطأ أثناء إنشاء الطلب: ' + error.message, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        async function checkCloudSync(productId) {
+            // Check Firebase
+            if (typeof database !== 'undefined') {
+                try {
+                    const snapshot = await database.ref('products').once('value');
+                    const firebaseProducts = snapshot.val();
+
+                    if (firebaseProducts) {
+                        const firebaseProduct = Array.isArray(firebaseProducts)
+                            ? firebaseProducts.find(p => p.id === productId)
+                            : Object.values(firebaseProducts).find(p => p.id === productId);
+
+                        if (firebaseProduct) {
+                            log(`🔥 Firebase: الكمية = ${firebaseProduct.quantity}`, 'info');
+                        } else {
+                            log('⚠️ المنتج غير موجود في Firebase', 'error');
+                        }
+                    }
+                } catch (error) {
+                    log('❌ فشل فحص Firebase: ' + error.message, 'error');
+                }
+            }
+
+            // Check Cloudflare
+            if (typeof HYBRID_CONFIG !== 'undefined' && HYBRID_CONFIG.enabled) {
+                try {
+                    const response = await fetch(`${HYBRID_CONFIG.workerUrl}/api/products?t=${Date.now()}`);
+                    const cloudProducts = await response.json();
+                    const cloudProduct = cloudProducts.find(p => p.id === productId);
+
+                    if (cloudProduct) {
+                        log(`☁️ Cloudflare: الكمية = ${cloudProduct.quantity}`, 'info');
+                    } else {
+                        log('⚠️ المنتج غير موجود في Cloudflare', 'error');
+                    }
+                } catch (error) {
+                    log('❌ فشل فحص Cloudflare: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('✅ تم تحميل صفحة الاختبار بنجاح', 'success');
+            log('اضغط على الأزرار أعلاه لبدء الاختبار', 'info');
+        });
+    </script>
+</body>
+
+</html>

@@ -392,17 +392,32 @@ class StoreDB {
 
             // 2. Deduct quantities locally
             let products = this.getProducts();
+            const modifiedProducts = [];
+
             order.items.forEach(item => {
                 const p = products.find(prod => prod.id == item.id);
                 if (p) {
+                    let changed = false;
+
+                    // 1. Deduct from specific Variant (Size)
                     if (item.selectedSize && p.variants && p.variants.length > 0) {
-                        const variant = p.variants.find(v => v.size === item.selectedSize);
+                        // Use loose equality (==) to handle number vs string comparisons
+                        const variant = p.variants.find(v => v.size == item.selectedSize);
                         if (variant && variant.quantity !== undefined) {
                             variant.quantity = Math.max(0, variant.quantity - item.quantity);
+                            changed = true;
                         }
                     }
+
+                    // 2. Deduct from Global Quantity
                     if (p.quantity !== undefined) {
                         p.quantity = Math.max(0, p.quantity - item.quantity);
+                        changed = true;
+                    }
+
+                    if (changed) {
+                        p.lastUpdated = Date.now();
+                        modifiedProducts.push(p);
                     }
                 }
             });
@@ -413,18 +428,28 @@ class StoreDB {
             if (sessionId) this.removeAbandonedCart(sessionId);
             this.clearCart();
 
-            // 4. Cloud Sync - CRITICAL: Must await ORDER save for dashboard reliability.
-            // OPTIMIZATION: We do NOT await 'products' sync (Inventory) as it's heavy and non-critical for the order itself.
+            // 4. Cloud Sync - CRITICAL: Must await stock deduction before redirecting to prevent request abortion
             if (typeof firebase !== 'undefined') {
                 try {
-                    // Await Order Push (Fast & Critical)
+                    // A. Await Order Data Push
                     await database.ref('orders').push(order);
+                    console.log('✅ Order saved to Firebase');
 
-                    // Background Inventory Sync (Heavy & Secondary)
-                    // We don't await this to avoid blocking the user.
-                    this.updateCloud('products').catch(e => console.warn("Background inventory sync:", e));
+                    // B. Await Inventory Sync (CRITICAL: Must finish before page redirect)
+                    // 1. Sync entire products list to Firebase
+                    await this.updateCloud('products');
+                    console.log('✅ Inventory synced to Firebase');
+
+                    // 2. Sync specific modified products to Cloudflare Hybrid System
+                    if (typeof HybridSystem !== 'undefined' && HYBRID_CONFIG.enabled && modifiedProducts.length > 0) {
+                        console.log('📡 Syncing stock changes to Cloudflare...');
+                        await Promise.all(modifiedProducts.map(p => HybridSystem.saveProduct(p)));
+                        console.log('✅ Stock changes synced to Cloudflare');
+                    }
                 } catch (syncErr) {
-                    console.error('Cloud Sync failed but local save worked:', syncErr);
+                    console.error('CRITICAL: Cloud Sync failed during stock deduction:', syncErr);
+                    // We don't throw here to avoid blocking the user if they already paid, 
+                    // but we logged the error for debugging.
                 }
             }
 
@@ -433,6 +458,10 @@ class StoreDB {
             console.error('CRITICAL: createOrder failed', e);
             throw e;
         }
+    }
+
+    saveOrder(order) {
+        return this.createOrder(order);
     }
 
     // Abandoned Carts Logic
@@ -559,16 +588,77 @@ class StoreDB {
         );
         if (existing) {
             existing.quantity += quantity;
+            existing.addedBy = 'manual'; // Upgrade to manual if they clicked
         } else {
             cart.push({
                 ...product,
                 quantity: quantity,
                 selectedColor,
-                selectedSize
+                selectedSize,
+                addedBy: 'manual'
             });
         }
         localStorage.setItem('cart', JSON.stringify(cart));
         window.dispatchEvent(new Event('cartUpdated'));
+    }
+
+    syncProductToCart(product, selectedColor = null, selectedSize = null, quantity = 1) {
+        let cart = this.getCart();
+        const existingIndex = cart.findIndex(item => item.id == product.id);
+
+        // If it was already manually added, don't downgrade it
+        const wasManual = existingIndex !== -1 && cart[existingIndex].addedBy === 'manual';
+
+        const cartItem = {
+            ...product,
+            quantity: quantity,
+            selectedColor,
+            selectedSize,
+            addedBy: wasManual ? 'manual' : 'auto',
+            lastSynced: Date.now()
+        };
+        if (existingIndex !== -1) {
+            cart[existingIndex] = cartItem;
+        } else {
+            cart.push(cartItem);
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+        window.dispatchEvent(new Event('cartUpdated'));
+    }
+
+    autoCleanCart() {
+        let cart = this.getCart();
+        if (cart.length === 0) return;
+
+        const products = this.getProducts();
+        let changed = false;
+
+        const originalCount = cart.length;
+
+        // 1. Remove ONLY auto-added items that are now out of stock
+        cart = cart.filter(item => {
+            const p = products.find(prod => prod.id == item.id);
+            if (!p || p.archived) return item.addedBy === 'manual';
+
+            let isOutOfStock = false;
+            if (item.selectedSize && p.variants && p.variants.length > 0) {
+                const variant = p.variants.find(v => v.size === item.selectedSize);
+                if (variant && variant.quantity <= 0) isOutOfStock = true;
+            } else if (p.quantity <= 0) {
+                isOutOfStock = true;
+            }
+
+            if (isOutOfStock && item.addedBy === 'auto') return false;
+            return true;
+        });
+
+        if (cart.length !== originalCount) changed = true;
+
+        if (changed) {
+            localStorage.setItem('cart', JSON.stringify(cart));
+            window.dispatchEvent(new Event('cartUpdated'));
+            console.log('🧹 Cart self-cleaned (Out of stock items removed)');
+        }
     }
 
     removeFromCart(id) {

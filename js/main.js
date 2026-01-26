@@ -31,6 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof HybridSystem !== 'undefined') {
         HybridSystem.getProducts();
     }
+
+    // Auto-Clean Cart if stock changes in cloud
+    window.addEventListener('productsUpdated', () => {
+        if (typeof db !== 'undefined' && db.autoCleanCart) db.autoCleanCart();
+    });
 });
 
 function setLanguage(lang) {

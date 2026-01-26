@@ -737,10 +737,28 @@
             if (typeof initScrollAnimations === 'function') initScrollAnimations();
         }
 
+        function syncWithCart() {
+            if (!currentProduct || currentProduct.quantity <= 0) return;
+
+            // Requirements check
+            const colors = Array.isArray(currentProduct.color) ? currentProduct.color : (currentProduct.color ? currentProduct.color.split(',').map(c => c.trim()) : []);
+            const sizes = Array.isArray(currentProduct.size) ? currentProduct.size : (currentProduct.size ? currentProduct.size.split(',').map(s => s.trim()) : []);
+
+            // Only sync if they've made the necessary choices OR if there's only one option
+            const colorReady = colors.length === 0 || selectedColor;
+            const sizeReady = sizes.length === 0 || selectedSize;
+
+            if (colorReady && sizeReady) {
+                db.syncProductToCart(currentProduct, selectedColor, selectedSize, selectedQuantity);
+                console.log('🔄 Cart synced automatically');
+            }
+        }
+
         function selectColor(color, el) {
             selectedColor = color;
             document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
             el.classList.add('selected');
+            syncWithCart();
         }
 
         function selectSize(size, el) {
@@ -806,6 +824,7 @@
                 // No variants, check global quantity
                 updateAvailabilityUI(currentProduct.quantity > 0);
             }
+            syncWithCart();
         }
 
         function updateAvailabilityUI(isAvailable) {
@@ -840,6 +859,7 @@
                 selectedQuantity++;
                 const input = document.getElementById('qty-input');
                 if (input) input.value = selectedQuantity;
+                syncWithCart();
             } else {
                 const lang = localStorage.getItem('forto_lang') || 'ar';
                 showToast(lang === 'ar' ? 'عذراً، هذه هي أقصى كمية متوفرة حالياً' : 'Sorry, this is the maximum available quantity', 'info');
@@ -851,6 +871,7 @@
                 selectedQuantity--;
                 const input = document.getElementById('qty-input');
                 if (input) input.value = selectedQuantity;
+                syncWithCart();
             }
         }
 
@@ -875,6 +896,7 @@
 
             selectedQuantity = val;
             input.value = val;
+            syncWithCart();
         }
 
         function addToCartClick(id, btn) {
