@@ -2538,7 +2538,8 @@
                         كلمات مفتاحية مقترحة
                     </h4>
                     <div class="keywords-list">
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('متجر الشرقاوي')">متجر الشرقاوي</span>
+                        <span class="suggested-keyword" onclick="addSuggestedKeyword('متجر الشرقاوي')">متجر
+                            الشرقاوي</span>
                         <span class="suggested-keyword" onclick="addSuggestedKeyword('الشرقاوي')">الشرقاوي</span>
                         <span class="suggested-keyword" onclick="addSuggestedKeyword('أحذية مصر')">أحذية مصر</span>
                         <span class="suggested-keyword" onclick="addSuggestedKeyword('سنيكرز')">سنيكرز</span>
@@ -4406,14 +4407,32 @@
             window.open('../sitemap.xml', '_blank');
         }
 
+        // Copy Link Generic Function
+        function copyToClipboard(inputId) {
+            const inputEl = document.getElementById(inputId);
+            if (!inputEl) return;
+
+            inputEl.select();
+            inputEl.setSelectionRange(0, 99999); // For mobile devices
+
+            try {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(inputEl.value).then(() => {
+                        showToast('تم نسخ الرابط بنجاح', 'success');
+                    });
+                } else {
+                    document.execCommand('copy');
+                    showToast('تم نسخ الرابط بنجاح', 'success');
+                }
+            } catch (err) {
+                document.execCommand('copy');
+                showToast('تم نسخ الرابط بنجاح', 'success');
+            }
+        }
+
         // Copy Sitemap Link
         function copySitemapLink() {
-            const sitemapUrl = window.location.origin + '/sitemap.xml';
-            navigator.clipboard.writeText(sitemapUrl).then(() => {
-                showToast('تم نسخ رابط Sitemap بنجاح', 'success');
-            }).catch(() => {
-                showAlert('فشل نسخ الرابط. الرابط هو: ' + sitemapUrl, 'error');
-            });
+            copyToClipboard('sitemap-url');
         }
 
         // View Robots.txt
@@ -4423,12 +4442,15 @@
 
         // Copy Robots Link
         function copyRobotsLink() {
-            const robotsUrl = window.location.origin + '/robots.txt';
-            navigator.clipboard.writeText(robotsUrl).then(() => {
-                showToast('تم نسخ رابط Robots.txt بنجاح', 'success');
-            }).catch(() => {
-                showAlert('فشل نسخ الرابط. الرابط هو: ' + robotsUrl, 'error');
-            });
+            // Check if robots input exists in older sections
+            if (document.getElementById('robots-url')) {
+                copyToClipboard('robots-url');
+            } else {
+                const robotsUrl = window.location.origin + '/robots.txt';
+                navigator.clipboard.writeText(robotsUrl).then(() => {
+                    showToast('تم نسخ رابط Robots.txt بنجاح', 'success');
+                });
+            }
         }
 
         // Open SEO Guide
