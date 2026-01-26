@@ -13,6 +13,8 @@ function loadBostaSettings() {
     document.getElementById('s-bostaBuilding').value = settings.pickupAddress?.buildingNumber || '';
     document.getElementById('s-bostaFloor').value = settings.pickupAddress?.floor || '';
     document.getElementById('s-bostaApartment').value = settings.pickupAddress?.apartment || '';
+    document.getElementById('s-bostaWebhookAuthName').value = settings.webhookAuthName || 'X-Bosta-Signature';
+    document.getElementById('s-bostaWebhookAuthValue').value = settings.webhookAuthValue || '';
 }
 
 // Save Bosta Settings from Form
@@ -24,6 +26,8 @@ function saveBostaSettings() {
         apiKey: document.getElementById('s-bostaApiKey').value.trim(),
         businessName: document.getElementById('s-bostaBusinessName').value.trim(),
         businessPhone: document.getElementById('s-bostaBusinessPhone').value.trim(),
+        webhookAuthName: document.getElementById('s-bostaWebhookAuthName').value.trim(),
+        webhookAuthValue: document.getElementById('s-bostaWebhookAuthValue').value.trim(),
         pickupAddress: {
             city: city,
             firstLine: document.getElementById('s-bostaAddress').value.trim(),
@@ -79,10 +83,34 @@ async function testBostaConnection() {
     }
 }
 
+// Copy Webhook URL to Clipboard
+function copyWebhookUrl() {
+    const urlInput = document.getElementById('s-bostaWebhookUrl');
+    if (!urlInput) return;
+
+    urlInput.select();
+    urlInput.setSelectionRange(0, 99999); // For mobile
+
+    try {
+        navigator.clipboard.writeText(urlInput.value).then(() => {
+            if (typeof showToast === 'function') {
+                showToast('تم نسخ الرابط بنجاح! ضعه الآن في حساب بوسطة.', 'success');
+            }
+        });
+    } catch (err) {
+        // Fallback
+        document.execCommand('copy');
+        if (typeof showToast === 'function') {
+            showToast('تم نسخ الرابط بنجاح!', 'success');
+        }
+    }
+}
+
 // Export functions
 window.loadBostaSettings = loadBostaSettings;
 window.saveBostaSettings = saveBostaSettings;
 window.testBostaConnection = testBostaConnection;
+window.copyWebhookUrl = copyWebhookUrl;
 
 // Auto-load settings when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {

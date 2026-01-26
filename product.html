@@ -541,7 +541,7 @@
                 });
             }
             const container = document.getElementById('product-detail');
-            const lang = localStorage.getItem('forto_lang') || 'ar';
+            const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
             const t = translations[lang] || translations['ar'];
 
             if (!product) {
@@ -829,7 +829,7 @@
 
         function updateAvailabilityUI(isAvailable) {
             const btns = document.querySelectorAll('.action-buttons button, .floating-actions button');
-            const lang = localStorage.getItem('forto_lang') || 'ar';
+            const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
             const outOfStockText = lang === 'ar' ? 'نفذت الكمية' : 'Out of Stock';
             const addToCartText = lang === 'ar' ? 'أضف للسلة' : 'Add to Cart';
 
@@ -861,7 +861,7 @@
                 if (input) input.value = selectedQuantity;
                 syncWithCart();
             } else {
-                const lang = localStorage.getItem('forto_lang') || 'ar';
+                const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
                 showToast(lang === 'ar' ? 'عذراً، هذه هي أقصى كمية متوفرة حالياً' : 'Sorry, this is the maximum available quantity', 'info');
             }
         }
@@ -890,7 +890,7 @@
 
             if (val > maxQty) {
                 val = maxQty;
-                const lang = localStorage.getItem('forto_lang') || 'ar';
+                const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
                 showToast(lang === 'ar' ? `أقصى كمية متوفرة هي ${maxQty}` : `Maximum available is ${maxQty}`, 'info');
             }
 
@@ -901,7 +901,7 @@
 
         function addToCartClick(id, btn) {
             const product = db.getProduct(id);
-            const lang = localStorage.getItem('forto_lang') || 'ar';
+            const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
             const t = translations[lang] || translations['ar'];
 
             // Validation
@@ -961,7 +961,7 @@
         }
 
         function buyNowClick(id) {
-            const lang = localStorage.getItem('forto_lang') || 'ar';
+            const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
 
             if (!db.isCustomerLoggedIn()) {
                 const msg = lang === 'ar' ? 'يجب تسجيل الدخول لإتمام عملية الشراء. هل تريد تسجيل الدخول الآن؟' : 'You must be logged in to proceed. Do you want to login now?';
@@ -1023,7 +1023,7 @@
 
         function renderRelatedProducts(currentId) {
             const allProducts = db.getProducts();
-            const lang = localStorage.getItem('forto_lang') || 'ar';
+            const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
             const currency = translations[lang]['currency'];
             const btnText = translations[lang]['view_details'] || 'عرض التفاصيل';
 

@@ -19,7 +19,7 @@ function renderCart() {
     cartContainer.innerHTML = '';
 
     // Get current Lang text
-    const lang = localStorage.getItem('forto_lang') || 'ar';
+    const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
     const t = translations[lang] || translations['ar'];
 
     if (cart.length === 0) {

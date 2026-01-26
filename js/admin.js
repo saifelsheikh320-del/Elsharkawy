@@ -41,7 +41,7 @@ function showToast(message, type = 'info', title = '') {
     };
 
     if (!title) {
-        const lang = localStorage.getItem('forto_lang') || 'ar';
+        const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
         if (type === 'success') title = lang === 'ar' ? 'تم بنجاح' : 'Success';
         if (type === 'error') title = lang === 'ar' ? 'خطأ' : 'Error';
         if (type === 'info') title = lang === 'ar' ? 'تنبيه' : 'Info';
@@ -120,7 +120,7 @@ window.showAlert = function (message, type = 'info', onOk) {
     const btnNo = modal.querySelector('#confirm-no');
     const iconContainer = modal.querySelector('.confirm-content > div:first-child');
 
-    const lang = localStorage.getItem('forto_lang') || 'ar';
+    const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
     const t = { title: lang === 'ar' ? 'تنبيه' : 'Alert', ok: lang === 'ar' ? 'موافق' : 'OK' };
 
     modal.querySelector('#confirm-title').innerText = t.title;
@@ -158,7 +158,7 @@ window.showConfirm = function (message, callback) {
         const btnNo = modal.querySelector('#confirm-no');
         const iconContainer = modal.querySelector('.confirm-content > div:first-child');
 
-        const lang = localStorage.getItem('forto_lang') || 'ar';
+        const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
         const t = { title: lang === 'ar' ? 'تأكيد الإجراء' : 'Confirm', yes: lang === 'ar' ? 'نعم، متأكد' : 'Yes', no: lang === 'ar' ? 'إلغاء' : 'Cancel' };
 
         iconContainer.innerHTML = '<i class="fas fa-question-circle"></i>';
@@ -196,7 +196,7 @@ window.showPrompt = function (message, defaultValue = '') {
         const btnNo = modal.querySelector('#confirm-no');
         const iconContainer = modal.querySelector('.confirm-content > div:first-child');
 
-        const lang = localStorage.getItem('forto_lang') || 'ar';
+        const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
         const t = {
             title: lang === 'ar' ? 'إدخال بيانات' : 'User Input',
             yes: lang === 'ar' ? 'تأكيد' : 'Confirm',
@@ -797,7 +797,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // 3. Browser Notification
             if (Notification.permission === "granted") {
-                new Notification("Forto Store Admin", {
+                new Notification("الشرقاوي Admin", {
                     body: `💸 تم استقبال ${newOrdersCount} طلب جديد!`,
                     icon: '../images/logo-v2.png',
                     vibrate: [200, 100, 200]
@@ -2268,7 +2268,7 @@ function refreshSettings() {
     document.getElementById('s-featuredTitleEn').value = settings.featuredTitleEn || '';
     document.getElementById('s-featuredProductIds').value = (settings.featuredProductIds || []).join(', ');
     document.getElementById('s-fbPixelId').value = settings.fbPixelId || '';
-    document.getElementById('s-abandonedMsg').value = settings.abandonedMsg || 'مرحباً {name}، لاحظنا أنك نسيت بعض المنتجات الرائعة في سلة تسوقك بمتجر Forto Store (إجمالي: {total} ج.م). \n\nهل يمكننا مساعدتك في إكمال طلبك؟';
+    document.getElementById('s-abandonedMsg').value = settings.abandonedMsg || 'مرحباً {name}، لاحظنا أنك نسيت بعض المنتجات الرائعة في سلة تسوقك بمتجر الشرقاوي (إجمالي: {total} ج.م). \n\nهل يمكننا مساعدتك في إكمال طلبك؟';
     document.getElementById('s-offerTitle').value = settings.offerTitle !== undefined ? settings.offerTitle : 'تخفيضات نهاية العام';
     document.getElementById('s-offerDesc').value = settings.offerDesc !== undefined ? settings.offerDesc : 'احصل على خصم يصل إلى 40% على منتجات مختارة.';
     document.getElementById('s-offerBtn').value = settings.offerBtn !== undefined ? settings.offerBtn : 'عرض العروض';
@@ -2926,7 +2926,7 @@ function sendAbandonedWhatsApp(phone, name, total) {
     const settings = db.getSettings();
 
     // رابط المتجر الأساسي
-    const storeUrl = 'https://fortostore.com';
+    const storeUrl = 'https://elsharqawi.com';
 
     // الرسالة الافتراضية مع رابط المتجر
     let defaultTemplate = `مرحباً *{name}*! 👋
@@ -2936,11 +2936,11 @@ function sendAbandonedWhatsApp(phone, name, total) {
 💰 *الإجمالي: {total} ج.م*
 
 يمكنك إكمال طلبك الآن من خلال زيارة متجرنا:
-🔗 https://fortostore.com
+🔗 https://elsharqawi.com
 
 هل يمكننا مساعدتك في إكمال طلبك؟ 😊
 
-*Forto Store* - أناقتك تبدأ من هنا ✨`;
+*الشرقاوي* - أناقتك تبدأ من هنا ✨`;
 
     let template = settings.abandonedMsg || defaultTemplate;
 
@@ -3248,7 +3248,7 @@ function getInviteText(email, pass) {
     const cleanUrl = baseUrl + '/admin-login';
     const inviteLink = `${cleanUrl}?email=${encodeURIComponent(email)}`;
 
-    return `مرحباً بك في فريق فورتو استور! 👋\n\nتم إنشاء حساب موظف لك بنجاح.\n\nبيانات الدخول:\nالبريد: ${email}\nكلمة المرور: ${pass}\n\nرابط الدخول المباشر:\n${inviteLink}`;
+    return `مرحباً بك في فريق الشرقاوي استور! 👋\n\nتم إنشاء حساب موظف لك بنجاح.\n\nبيانات الدخول:\nالبريد: ${email}\nكلمة المرور: ${pass}\n\nرابط الدخول المباشر:\n${inviteLink}`;
 }
 
 function adminDeleteStaff(id) {
@@ -3317,7 +3317,7 @@ function confirmExport() {
     if (fields.length === 0) return showToast('اختر حقلاً واحداً على الأقل', 'error');
 
     let data = [];
-    let filename = `Forto_${currentExportType}`;
+    let filename = `الشرقاوي_${currentExportType}`;
 
     if (currentExportType === 'products') {
         data = db.getProducts().map(p => {
@@ -3733,7 +3733,7 @@ function initSecurity() {
     document.getElementById('menu-security').style.display = 'flex';
 
     const settings = db.getSettings();
-    document.getElementById('sa-email').value = settings.adminEmail || 'admin@fortostore.com';
+    document.getElementById('sa-email').value = settings.adminEmail || 'admin@elsharqawi.com';
     document.getElementById('sa-pin').value = settings.adminPin || '0000';
 }
 

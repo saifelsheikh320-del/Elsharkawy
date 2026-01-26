@@ -9,7 +9,9 @@ const BostaIntegration = {
         baseUrl: 'https://api.bosta.co',
         pickupAddress: JSON.parse(localStorage.getItem('bosta_pickup_address') || '{}'),
         businessName: localStorage.getItem('bosta_business_name') || 'متجر الشرقاوي',
-        businessPhone: localStorage.getItem('bosta_business_phone') || ''
+        businessPhone: localStorage.getItem('bosta_business_phone') || '',
+        webhookAuthName: localStorage.getItem('bosta_webhook_auth_name') || 'X-Bosta-Signature',
+        webhookAuthValue: localStorage.getItem('bosta_webhook_auth_value') || ''
     },
 
     // Save Settings
@@ -19,12 +21,16 @@ const BostaIntegration = {
         this.config.businessName = settings.businessName || 'متجر الشرقاوي';
         this.config.businessPhone = settings.businessPhone || '';
         this.config.pickupAddress = settings.pickupAddress || {};
+        this.config.webhookAuthName = settings.webhookAuthName || 'X-Bosta-Signature';
+        this.config.webhookAuthValue = settings.webhookAuthValue || '';
 
         localStorage.setItem('bosta_enabled', this.config.enabled);
         localStorage.setItem('bosta_api_key', this.config.apiKey);
         localStorage.setItem('bosta_business_name', this.config.businessName);
         localStorage.setItem('bosta_business_phone', this.config.businessPhone);
         localStorage.setItem('bosta_pickup_address', JSON.stringify(this.config.pickupAddress));
+        localStorage.setItem('bosta_webhook_auth_name', this.config.webhookAuthName);
+        localStorage.setItem('bosta_webhook_auth_value', this.config.webhookAuthValue);
     },
 
     // Get Settings
@@ -34,7 +40,9 @@ const BostaIntegration = {
             apiKey: this.config.apiKey,
             businessName: this.config.businessName,
             businessPhone: this.config.businessPhone,
-            pickupAddress: this.config.pickupAddress
+            pickupAddress: this.config.pickupAddress,
+            webhookAuthName: this.config.webhookAuthName,
+            webhookAuthValue: this.config.webhookAuthValue
         };
     },
 
@@ -62,12 +70,21 @@ const BostaIntegration = {
                     }
                 },
                 cod: cod,
+                // Picking up from your store (configured in settings)
+                pickupAddress: {
+                    city: this.getCityCode(this.config.pickupAddress?.city || 'القاهرة'),
+                    firstLine: this.config.pickupAddress?.firstLine || 'عنوان المحل غير محدد',
+                    buildingNumber: this.config.pickupAddress?.buildingNumber || '',
+                    floor: this.config.pickupAddress?.floor || '',
+                    apartment: this.config.pickupAddress?.apartment || ''
+                },
+                // Dropping off at customer's place
                 dropOffAddress: {
-                    city: this.getCityCode(order.address?.city || 'القاهرة'),
-                    firstLine: order.address?.street || order.address?.address || 'العنوان غير متوفر',
-                    buildingNumber: order.address?.building || '',
-                    floor: order.address?.floor || '',
-                    apartment: order.address?.apartment || ''
+                    city: this.getCityCode(order.customer?.province || 'القاهرة'),
+                    firstLine: order.customer?.address || 'العنوان غير متوفر',
+                    buildingNumber: '', // Can be extracted if formatted
+                    floor: '',
+                    apartment: ''
                 },
                 receiver: {
                     firstName: order.customer?.name?.split(' ')[0] || 'العميل',
