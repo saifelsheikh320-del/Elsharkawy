@@ -30,6 +30,31 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    caret-color: transparent !important;
+}
+
+input,
+textarea,
+[contenteditable="true"],
+[contenteditable="true"] * {
+    caret-color: auto !important;
+}
+
+.menu-item,
+.btn,
+.nav-links,
+.stat-card,
+.logo,
+.footer-content,
+th,
+td,
+span,
+h1,
+h2,
+h3,
+p {
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 html {
@@ -627,4 +652,3 @@ body.rtl .whatsapp-float {
         display: none !important;
     }
 }
-

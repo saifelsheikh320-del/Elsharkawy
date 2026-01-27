@@ -146,6 +146,36 @@
                 z-index: 999;
             }
 
+            /* Global UI Caret Fix */
+            * {
+                caret-color: transparent !important;
+            }
+
+            input,
+            textarea,
+            [contenteditable="true"],
+            [contenteditable="true"] * {
+                caret-color: auto !important;
+            }
+
+            .sidebar,
+            .stat-card,
+            .btn,
+            .menu-item,
+            .page-header,
+            .sidebar-brand,
+            .card,
+            th,
+            td,
+            span,
+            h1,
+            h2,
+            h3,
+            p {
+                user-select: none;
+                -webkit-user-select: none;
+            }
+
             .sidebar-overlay.active {
                 display: block;
             }
@@ -224,6 +254,9 @@
             border-right: 4px solid transparent;
             font-weight: 600;
             text-decoration: none;
+            user-select: none;
+            -webkit-user-select: none;
+            outline: none !important;
         }
 
         .menu-item:hover {
@@ -4679,4 +4712,3 @@
 </body>
 
 </html>
-
