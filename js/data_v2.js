@@ -2,38 +2,7 @@
  * Data Layer Simulation (Local Storage)
  */
 
-const INITIAL_PRODUCTS = [
-    {
-        id: 1737750796324,
-        name: "مقبض دولاب دفن معدن - موديل عصري 128 ملم",
-        price: 45,
-        oldPrice: 65,
-        quantity: 50,
-        category: "مقابض",
-        image: "https://elsharqawi-store.com/admin/uploads/1737750796324-159842600.jpg",
-        images: ["https://elsharqawi-store.com/admin/uploads/1737750796324-159842600.jpg"],
-        description: "مقبض دولاب معدني عالي الجودة بتصميم عصري.",
-        size: ["128 ملم"],
-        color: ["فضي"],
-        variants: [{ size: "128 ملم", price: 45, quantity: 50 }],
-        lastUpdated: Date.now()
-    },
-    {
-        id: 1737750800000,
-        name: "أكرة باب غرف سيلفر - جودة عالية",
-        price: 120,
-        oldPrice: 150,
-        quantity: 30,
-        category: "أوكر",
-        image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400",
-        images: ["https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400"],
-        description: "أكرة باب متينة بتصميم كلاسيكي عصري.",
-        size: ["ستاندرد"],
-        color: ["فضي"],
-        variants: [{ size: "ستاندرد", price: 120, quantity: 30 }],
-        lastUpdated: Date.now()
-    }
-];
+const INITIAL_PRODUCTS = []; // 🔴 تم مسح جميع المنتجات الافتراضية للبدء من جديد
 
 class StoreDB {
     constructor() {
@@ -176,15 +145,18 @@ class StoreDB {
                 // 2. Sync to Cloudflare (Products only - If hybrid enabled)
                 if (collection === 'products' && typeof HybridSystem !== 'undefined' && typeof HYBRID_CONFIG !== 'undefined' && HYBRID_CONFIG.enabled) {
                     console.log("📡 Hybrid Mode: Triggering background sync to Cloudflare...");
-                    // We sync each product individually or use a bulk endpoint if available.
-                    // For simplicity and speed, we'll use a Promise.all approach if data is an array
-                    if (Array.isArray(data)) {
-                        // In a real bulk scenario we'd have a bulk endpoint, 
-                        // but for now, we'll rely on individual saves or a single bulk save if supported.
-                        // Our current worker supports POST /api/products for a single product.
-                        // Let's modify the worker later for bulk, OR just sync the whole list if we add a bulk endpoint.
-                        // For now, let's just log it - but actually, the INITIAL_PRODUCTS seeding 
-                        // should trigger this.
+
+                    if (Array.isArray(data) && data.length > 0) {
+                        // Sync each product to Cloudflare
+                        // Using Promise.allSettled to ensure one failure doesn't stop others
+                        Promise.allSettled(data.map(p => HybridSystem.saveProduct(p))).then(results => {
+                            const failed = results.filter(r => r.status === 'rejected');
+                            if (failed.length > 0) {
+                                console.warn(`⚠️ Partial sync issue: ${failed.length} products failed to sync.`);
+                            } else {
+                                console.log("✅ All products synced to Cloudflare successfully.");
+                            }
+                        });
                     }
                 }
 
@@ -428,28 +400,25 @@ class StoreDB {
             if (sessionId) this.removeAbandonedCart(sessionId);
             this.clearCart();
 
-            // 4. Cloud Sync - CRITICAL: Must await stock deduction before redirecting to prevent request abortion
+            // 4. Cloud Sync - CRITICAL: Must await stock deduction before redirecting
             if (typeof firebase !== 'undefined') {
                 try {
                     // A. Await Order Data Push
                     await database.ref('orders').push(order);
-                    console.log('✅ Order saved to Firebase');
 
-                    // B. Await Inventory Sync (CRITICAL: Must finish before page redirect)
+                    // B. Await Inventory Sync
                     // 1. Sync entire products list to Firebase
                     await this.updateCloud('products');
-                    console.log('✅ Inventory synced to Firebase');
 
-                    // 2. Sync specific modified products to Cloudflare Hybrid System
+                    // 2. Sync specific modified products to Cloudflare (Protected Sync)
                     if (typeof HybridSystem !== 'undefined' && HYBRID_CONFIG.enabled && modifiedProducts.length > 0) {
-                        console.log('📡 Syncing stock changes to Cloudflare...');
-                        await Promise.all(modifiedProducts.map(p => HybridSystem.saveProduct(p)));
-                        console.log('✅ Stock changes synced to Cloudflare');
+                        for (const p of modifiedProducts) {
+                            await HybridSystem.saveProduct(p);
+                        }
+                        console.log('✅ Stock changes synced to Cloudflare (Sequential)');
                     }
                 } catch (syncErr) {
-                    console.error('CRITICAL: Cloud Sync failed during stock deduction:', syncErr);
-                    // We don't throw here to avoid blocking the user if they already paid, 
-                    // but we logged the error for debugging.
+                    console.error('Cloud Sync failed:', syncErr);
                 }
             }
 
@@ -517,33 +486,66 @@ class StoreDB {
             // Auto-create Bosta delivery when status changes to "Confirmed"
             if (status === 'Confirmed' && oldStatus !== 'Confirmed') {
                 try {
-                    // Check if Bosta is configured and available
                     if (typeof BostaIntegration !== 'undefined' && BostaIntegration.config.enabled && BostaIntegration.isConfigured()) {
-                        // Only create if not already created
                         if (!order.bostaDeliveryId) {
                             const result = await BostaIntegration.createDelivery(order);
-
                             if (result.success) {
-                                // Save Bosta tracking info to order
                                 order.bostaDeliveryId = result.deliveryId;
                                 order.bostaTrackingNumber = result.trackingNumber;
-                                order.bostaStatus = result.state;
+                                order.bostaStatus = 'Confirmed';
                                 order.bostaCreatedAt = Date.now();
-
                                 console.log('✅ Bosta Delivery Created:', result.trackingNumber);
 
-                                // Show success notification if showToast is available
-                                if (typeof showToast === 'function') {
-                                    showToast(`تم إرسال الطلب لبوسطة - رقم التتبع: ${result.trackingNumber}`, 'success', 'شحنة جديدة');
+                                // NEW: Auto-request Pickup immediately
+                                try {
+                                    const pResult = await BostaIntegration.createPickup([result.deliveryId]);
+                                    if (pResult.success && typeof showToast === 'function') {
+                                        showToast(`تم إرسال الطلب لبوسطة وطلب المندوب بنجاح`, 'success', 'شحنة مؤكدة');
+                                    } else if (!pResult.success && typeof showToast === 'function') {
+                                        // Show specifically why pickup failed
+                                        showToast(`تم إنشاء البوليصة ولكن فشل طلب المندوب: ${pResult.message}`, 'warning', 'تنبيه الاستلام');
+                                    }
+                                } catch (pError) {
+                                    console.warn('Pickup scheduling failed:', pError);
                                 }
                             }
                         }
                     }
                 } catch (error) {
                     console.error('Bosta Integration Error:', error);
-                    // Show error but don't prevent status update
                     if (typeof showToast === 'function') {
                         showToast(`تم تأكيد الطلب ولكن فشل الإرسال لبوسطة: ${error.message}`, 'warning');
+                    }
+                }
+            }
+
+            // Auto-cancel Bosta delivery if status changes back to "Pending" or "Cancelled"
+            if ((status === 'Pending' || status === 'Cancelled') && order.bostaDeliveryId) {
+                try {
+                    if (typeof BostaIntegration !== 'undefined') {
+                        const cancelResult = await BostaIntegration.cancelDelivery(order.bostaDeliveryId);
+                        if (cancelResult.success) {
+                            console.log('🗑️ Bosta Delivery Cancelled:', order.bostaTrackingNumber);
+                            const oldNum = order.bostaTrackingNumber;
+                            // Clear Bosta info from order
+                            delete order.bostaDeliveryId;
+                            delete order.bostaTrackingNumber;
+                            delete order.bostaStatus;
+                            delete order.bostaCreatedAt;
+
+                            if (typeof showToast === 'function') {
+                                showToast(`تم إلغاء شحنة بوسطة (${oldNum}) بنجاح`, 'info');
+                            }
+                        } else {
+                            if (typeof showToast === 'function') {
+                                showToast(`تنبيه: فشل إلغاء الشحنة في بوسطة: ${cancelResult.message || 'خطأ غير معروف'}`, 'warning');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Bosta Cancel Error:', error);
+                    if (typeof showToast === 'function') {
+                        showToast(`خطأ أثناء محاولة إلغاء شحنة بوسطة: ${error.message}`, 'error');
                     }
                 }
             }
@@ -563,16 +565,30 @@ class StoreDB {
         }
     }
 
-    deleteOrder(orderId) {
+    async deleteOrder(orderId) {
         let orders = this.getOrders();
+        const order = orders.find(o => o.id === orderId);
+
+        // Cancel in Bosta if exists
+        if (order && order.bostaDeliveryId) {
+            try {
+                if (typeof BostaIntegration !== 'undefined') {
+                    await BostaIntegration.cancelDelivery(order.bostaDeliveryId);
+                    console.log('🗑️ Bosta Delivery Cancelled due to order deletion');
+                }
+            } catch (error) {
+                console.error('Bosta Cancel Error during deletion:', error);
+            }
+        }
+
         orders = orders.filter(o => o.id !== orderId);
         localStorage.setItem('orders', JSON.stringify(orders));
         this.updateCloud('orders');
         return true;
     }
 
-    cancelOrder(orderId) {
-        return this.deleteOrder(orderId);
+    async cancelOrder(orderId) {
+        return await this.deleteOrder(orderId);
     }
 
     getCart() {

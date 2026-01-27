@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الشرقاوي | المتجر</title>
     <link rel="icon" href="images/أخضر.png" type="image/png">
-    <link rel="canonical" href="https://elsharqawi.com/products.html">
-    <link rel="alternate" hreflang="ar" href="https://elsharqawi.com/products.html">
-    <link rel="alternate" hreflang="en" href="https://elsharqawi.com/products.html">
-    <link rel="alternate" hreflang="x-default" href="https://elsharqawi.com/products.html">
+    <link rel="canonical" href="https://fortostore.com/products.html">
+    <link rel="alternate" hreflang="ar" href="https://fortostore.com/products.html">
+    <link rel="alternate" hreflang="en" href="https://fortostore.com/products.html">
+    <link rel="alternate" hreflang="x-default" href="https://fortostore.com/products.html">
     <meta name="description"
         content="تسوق أحدث تشكيلة من إكسسوارات الموبيليا في متجر الشرقاوي. أفضل الأسعار، جودة عالية، وتوصيل سريع في مصر.">
     <meta name="keywords"
@@ -18,8 +18,8 @@
     <!-- Open Graph -->
     <meta property="og:title" content="تسوق إكسسوارات الموبيليا | الشرقاوي">
     <meta property="og:description" content="اكتشف أحدث تشكيلة من الأوكر والكوالين والديكورات">
-    <meta property="og:image" content="https://elsharqawi.com/images/أخضر.jpg">
-    <meta property="og:url" content="https://elsharqawi.com/products.html">
+    <meta property="og:image" content="https://fortostore.com/images/Forto_Store_Logo_Final.png">
+    <meta property="og:url" content="https://fortostore.com/products.html">
     <meta property="fb:app_id" content="1214265283946236">
 
     <link
@@ -355,10 +355,10 @@
                     <h3>الشرقاوي</h3>
                     <p style="margin-top: 20px; color: #888;" data-i18n="premium_exp">تجربة تسوق فاخرة.</p>
                     <div class="social-links" style="margin-top: 20px; display: flex; gap: 15px;">
-                        <a href="https://www.facebook.com/profile.php?id=61579631342353" target="_blank"
+                        <a href="https://www.facebook.com/fortostore/" target="_blank"
                             style="color: #888; font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
-                        <a href="https://www.instagram.com/elsharkawyfurnitureaccessories?igsh=MXRxdzZtNHd0cGV5Ng=="
-                            target="_blank" style="color: #888; font-size: 1.5rem;"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.instagram.com/fortostore/" target="_blank"
+                            style="color: #888; font-size: 1.5rem;"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
                 <div>
@@ -460,7 +460,7 @@
                     'Beige': 'بيج'
                 };
 
-                const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
+                const lang = localStorage.getItem('forto_lang') || 'ar';
                 let displayText = color;
                 if (lang === 'ar' && colorNames[color]) {
                     displayText = colorNames[color];
@@ -630,7 +630,7 @@
         function renderProducts() {
             const container = document.getElementById('product-container');
             container.innerHTML = '';
-            const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
+            const lang = localStorage.getItem('forto_lang') || 'ar';
             const currency = translations[lang]['currency'];
 
             const offers = db.getSpecialOffers();

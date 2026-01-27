@@ -1,7 +1,7 @@
 {
-    "name": "الشرقاوي Admin",
-    "short_name": "الشرقاوي Admin",
-    "description": "نظام إدارة متجر الشرقاوي الاحترافي",
+    "name": "Forto Store Admin",
+    "short_name": "Forto Admin",
+    "description": "نظام إدارة متجر فورتو الاحترافي",
     "start_url": "dashboard.html",
     "display": "standalone",
     "background_color": "#2c3e50",

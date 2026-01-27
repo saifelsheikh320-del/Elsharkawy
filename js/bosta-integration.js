@@ -1,39 +1,27 @@
-// Bosta Integration for Automated Shipping
-// API Documentation: https://docs.bosta.co/api
-
+// Bosta Integration - VERSION 26.0 (WEBHOOK SUPPORT)
 const BostaIntegration = {
-    // Configuration
     config: {
-        enabled: localStorage.getItem('bosta_enabled') === 'true',
-        apiKey: localStorage.getItem('bosta_api_key') || '',
+        get enabled() { return localStorage.getItem('bosta_enabled') === 'true'; },
+        get apiKey() { return localStorage.getItem('bosta_api_key') || ''; },
         baseUrl: 'https://api.bosta.co',
-        pickupAddress: JSON.parse(localStorage.getItem('bosta_pickup_address') || '{}'),
-        businessName: localStorage.getItem('bosta_business_name') || 'متجر الشرقاوي',
-        businessPhone: localStorage.getItem('bosta_business_phone') || '',
-        webhookAuthName: localStorage.getItem('bosta_webhook_auth_name') || 'X-Bosta-Signature',
-        webhookAuthValue: localStorage.getItem('bosta_webhook_auth_value') || ''
+        get pickupAddress() { return JSON.parse(localStorage.getItem('bosta_pickup_address') || '{}'); },
+        get businessName() { return localStorage.getItem('bosta_business_name') || 'متجر الشرقاوي'; },
+        get businessPhone() { return localStorage.getItem('bosta_business_phone') || ''; },
+        // Webhook Tracking URL (Derived from Cloudflare Worker)
+        get webhookUrl() {
+            const workerBase = "https://elsharkawy-products.saifelsheikh320.workers.dev";
+            return `${workerBase}/api/bosta-webhook`;
+        }
     },
 
-    // Save Settings
-    saveSettings(settings) {
-        this.config.enabled = settings.enabled || false;
-        this.config.apiKey = settings.apiKey || '';
-        this.config.businessName = settings.businessName || 'متجر الشرقاوي';
-        this.config.businessPhone = settings.businessPhone || '';
-        this.config.pickupAddress = settings.pickupAddress || {};
-        this.config.webhookAuthName = settings.webhookAuthName || 'X-Bosta-Signature';
-        this.config.webhookAuthValue = settings.webhookAuthValue || '';
-
-        localStorage.setItem('bosta_enabled', this.config.enabled);
-        localStorage.setItem('bosta_api_key', this.config.apiKey);
-        localStorage.setItem('bosta_business_name', this.config.businessName);
-        localStorage.setItem('bosta_business_phone', this.config.businessPhone);
-        localStorage.setItem('bosta_pickup_address', JSON.stringify(this.config.pickupAddress));
-        localStorage.setItem('bosta_webhook_auth_name', this.config.webhookAuthName);
-        localStorage.setItem('bosta_webhook_auth_value', this.config.webhookAuthValue);
+    saveSettings(s) {
+        localStorage.setItem('bosta_enabled', s.enabled);
+        localStorage.setItem('bosta_api_key', s.apiKey || '');
+        localStorage.setItem('bosta_business_name', s.businessName || '');
+        localStorage.setItem('bosta_business_phone', s.businessPhone || '');
+        localStorage.setItem('bosta_pickup_address', JSON.stringify(s.pickupAddress || {}));
     },
 
-    // Get Settings
     getSettings() {
         return {
             enabled: this.config.enabled,
@@ -41,181 +29,139 @@ const BostaIntegration = {
             businessName: this.config.businessName,
             businessPhone: this.config.businessPhone,
             pickupAddress: this.config.pickupAddress,
-            webhookAuthName: this.config.webhookAuthName,
-            webhookAuthValue: this.config.webhookAuthValue
+            webhookUrl: this.config.webhookUrl // Allow UI to show this
         };
     },
 
-    // Check if Bosta is configured
-    isConfigured() {
-        return this.config.apiKey && this.config.apiKey.length > 0;
+    isConfigured() { return !!this.config.apiKey; },
+
+    norm(t) {
+        if (!t) return '';
+        return t.toString().replace(/[إأآا]/g, 'ا').replace(/[ىي]/g, 'ي').replace(/[ةه]/g, 'ة').toLowerCase().trim();
     },
 
-    // Create Delivery
     async createDelivery(order) {
-        if (!this.isConfigured()) {
-            throw new Error('Bosta API غير مفعل. يرجى إضافة API Key في الإعدادات');
-        }
-
+        if (!this.isConfigured()) throw new Error('يرجى ضبط API Key أولاً');
         try {
-            // Calculate COD Amount based on payment method
-            const cod = this.calculateCOD(order);
+            const cust = order.customer || {};
+            const provinceField = cust.province || '';
+            const cityField = cust.city || '';
+            const addressField = cust.address || '';
 
-            // Prepare delivery data
-            const deliveryData = {
-                type: 10, // Forward delivery
-                specs: {
-                    packageDetails: {
-                        description: `طلب #${order.id}`
-                    }
-                },
-                cod: cod,
-                // Picking up from your store (configured in settings)
-                pickupAddress: {
-                    city: this.getCityCode(this.config.pickupAddress?.city || 'القاهرة'),
-                    firstLine: this.config.pickupAddress?.firstLine || 'عنوان المحل غير محدد',
-                    buildingNumber: this.config.pickupAddress?.buildingNumber || '',
-                    floor: this.config.pickupAddress?.floor || '',
-                    apartment: this.config.pickupAddress?.apartment || ''
-                },
-                // Dropping off at customer's place
+            const normalizedCombined = this.norm(cityField + " " + addressField + " " + provinceField);
+            let provinceCode = normalizedCombined.includes('زفتي') || normalizedCombined.includes('طنطا') || normalizedCombined.includes('غربية') ? 'EG-07' : this.getManualCode(provinceField || cityField);
+
+            let receiverName = (cust.name || 'عميل').replace(/الشيخ/g, '').replace(/El Sheikh/ig, '').trim();
+            let cleanAddress = [cityField, addressField].filter(p => p && p.length > 1).join(' - ');
+            if (provinceCode === 'EG-07') cleanAddress = cleanAddress.replace(/بني سويف/g, '').replace(/كفر الشيخ/g, '').replace(/اسيوط/g, '').trim();
+
+            const firstLine = `محافظة ${provinceCode === 'EG-07' ? 'الغربية' : (provinceField || 'القاهرة')} - ${cleanAddress || 'العنوان بالتفصيل'}`;
+
+            const payload = {
+                type: 10,
+                specs: { packageDetails: { description: `طلب #${order.id}`, itemsCount: 1, packaging: "Box" }, allowOpening: true },
+                cod: parseFloat(order.total) || 0,
                 dropOffAddress: {
-                    city: this.getCityCode(order.customer?.province || 'القاهرة'),
-                    firstLine: `${order.customer?.province || ''} - ${order.customer?.address || 'العنوان غير متوفر'}`,
-                    buildingNumber: '',
-                    floor: '',
-                    apartment: ''
+                    city: provinceCode,
+                    firstLine: firstLine.substring(0, 160),
+                    buildingNumber: '1', floor: 'G', apartment: '1'
                 },
                 receiver: {
-                    firstName: order.customer?.name?.split(' ')[0] || 'العميل',
-                    lastName: order.customer?.name?.split(' ').slice(1).join(' ') || '',
-                    phone: order.customer?.phone || order.phone || ''
-                }
+                    firstName: (receiverName).split(' ')[0],
+                    lastName: (receiverName).split(' ').slice(1).join(' ') || '.',
+                    phone: (cust.phone || '').toString().replace(/\D/g, '').replace(/^2/, '')
+                },
+                notes: order.notes || 'يرجى الاتصال قبل الوصول'
             };
 
-            // Make API Call
             const response = await fetch(`${this.config.baseUrl}/api/v2/deliveries`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': this.config.apiKey,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(deliveryData)
+                headers: { 'Authorization': this.config.apiKey, 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `Bosta API Error: ${response.status}`);
-            }
 
             const result = await response.json();
-
-            // Return tracking information
-            return {
-                success: true,
-                deliveryId: result._id,
-                trackingNumber: result.trackingNumber,
-                state: result.state,
-                message: 'تم إنشاء الشحنة بنجاح في بوسطة'
-            };
-
-        } catch (error) {
-            console.error('Bosta API Error:', error);
-            throw error;
+            if (!response.ok) throw new Error(result.message || 'Bosta Error');
+            return { success: true, trackingNumber: result.trackingNumber, deliveryId: result._id };
+        } catch (e) {
+            console.error('Bosta Delivery Error:', e);
+            throw e;
         }
     },
 
-    // Calculate COD (Cash on Delivery) amount
-    calculateCOD(order) {
-        const paymentMethod = order.paymentMethod || order.payment?.method || 'cash';
+    async createPickup(deliveryIds = []) {
+        if (!this.isConfigured()) return { success: false, message: 'Settings Incomplete' };
 
-        // If payment is "Cash on Delivery" → COD = Total Amount
-        if (paymentMethod === 'cash' || paymentMethod === 'cod' || paymentMethod === 'الدفع عند الاستلام') {
-            return parseFloat(order.total) || 0;
-        }
-
-        // If payment is "Vodafone Cash" or "InstaPay" → COD = 0
-        if (paymentMethod === 'vodafone' || paymentMethod === 'instapay' ||
-            paymentMethod === 'فودافون كاش' || paymentMethod === 'إنستاباي') {
-            return 0;
-        }
-
-        // Default: COD = Total Amount (for safety)
-        return parseFloat(order.total) || 0;
-    },
-
-    // Get City Code (Egypt Cities)
-    getCityCode(cityName) {
-        const cityMap = {
-            'القاهرة': 'EG-01',
-            'الجيزة': 'EG-02',
-            'الإسكندرية': 'EG-03',
-            'الدقهلية': 'EG-04',
-            'البحر الأحمر': 'EG-05',
-            'البحيرة': 'EG-06',
-            'الفيوم': 'EG-07',
-            'الغربية': 'EG-08',
-            'الإسماعيلية': 'EG-09',
-            'المنوفية': 'EG-10',
-            'المنيا': 'EG-11',
-            'القليوبية': 'EG-12',
-            'الوادي الجديد': 'EG-13',
-            'السويس': 'EG-14',
-            'أسوان': 'EG-15',
-            'أسيوط': 'EG-16',
-            'بني سويف': 'EG-17',
-            'بورسعيد': 'EG-18',
-            'دمياط': 'EG-19',
-            'الشرقية': 'EG-20',
-            'جنوب سيناء': 'EG-21',
-            'كفر الشيخ': 'EG-22',
-            'مطروح': 'EG-23',
-            'الأقصر': 'EG-24',
-            'قنا': 'EG-25',
-            'شمال سيناء': 'EG-26',
-            'سوهاج': 'EG-27'
-        };
-
-        return cityMap[cityName] || 'EG-01'; // Default to Cairo
-    },
-
-    // Get Cities List for Dropdown
-    getCitiesList() {
-        return [
-            'القاهرة', 'الجيزة', 'الإسكندرية', 'الدقهلية', 'البحر الأحمر',
-            'البحيرة', 'الفيوم', 'الغربية', 'الإسماعيلية', 'المنوفية',
-            'المنيا', 'القليوبية', 'الوادي الجديد', 'السويس', 'أسوان',
-            'أسيوط', 'بني سويف', 'بورسعيد', 'دمياط', 'الشرقية',
-            'جنوب سيناء', 'كفر الشيخ', 'مطروح', 'الأقصر', 'قنا',
-            'شمال سيناء', 'سوهاج'
-        ];
-    },
-
-    // Test API Connection
-    async testConnection() {
-        if (!this.isConfigured()) {
-            throw new Error('API Key غير موجود');
-        }
+        const bizPhone = (this.config.businessPhone || '').toString().replace(/\D/g, '');
+        if (!bizPhone) return { success: false, message: 'رقم تليفون المحل مطلوب في الإعدادات' };
 
         try {
-            const response = await fetch(`${this.config.baseUrl}/api/v2/cities`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': this.config.apiKey,
-                    'Content-Type': 'application/json'
-                }
+            const now = new Date();
+            if (now.getHours() >= 15) now.setDate(now.getDate() + 1);
+            const dateStr = now.toISOString().split('T')[0];
+
+            const pickupPayload = {
+                scheduledDate: dateStr,
+                scheduledSlot: "10:00 - 16:00",
+                contactPerson: {
+                    name: this.config.businessName || 'متجر الشرقاوي',
+                    phone: bizPhone
+                },
+                pickupAddress: {
+                    cityCode: this.getManualCode(this.config.pickupAddress.city),
+                    firstLine: this.config.pickupAddress.firstLine || 'العنوان غير مسجل',
+                    buildingNumber: this.config.pickupAddress.buildingNumber || '1',
+                    floor: this.config.pickupAddress.floor || '1',
+                    apartment: this.config.pickupAddress.apartment || '1'
+                },
+                deliveryIds: deliveryIds
+            };
+
+            const response = await fetch(`${this.config.baseUrl}/api/v2/pickups`, {
+                method: 'POST',
+                headers: { 'Authorization': this.config.apiKey, 'Content-Type': 'application/json' },
+                body: JSON.stringify(pickupPayload)
             });
 
+            const result = await response.json();
             if (!response.ok) {
-                throw new Error(`فشل الاتصال: ${response.status}`);
+                if (result.message && result.message.includes('already exists')) return { success: true, alreadyExists: true };
+                return { success: false, message: result.message || `Status ${response.status}` };
             }
-
-            return { success: true, message: 'تم الاتصال بنجاح ✓' };
-        } catch (error) {
-            throw new Error(`فشل الاتصال: ${error.message}`);
+            return { success: true, pickupId: result._id };
+        } catch (e) {
+            return { success: false, message: e.message };
         }
+    },
+
+    async cancelDelivery(deliveryId) {
+        if (!deliveryId) return { success: false };
+        try {
+            const r = await fetch(`${this.config.baseUrl}/api/v2/deliveries/${deliveryId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': this.config.apiKey }
+            });
+            return { success: r.ok || r.status === 404 };
+        } catch (e) { return { success: false }; }
+    },
+
+    getManualCode(name) {
+        if (!name) return 'EG-01';
+        const q = this.norm(name);
+        const map = {
+            'القاهرة': 'EG-01', 'الاسكندرية': 'EG-02', 'الغربية': 'EG-07', 'كفر الشيخ': 'EG-08',
+            'بني سويف': 'EG-16', 'اسيوط': 'EG-17', 'الجيزة': 'EG-25', 'الدقهلية': 'EG-05'
+        };
+        for (let key in map) if (this.norm(key) === q || q.includes(this.norm(key))) return map[key];
+        return 'EG-01';
+    },
+
+    async testConnection() {
+        if (!this.config.apiKey) return { success: false, message: 'API Key Missing' };
+        const r = await fetch(`${this.config.baseUrl}/api/v2/cities`, { headers: { 'Authorization': this.config.apiKey } });
+        return { success: r.ok, message: r.ok ? 'الاتصال يعمل بنجاح' : 'الـ API Key غير صحيح' };
     }
 };
 
-// Export to window
 window.BostaIntegration = BostaIntegration;
+console.log("Bosta V26.0 Webhook Support Ready.");

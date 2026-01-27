@@ -2,7 +2,7 @@
  * Main Application Logic
  */
 
-let currentLang = localStorage.getItem('elsharqawi_lang') || 'ar'; // Default Arabic
+let currentLang = localStorage.getItem('forto_lang') || 'ar'; // Default Arabic
 
 document.addEventListener('DOMContentLoaded', () => {
     // Check Maintenance Mode First
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setLanguage(lang) {
     currentLang = lang;
-    localStorage.setItem('elsharqawi_lang', lang);
+    localStorage.setItem('forto_lang', lang);
 
     // Direction & Font
     if (lang === 'ar') {
@@ -100,7 +100,7 @@ function applySiteSettings() {
     // Apply Store Name to Logos
     document.querySelectorAll('.logo').forEach(el => {
         const text = el.innerText.trim().toUpperCase();
-        if (text === 'الشرقاوي' || text === 'الشرقاوي') {
+        if (text === 'FORTO STORE' || text === 'FORTO') {
             el.innerText = settings.storeName.toUpperCase();
         }
     });
@@ -225,7 +225,7 @@ function initAuth() {
     const authLinkContainer = document.getElementById('auth-link');
     if (!authLinkContainer) return;
 
-    const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
+    const lang = localStorage.getItem('forto_lang') || 'ar';
     const t = translations[lang];
 
     const shopLinkLi = document.querySelector('a[data-i18n="shop"]')?.parentElement;
@@ -253,7 +253,7 @@ function initAuth() {
 
 function handleLogout(e) {
     if (e) e.preventDefault();
-    const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
+    const lang = localStorage.getItem('forto_lang') || 'ar';
 
     showConfirm(
         lang === 'ar' ? 'هل أنت متأكد من تسجيل الخروج؟' : 'Are you sure you want to logout?',
@@ -378,7 +378,7 @@ window.showConfirm = function (message, callback) {
         const btnNo = modal.querySelector('#confirm-no');
         const iconContainer = modal.querySelector('.confirm-content > div:first-child');
 
-        const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
+        const lang = localStorage.getItem('forto_lang') || 'ar';
         const t = {
             title: lang === 'ar' ? 'تأكيد الإجراء' : 'Confirm Action',
             yes: lang === 'ar' ? 'نعم، متأكد' : 'Yes, Confirm',
@@ -437,7 +437,7 @@ window.showAlert = function (message, type = 'info', onOk) {
     const btnNo = modal.querySelector('#confirm-no');
     const iconContainer = modal.querySelector('.confirm-content > div:first-child');
 
-    const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
+    const lang = localStorage.getItem('forto_lang') || 'ar';
     const t = {
         title: lang === 'ar' ? 'تنبيه' : 'Alert',
         ok: lang === 'ar' ? 'موافق' : 'OK'
@@ -496,7 +496,7 @@ window.showPrompt = function (message, defaultValue = '') {
         const btnNo = modal.querySelector('#confirm-no');
         const iconContainer = modal.querySelector('.confirm-content > div:first-child');
 
-        const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
+        const lang = localStorage.getItem('forto_lang') || 'ar';
         const t = {
             title: lang === 'ar' ? 'إدخال بيانات' : 'User Input',
             yes: lang === 'ar' ? 'تأكيد' : 'Confirm',
@@ -795,7 +795,7 @@ function checkMaintenanceMode() {
 
     const settings = db.getSettings();
     if (settings && settings.maintenanceMode) {
-        const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
+        const lang = localStorage.getItem('forto_lang') || 'ar';
         const msg = lang === 'ar' ? settings.maintenanceMessageAr : settings.maintenanceMessageEn;
 
         // Show maintenance overlay
@@ -838,7 +838,7 @@ function initAnnouncementBar() {
     const settings = db.getSettings();
 
     if (settings && settings.announcementEnabled) {
-        const lang = localStorage.getItem('elsharqawi_lang') || 'ar';
+        const lang = localStorage.getItem('forto_lang') || 'ar';
         const text = lang === 'ar' ? settings.announcementTextAr : settings.announcementTextEn;
 
         if (!text) return;

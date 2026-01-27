@@ -1,86 +1,67 @@
-
 /**
- * Hybrid Cloudflare Adapter
+ * Hybrid Cloudflare Adapter - VERSION 3.0 (PROTECTED SYNC)
  * Bridges the gap between Client Layouts & Cloud Infrastructure
  */
 const HYBRID_CONFIG = {
     workerUrl: "https://elsharkawy-products.saifelsheikh320.workers.dev",
-    enabled: true // ✅ النظام الآن مفعّل بالكامل وجاهز لاستقبال بيانات الإكسيل
+    enabled: true
 };
 
 class HybridSystem {
-    // 1. READ (Optimized for Visitors - Zero Latency)
+    // 1. READ (Cloud-First with Local Protection)
     static async getProducts() {
         if (!HYBRID_CONFIG.enabled || !HYBRID_CONFIG.workerUrl) {
-            console.log("Hybrid Mode: OFF (Using Firebase/Local)");
             return JSON.parse(localStorage.getItem('products') || '[]');
         }
 
         try {
-            // Fetch from KV Edge (via Worker) - with AGGRESSIVE cache bust
-            // We use Date.now() + Math.random() to ensure Cloudflare NEVER serves a cached response
-            const uniqueQuery = `?t=${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+            const uniqueQuery = `?t=${Date.now()}`;
             const res = await fetch(`${HYBRID_CONFIG.workerUrl}/api/products${uniqueQuery}`);
-            if (!res.ok) throw new Error("KV Fetch failed");
+
+            if (!res.ok) throw new Error("Cloudflare Fetch Failed");
 
             const cloudProducts = await res.json();
+
+            if (!Array.isArray(cloudProducts)) throw new Error("Invalid Cloud Data");
+
+            // --- PROTECTION LOGIC ---
             const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
 
-            // Base the result on Cloud data, but keep track of IDs we've seen
-            const cloudIds = new Set(cloudProducts.map(p => p.id.toString()));
+            // We merge instead of overwrite to protect recently updated local stock
+            const mergedProducts = cloudProducts.map(cloudP => {
+                const localP = localProducts.find(lp => lp.id == cloudP.id);
 
-            // OPTIMIZED MERGE: Force fetch from cloud, but trust local if it's explicitly newer
-            // This prevents the "reverting" issue when cloud is slow to update
-
-            const mergedProducts = cloudProducts.map(cloudProd => {
-                const localProd = localProducts.find(p => p.id.toString() === cloudProd.id.toString());
-
-                if (localProd) {
-                    const cloudTs = Number(cloudProd.lastUpdated || 0);
-                    const localTs = Number(localProd.lastUpdated || 0);
-
-                    // If local is explicitly newer (user just edited it), KEEP IT
-                    // This bridges the 1-2 second gap while cloud is processing the write
-                    if (localTs > cloudTs) {
-                        console.log(`🏠 Keeping local version of ${cloudProd.name} (Local is newer by ${localTs - cloudTs}ms)`);
-                        return localProd;
-                    }
+                // If local product was updated in the last 60 seconds, keep local stock
+                // This prevents race conditions where cloud returns old stock after a purchase
+                if (localP && localP.lastUpdated && (Date.now() - localP.lastUpdated < 60000)) {
+                    console.log(`🛡️ Protecting local stock for ${localP.name} (Recently Updated)`);
+                    return { ...cloudP, quantity: localP.quantity, variants: localP.variants, lastUpdated: localP.lastUpdated };
                 }
-                return cloudProd;
+                return cloudP;
             });
 
-            // Sort
-            mergedProducts.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-
-            // Sync back to local storage to keep it up to date
+            // Update local cache
             localStorage.setItem('products', JSON.stringify(mergedProducts));
 
-            // UI Update
-            setTimeout(() => {
-                window.dispatchEvent(new Event('productsUpdated'));
-            }, 0);
+            // Trigger UI
+            window.dispatchEvent(new Event('productsUpdated'));
 
             return mergedProducts;
         } catch (e) {
-            console.warn("Hybrid Fallback:", e);
-            // 🚨 自動التنبيه بالبريد عند حدوث فشل في Cloudflare
-            if (typeof emailService !== 'undefined') {
-                emailService.sendErrorReport("فشل جلب المنتجات من Cloudflare (Visitor Mode)", e.message);
-            }
-            // Fallback to local if Edge fails
+            console.error("🚨 Cloudflare Offline:", e);
             return JSON.parse(localStorage.getItem('products') || '[]');
         }
     }
 
-    // 2. WRITE (Admin - Source of Truth)
+    // 2. WRITE (Guaranteed Sync)
     static async saveProduct(product) {
-        if (!HYBRID_CONFIG.enabled) {
-            // Use old system
-            return db ? db.saveProduct_Legacy(product) : false;
-        }
+        if (!HYBRID_CONFIG.enabled) return true;
 
         try {
-            // Write to D1 (via Worker)
+            // Ensure product has timestamp
+            product.lastUpdated = Date.now();
+
+            console.log(`📡 Attempting to sync ${product.name} to Cloud...`);
             const res = await fetch(`${HYBRID_CONFIG.workerUrl}/api/products`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -88,17 +69,15 @@ class HybridSystem {
             });
 
             if (!res.ok) {
-                console.warn("Cloudflare sync failed, but local save will proceed");
-                return true; // Don't block local save
+                const errorText = await res.text();
+                throw new Error(errorText || "Upload failed");
             }
 
-            console.log("✅ Product synced to Cloudflare successfully");
+            console.log(`✅ ${product.name} synced to Cloud.`);
             return true;
         } catch (e) {
-            console.error("Hybrid Write Error:", e);
-            console.warn("⚠️ Cloudflare unavailable - Product saved locally only");
-            // Don't show alert or block - let local save proceed
-            return true;
+            console.error("❌ CLOUD SYNC ERROR:", e);
+            return false;
         }
     }
 
@@ -108,10 +87,9 @@ class HybridSystem {
             const res = await fetch(`${HYBRID_CONFIG.workerUrl}/api/products/${id}`, {
                 method: 'DELETE'
             });
-            if (!res.ok) throw new Error("D1 Delete Failed");
-            return true;
+            return res.ok;
         } catch (e) {
-            console.error("Hybrid Delete Error:", e);
+            console.error("Delete Error:", e);
             return false;
         }
     }

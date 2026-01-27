@@ -2538,9 +2538,8 @@
                         كلمات مفتاحية مقترحة
                     </h4>
                     <div class="keywords-list">
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('متجر الشرقاوي')">متجر
-                            الشرقاوي</span>
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('الشرقاوي')">الشرقاوي</span>
+                        <span class="suggested-keyword" onclick="addSuggestedKeyword('متجر فورتو')">متجر فورتو</span>
+                        <span class="suggested-keyword" onclick="addSuggestedKeyword('Forto Store')">Forto Store</span>
                         <span class="suggested-keyword" onclick="addSuggestedKeyword('أحذية مصر')">أحذية مصر</span>
                         <span class="suggested-keyword" onclick="addSuggestedKeyword('سنيكرز')">سنيكرز</span>
                         <span class="suggested-keyword" onclick="addSuggestedKeyword('كوتشيات رياضية')">كوتشيات
@@ -2567,7 +2566,7 @@
 
                 <div class="form-group">
                     <label><i class="fas fa-heading" style="margin-left: 5px;"></i> عنوان الموقع (Title)</label>
-                    <input type="text" id="meta-title" class="form-control" placeholder="متجر الشرقاوي | الشرقاوي"
+                    <input type="text" id="meta-title" class="form-control" placeholder="متجر فورتو | Forto Store"
                         maxlength="60">
                     <small class="text-muted">
                         <span id="title-length">0</span>/60 حرف - يظهر في نتائج البحث
@@ -3066,112 +3065,95 @@
                                     <i class="fas fa-info-circle"></i> يمكنك الحصول على API Key من لوحة تحكم بوسطة:
                                     <a href="https://business.bosta.co/settings/api" target="_blank">Settings > API
                                         Keys</a>
-                                <div class="stats-grid" style="margin-top: 20px;">
-                                    <div class="form-group" style="grid-column: span 3;">
-                                        <label>رابط الـ Webhook الخاص بك (لالتحديث التلقائي)</label>
-                                        <div style="display: flex; gap: 10px;">
-                                            <input type="text" id="s-bostaWebhookUrl" class="form-control"
-                                                value="https://elsharkawy-products.saifelsheikh320.workers.dev/api/bosta-webhook"
-                                                readonly style="background: #f1f5f9; cursor: default; direction: ltr;">
-                                            <button type="button" class="btn btn-secondary" onclick="copyWebhookUrl()"
-                                                style="white-space: nowrap;">
-                                                <i class="fas fa-copy"></i> نسخ الرابط
-                                            </button>
-                                            <button type="button" class="btn btn-outline-info"
-                                                onclick="testWebhookConnection(event)" style="white-space: nowrap;">
-                                                <i class="fas fa-satellite-dish"></i> اختبار الرد
-                                            </button>
-                                        </div>
-                                        <p class="text-muted small">
-                                            <i class="fas fa-info-circle"></i> انسخ هذا الرابط وضعه في إعدادات الربط
-                                            بحسابك في بوسطة (Webhook URL) لتحديث حالة الطلبات أوتوماتيكياً.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="stats-grid" style="margin-top: 15px;">
-                                    <div class="form-group">
-                                        <label>اسم مفتاح التوثيق (من اختيارك)</label>
-                                        <input type="text" id="s-bostaWebhookAuthName" class="form-control"
-                                            placeholder="مثلاً: My-Secret-Key" style="direction: ltr;">
-                                    </div>
-                                    <div class="form-group" style="grid-column: span 2;">
-                                        <label>قيمة مفتاح التوثيق (ألف كلمة سر من عندك)</label>
-                                        <input type="text" id="s-bostaWebhookAuthValue" class="form-control"
-                                            placeholder="اكتب أي كود سري هنا" style="direction: ltr;">
-                                    </div>
-                                </div>
-                                <p class="text-muted small" style="margin-top: 5px;">
-                                    <i class="fas fa-shield-alt"></i> هذه البيانات اختيارية لتأمين الربط؛ قم بتأليف أي
-                                    اسم وكود سري وضعهما هنا وفي إعدادات بوسطة لضمان أمان التحديثات.
                                 </p>
+                            </div>
+                        </div>
 
-                                <div class="stats-grid">
-                                    <div class="form-group">
-                                        <label>اسم النشاط التجاري</label>
-                                        <input type="text" id="s-bostaBusinessName" class="form-control"
-                                            placeholder="مثلاً: رويعي الشرقاوي">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>رقم هاتف المتجر</label>
-                                        <input type="text" id="s-bostaBusinessPhone" class="form-control"
-                                            placeholder="الرقم اللي المندوب هيكلمك عليه">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>المدينة (موقع مخزنك)</label>
-                                        <select id="s-bostaCity" class="form-control">
-                                            <option value="">اختر المدينة</option>
-                                            <option value="القاهرة">القاهرة</option>
-                                            <option value="الجيزة">الجيزة</option>
-                                            <option value="الإسكندرية">الإسكندرية</option>
-                                            <option value="الدقهلية">الدقهلية</option>
-                                            <option value="الشرقية">الشرقية</option>
-                                            <option value="القليوبية">القليوبية</option>
-                                            <option value="الغربية">الغربية</option>
-                                            <option value="المنوفية">المنوفية</option>
-                                            <option value="البحيرة">البحيرة</option>
-                                            <option value="الإسماعيلية">الإسماعيلية</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label>عنوان المتجر التفصيلي (Pickup Address)</label>
-                                    <input type="text" id="s-bostaAddress" class="form-control"
-                                        placeholder="الشارع والمنطقة والمحل / المخزن">
-                                </div>
-
-                                <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
-                                    <div class="form-group">
-                                        <label>رقم العقار</label>
-                                        <input type="text" id="s-bostaBuilding" class="form-control" placeholder="5">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>الدور</label>
-                                        <input type="text" id="s-bostaFloor" class="form-control" placeholder="3">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>رقم المكتب/الشقة</label>
-                                        <input type="text" id="s-bostaApartment" class="form-control" placeholder="10">
-                                    </div>
-                                </div>
-
-                                <div class="mt-3">
-                                    <button type="button" class="btn btn-secondary"
-                                        onclick="testBostaConnection(event)">
-                                        <i class="fas fa-plug"></i> اختبار الاتصال
-                                    </button>
-                                    <span id="bosta-connection-status" class="mr-3"></span>
+                        <div class="stats-grid" style="margin-top: 10px;">
+                            <div class="form-group" style="grid-column: span 3;">
+                                <label style="display: flex; justify-content: space-between;">
+                                    رابط الـ Webhook (لتلقي التحديثات تلقائياً)
+                                    <span class="badge badge-success" style="cursor: pointer;"
+                                        onclick="copyWebhookUrl()">
+                                        <i class="fas fa-copy"></i> نسخ الرابط
+                                    </span>
+                                </label>
+                                <input type="text" id="s-bostaWebhookUrl" class="form-control" readonly
+                                    style="background: #f8f9fa; direction: ltr; font-family: monospace; font-size: 0.9rem;">
+                                <div class="alert alert-info"
+                                    style="margin-top: 10px; padding: 10px; font-size: 0.85rem;">
+                                    <i class="fas fa-lightbulb"></i> <strong>كيف تفعلها؟</strong>
+                                    قم بنسخ هذا الرابط ووضعه في لوحة تحكم بوسطة بمجرد الضغط على "Add Webhook" واختيار
+                                    نوع الأحداث (Delivery Status Updates).
                                 </div>
                             </div>
+                        </div>
 
-
-
-                            <div class="mt-4 pt-4 border-top">
-                                <button type="submit" class="btn btn-primary btn-block p-3 text-lg">
-                                    <i class="fas fa-save"></i> حفظ كل الإعدادات
-                                </button>
+                        <div class="stats-grid">
+                            <div class="form-group">
+                                <label>اسم النشاط التجاري</label>
+                                <input type="text" id="s-bostaBusinessName" class="form-control"
+                                    placeholder="مثلاً: رويعي الشرقاوي">
                             </div>
+                            <div class="form-group">
+                                <label>رقم هاتف المتجر</label>
+                                <input type="text" id="s-bostaBusinessPhone" class="form-control"
+                                    placeholder="الرقم اللي المندوب هيكلمك عليه">
+                            </div>
+                            <div class="form-group">
+                                <label>المدينة (موقع مخزنك)</label>
+                                <select id="s-bostaCity" class="form-control">
+                                    <option value="">اختر المدينة</option>
+                                    <option value="القاهرة">القاهرة</option>
+                                    <option value="الجيزة">الجيزة</option>
+                                    <option value="الإسكندرية">الإسكندرية</option>
+                                    <option value="الدقهلية">الدقهلية</option>
+                                    <option value="الشرقية">الشرقية</option>
+                                    <option value="القليوبية">القليوبية</option>
+                                    <option value="الغربية">الغربية</option>
+                                    <option value="المنوفية">المنوفية</option>
+                                    <option value="البحيرة">البحيرة</option>
+                                    <option value="الإسماعيلية">الإسماعيلية</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>عنوان المتجر التفصيلي (Pickup Address)</label>
+                            <input type="text" id="s-bostaAddress" class="form-control"
+                                placeholder="الشارع والمنطقة والمحل / المخزن">
+                        </div>
+
+                        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+                            <div class="form-group">
+                                <label>رقم العقار</label>
+                                <input type="text" id="s-bostaBuilding" class="form-control" placeholder="5">
+                            </div>
+                            <div class="form-group">
+                                <label>الدور</label>
+                                <input type="text" id="s-bostaFloor" class="form-control" placeholder="3">
+                            </div>
+                            <div class="form-group">
+                                <label>رقم المكتب/الشقة</label>
+                                <input type="text" id="s-bostaApartment" class="form-control" placeholder="10">
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-secondary" onclick="testBostaConnection()">
+                                <i class="fas fa-plug"></i> اختبار الاتصال
+                            </button>
+                            <span id="bosta-connection-status" class="mr-3"></span>
+                        </div>
+                    </div>
+
+
+
+                    <div class="mt-4 pt-4 border-top">
+                        <button type="submit" class="btn btn-primary btn-block p-3 text-lg">
+                            <i class="fas fa-save"></i> حفظ كل الإعدادات
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -4022,7 +4004,7 @@
                     الكلمة المفتاحية
                 </label>
                 <input type="text" id="keyword-input" class="form-control"
-                    placeholder="مثال: متجر الشرقاوي، الشرقاوي، أحذية مصر..." style="font-size: 1rem; padding: 14px;"
+                    placeholder="مثال: متجر فورتو، Forto Store، أحذية مصر..." style="font-size: 1rem; padding: 14px;"
                     autofocus>
                 <small style="color: #7f8c8d; display: block; margin-top: 8px;">
                     <i class="fas fa-info-circle"></i>
@@ -4412,32 +4394,14 @@
             window.open('../sitemap.xml', '_blank');
         }
 
-        // Copy Link Generic Function
-        function copyToClipboard(inputId) {
-            const inputEl = document.getElementById(inputId);
-            if (!inputEl) return;
-
-            inputEl.select();
-            inputEl.setSelectionRange(0, 99999); // For mobile devices
-
-            try {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(inputEl.value).then(() => {
-                        showToast('تم نسخ الرابط بنجاح', 'success');
-                    });
-                } else {
-                    document.execCommand('copy');
-                    showToast('تم نسخ الرابط بنجاح', 'success');
-                }
-            } catch (err) {
-                document.execCommand('copy');
-                showToast('تم نسخ الرابط بنجاح', 'success');
-            }
-        }
-
         // Copy Sitemap Link
         function copySitemapLink() {
-            copyToClipboard('sitemap-url');
+            const sitemapUrl = window.location.origin + '/sitemap.xml';
+            navigator.clipboard.writeText(sitemapUrl).then(() => {
+                showToast('تم نسخ رابط Sitemap بنجاح', 'success');
+            }).catch(() => {
+                showAlert('فشل نسخ الرابط. الرابط هو: ' + sitemapUrl, 'error');
+            });
         }
 
         // View Robots.txt
@@ -4447,15 +4411,12 @@
 
         // Copy Robots Link
         function copyRobotsLink() {
-            // Check if robots input exists in older sections
-            if (document.getElementById('robots-url')) {
-                copyToClipboard('robots-url');
-            } else {
-                const robotsUrl = window.location.origin + '/robots.txt';
-                navigator.clipboard.writeText(robotsUrl).then(() => {
-                    showToast('تم نسخ رابط Robots.txt بنجاح', 'success');
-                });
-            }
+            const robotsUrl = window.location.origin + '/robots.txt';
+            navigator.clipboard.writeText(robotsUrl).then(() => {
+                showToast('تم نسخ رابط Robots.txt بنجاح', 'success');
+            }).catch(() => {
+                showAlert('فشل نسخ الرابط. الرابط هو: ' + robotsUrl, 'error');
+            });
         }
 
         // Open SEO Guide
@@ -4500,7 +4461,7 @@
                         <p>هذا هو أهم حساب يجب أن تمتلكه:</p>
                         <ul>
                             <li>افتح: <a href="https://search.google.com/search-console" target="_blank">Google Search Console</a></li>
-                            <li>أضف موقعك: <code>https://elsharqawi.com</code></li>
+                            <li>أضف موقعك: <code>https://fortostore.com</code></li>
                             <li>في الإعدادات هنا، الصق كود التحقق في خانة <strong>Google Verification Code</strong> في الإعدادات.</li>
                         </ul>
                     </div>
@@ -4509,7 +4470,7 @@
                         <h3><span style="background: #e67e22; color: white; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.9rem; margin-left: 10px;">2</span> أرسل خريطة الموقع (Sitemap)</h3>
                         <p>داخل حساب جوجل للبحث، ابحث عن "Sitemaps" وأضف الرابط:</p>
                         <div style="background: #f9f9f9; padding: 10px; border-radius: 8px; font-family: monospace; text-align: center; margin: 10px 0; direction: ltr;">
-                            https://elsharqawi.com/sitemap.xml
+                            https://fortostore.com/sitemap.xml
                         </div>
                     </div>
 
@@ -4524,7 +4485,7 @@
 
                     <h3 style="color: #27ae60;"><i class="fas fa-star"></i> الكلمات الأكثر أهمية</h3>
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;">
-                        <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">متجر الشرقاوي</span>
+                        <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">متجر فورتو</span>
                         <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">أحذية رياضية مصر</span>
                         <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">سنيكرز اونلاين</span>
                         <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">أفضل كوتشيات رياضية</span>
@@ -4532,13 +4493,13 @@
 
                     <div class="info-box" style="background: #fff8e1; border-right-color: #ffc107;">
                         <h4 style="margin: 0 0 10px; color: #856404;"><i class="fas fa-pencil-alt"></i> كيف تستخدمها؟</h4>
-                        <p style="margin: 0; color: #856404; font-size: 0.95rem;">ضع هذه الكلمات داخل <strong>وصف المنتج</strong> بشكل طبيعي. مثلاً: "هذا السنيكرز هو الأفضل في الشرقاوي متجر الأحذية..."</p>
+                        <p style="margin: 0; color: #856404; font-size: 0.95rem;">ضع هذه الكلمات داخل <strong>وصف المنتج</strong> بشكل طبيعي. مثلاً: "هذا السنيكرز هو الأفضل في فورتو متجر الأحذية..."</p>
                     </div>
 
                     <h3><i class="fas fa-language" style="color: #3498db;"></i> لا تنسَ الإنجليزية!</h3>
                     <p>الكثير من الناس يبحثون بالإنجليزية. تأكد من استخدام كلمات مثل:</p>
                     <ul style="column-count: 2;">
-                        <li>الشرقاوي</li>
+                        <li>Forto Store</li>
                         <li>Shoes Egypt</li>
                         <li>Buy Sneakers</li>
                         <li>Best Shoes</li>
@@ -4702,7 +4663,7 @@
     <script src="../js/data_v2.js"></script>
     <script src="../js/translations.js"></script>
     <script src="../js/admin_coupons.js"></script>
-    <script src="../js/bosta-integration.js"></script>
+    <script src="../js/bosta-integration.js?v=26.0"></script>
     <script src="../js/bosta-admin.js"></script>
 
     <!-- SortableJS for Reordering -->

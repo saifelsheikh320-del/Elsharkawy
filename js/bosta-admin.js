@@ -13,8 +13,10 @@ function loadBostaSettings() {
     document.getElementById('s-bostaBuilding').value = settings.pickupAddress?.buildingNumber || '';
     document.getElementById('s-bostaFloor').value = settings.pickupAddress?.floor || '';
     document.getElementById('s-bostaApartment').value = settings.pickupAddress?.apartment || '';
-    document.getElementById('s-bostaWebhookAuthName').value = settings.webhookAuthName || 'X-Bosta-Signature';
-    document.getElementById('s-bostaWebhookAuthValue').value = settings.webhookAuthValue || '';
+
+    // Show Webhook URL if field exists
+    const webhookEl = document.getElementById('s-bostaWebhookUrl');
+    if (webhookEl) webhookEl.value = settings.webhookUrl || '';
 }
 
 // Save Bosta Settings from Form
@@ -26,8 +28,6 @@ function saveBostaSettings() {
         apiKey: document.getElementById('s-bostaApiKey').value.trim(),
         businessName: document.getElementById('s-bostaBusinessName').value.trim(),
         businessPhone: document.getElementById('s-bostaBusinessPhone').value.trim(),
-        webhookAuthName: document.getElementById('s-bostaWebhookAuthName').value.trim(),
-        webhookAuthValue: document.getElementById('s-bostaWebhookAuthValue').value.trim(),
         pickupAddress: {
             city: city,
             firstLine: document.getElementById('s-bostaAddress').value.trim(),
@@ -43,9 +43,9 @@ function saveBostaSettings() {
 }
 
 // Test Bosta Connection
-async function testBostaConnection(event) {
+async function testBostaConnection() {
     const statusEl = document.getElementById('bosta-connection-status');
-    const btn = event.currentTarget;
+    const btn = event.target;
 
     // Save settings first
     saveBostaSettings();
@@ -85,52 +85,14 @@ async function testBostaConnection(event) {
 
 // Copy Webhook URL to Clipboard
 function copyWebhookUrl() {
-    const urlInput = document.getElementById('s-bostaWebhookUrl');
-    if (!urlInput) return;
-
-    urlInput.select();
-    urlInput.setSelectionRange(0, 99999); // For mobile
-
-    try {
-        navigator.clipboard.writeText(urlInput.value).then(() => {
-            if (typeof showToast === 'function') {
-                showToast('تم نسخ الرابط بنجاح! ضعه الآن في حساب بوسطة.', 'success');
-            }
-        });
-    } catch (err) {
-        // Fallback
-        document.execCommand('copy');
-        if (typeof showToast === 'function') {
-            showToast('تم نسخ الرابط بنجاح!', 'success');
-        }
-    }
-}
-
-// Test Webhook URL endpoint
-async function testWebhookConnection(event) {
     const url = document.getElementById('s-bostaWebhookUrl').value;
-    const btn = event.currentTarget;
-    const originalText = btn.innerHTML;
+    if (!url) return;
 
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الفحص...';
-
-    try {
-        // We use a GET request just to see if the server responds at all
-        const response = await fetch(url);
-
-        // Even if it's 405 (Method Not Allowed), it means the server is UP and the URL is correct
-        if (response.status !== 404) {
-            showToast('الويب هوك نشط ومستعد لاستقبال البيانات ✅', 'success');
-        } else {
-            showToast('الرابط غير موجود (404) ❌', 'error');
-        }
-    } catch (error) {
-        showToast('لا يمكن الوصول للرابط حالياً ❌', 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-    }
+    navigator.clipboard.writeText(url).then(() => {
+        showToast('تم نسخ رابط الـ Webhook بنجاح', 'success');
+    }).catch(err => {
+        console.error('Copy failed:', err);
+    });
 }
 
 // Export functions
@@ -138,7 +100,6 @@ window.loadBostaSettings = loadBostaSettings;
 window.saveBostaSettings = saveBostaSettings;
 window.testBostaConnection = testBostaConnection;
 window.copyWebhookUrl = copyWebhookUrl;
-window.testWebhookConnection = testWebhookConnection;
 
 // Auto-load settings when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
