@@ -165,3 +165,4 @@ const BostaIntegration = {
 
 window.BostaIntegration = BostaIntegration;
 console.log("Bosta V26.0 Webhook Support Ready.");
+

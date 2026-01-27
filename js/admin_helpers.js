@@ -56,3 +56,4 @@ function loadFeaturedSettings(settings) {
     }
     toggleFeaturedMode();
 }
+

@@ -141,3 +141,4 @@ const BostaIntegration = {
 
 window.BostaIntegration = BostaIntegration;
 console.log("%c Bosta Integration v6.0 ACTIVE ", "color: white; background: green; padding: 5px;");
+

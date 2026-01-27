@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://fortostore.com/sitemap.xml
+Sitemap: https://elsharkawystore.com/sitemap.xml

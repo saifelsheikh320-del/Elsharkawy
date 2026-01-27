@@ -92,3 +92,4 @@ window.closeCouponModal = closeCouponModal;
 window.saveCoupon = saveCoupon;
 window.adminDeleteCoupon = adminDeleteCoupon;
 window.saveSpecialOffers = saveSpecialOffers;
+

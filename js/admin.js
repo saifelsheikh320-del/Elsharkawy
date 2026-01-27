@@ -2925,7 +2925,7 @@ function sendAbandonedWhatsApp(phone, name, total) {
     const settings = db.getSettings();
 
     // رابط المتجر الأساسي
-    const storeUrl = 'https://fortostore.com';
+    const storeUrl = 'https://elsharkawystore.com';
 
     // الرسالة الافتراضية مع رابط المتجر
     let defaultTemplate = `مرحباً *{name}*! 👋
@@ -2935,7 +2935,7 @@ function sendAbandonedWhatsApp(phone, name, total) {
 💰 *الإجمالي: {total} ج.م*
 
 يمكنك إكمال طلبك الآن من خلال زيارة متجرنا:
-🔗 https://fortostore.com
+🔗 https://elsharkawystore.com
 
 هل يمكننا مساعدتك في إكمال طلبك؟ 😊
 
@@ -3732,7 +3732,7 @@ function initSecurity() {
     document.getElementById('menu-security').style.display = 'flex';
 
     const settings = db.getSettings();
-    document.getElementById('sa-email').value = settings.adminEmail || 'admin@fortostore.com';
+    document.getElementById('sa-email').value = settings.adminEmail || 'admin@elsharkawystore.com';
     document.getElementById('sa-pin').value = settings.adminPin || '0000';
 }
 
@@ -3947,4 +3947,5 @@ window.viewOrder = viewOrder;
 window.printShippingLabel = printShippingLabel;
 window.adminArchiveOrder = adminArchiveOrder;
 window.adminDeleteOrder = adminDeleteOrder;
+
 

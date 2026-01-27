@@ -20,3 +20,4 @@ window.database = firebase.database();
 
 // Safe Analytics Initialization
 const analytics = typeof firebase.analytics === 'function' ? firebase.analytics() : null;
+

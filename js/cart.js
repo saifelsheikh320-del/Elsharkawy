@@ -85,3 +85,4 @@ window.updateQty = (id, qty) => db.updateCartQuantity(id, qty);
 window.removeItem = (id) => db.removeFromCart(id);
 window.updateQtyByIndex = updateQtyByIndex;
 window.removeItemByIndex = removeItemByIndex;
+
