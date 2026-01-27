@@ -22,8 +22,11 @@
 
         input,
         textarea,
+        select,
         [contenteditable="true"] {
             caret-color: auto !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
         }
 
         .tab,
@@ -31,9 +34,15 @@
         .btn,
         span,
         h1,
-        p {
+        h2,
+        h3,
+        p,
+        a,
+        label {
             user-select: none;
             -webkit-user-select: none;
+            -ms-user-select: none;
+            outline: none !important;
         }
 
         body {

@@ -405,7 +405,7 @@
         </section>
 
         <!-- Featured Products -->
-        <section class="container" style="padding: var(--spacing-xl) var(--spacing-sm);">
+        <section class="container" id="trending_section" style="padding: var(--spacing-xl) var(--spacing-sm);">
             <div class="section-header reveal" style="text-align: center; margin-bottom: var(--spacing-lg);">
                 <h2 data-i18n="trending_now">الأكثر رواجاً</h2>
                 <div style="width: 50px; height: 3px; background: var(--color-primary); margin: 10px auto;"></div>
@@ -428,24 +428,25 @@
                 <div class="reveal">
                     <h2 style="margin-bottom: var(--spacing-lg);" data-i18n="categories">الأقسام</h2>
                 </div>
-                <div class="category-grid">
-                    <div class="category-card reveal delay-100" data-i18n="cat_tassels">أوكر وكوالين</div>
-                    <div class="category-card reveal delay-200" data-i18n="cat_decorations">ديكورات</div>
-                    <div class="category-card reveal delay-300" data-i18n="cat_accessories">إكسسوارات</div>
+                <div class="category-grid" id="home-category-grid">
+                    <!-- Injected via JS -->
                 </div>
             </div>
         </section>
 
 
 
-        <!-- Dynamic Offers -->
         <section class="container" id="offer_section"
-            style="padding: var(--spacing-xl) var(--spacing-sm); text-align: center; display: none;">
-            <div class="reveal-zoom"
-                style="background: #f0f8ff; padding: 4rem; border-radius: 20px; border: 1px solid var(--color-primary);">
+            style="padding: var(--spacing-xl) var(--spacing-sm); display: none;">
+            <div id="offer_banner_box" class="reveal-zoom"
+                style="background: #f0f8ff; padding: 4rem; border-radius: 20px; border: 1px solid var(--color-primary); text-align: center; margin-bottom: 2rem;">
                 <h2 style="color: var(--color-primary); font-weight: 900;" id="offer_title"></h2>
                 <p style="margin: 20px 0; font-size: 1.4rem; color: #444;" id="offer_desc"></p>
-                <a href="products" class="btn btn-primary" id="offer_btn" style="min-width: 200px;"></a>
+                <a href="products.html" class="btn btn-primary" id="offer_btn" style="min-width: 200px;"></a>
+            </div>
+
+            <div id="offer_products_grid" class="featured-grid" style="display: none;">
+                <!-- Products injected via JS -->
             </div>
         </section>
 
@@ -553,11 +554,32 @@
                     offerSec.style.display = 'block';
                     document.getElementById('offer_title').innerText = settings.offerTitle || '';
                     document.getElementById('offer_desc').innerText = settings.offerDesc || '';
-                    document.getElementById('offer_btn').innerText = settings.offerBtn || '';
+                    const offerBtn = document.getElementById('offer_btn');
+                    offerBtn.innerText = settings.offerBtn || '';
+                    offerBtn.href = settings.offerLink || 'products.html';
+
+                    const offerBanner = document.getElementById('offer_banner_box');
+
+                    if (settings.offerMode === 'manual') {
+                        offerBanner.style.marginBottom = '0';
+                        offerBtn.style.display = 'inline-block';
+                        offerBtn.href = 'products.html?offers=true';
+                    } else {
+                        offerBanner.style.marginBottom = '0';
+                        offerBtn.style.display = 'inline-block';
+                        offerBtn.href = settings.offerLink || 'products.html';
+                    }
                 } else {
                     offerSec.style.display = 'none';
                 }
             }
+
+            // 1.2 Featured Products Section Visibility
+            const featuredSec = document.getElementById('trending_section');
+            if (featuredSec) {
+                featuredSec.style.display = (settings.showFeatured !== false) ? 'block' : 'none';
+            }
+
             const container = document.getElementById('featured-products');
             container.innerHTML = '';
 
@@ -571,7 +593,7 @@
                 return orderA - orderB;
             });
 
-            const featuredProducts = allProducts.filter(p => featuredIds.includes(p.id) && !p.archived);
+            const featuredProducts = allProducts.filter(p => featuredIds.includes(p.id) && !p.archived && p.isVisible !== false);
 
             // Fallback if none selected
             const displayProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 3);
@@ -623,20 +645,42 @@
                 catSec.style.display = (settings.showCollections !== false) ? 'block' : 'none';
             }
 
-            const catGrid = document.querySelector('.category-grid');
-            if (catGrid && settings.collections) {
+            // 3. Render Home Categories
+            const catGrid = document.getElementById('home-category-grid');
+            if (catGrid) {
                 catGrid.innerHTML = '';
-                settings.collections.forEach((col, index) => {
-                    const delay = (index + 1) * 100;
-                    const card = document.createElement('div');
-                    card.className = `category-card reveal delay-${delay}`;
-                    card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('${col.image}')`;
-                    card.style.backgroundSize = 'cover';
-                    card.style.backgroundPosition = 'center';
-                    card.innerText = lang === 'ar' ? col.nameAr : col.nameEn;
-                    card.onclick = () => window.location.href = col.link;
-                    catGrid.appendChild(card);
-                });
+                const homeCats = settings.homeCategories || [];
+                if (homeCats.length > 0) {
+                    homeCats.forEach((cat, index) => {
+                        const delay = (index + 1) * 100;
+                        const card = document.createElement('div');
+                        card.className = `category-card reveal delay-${delay}`;
+                        card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${cat.image}')`;
+                        card.style.backgroundSize = 'cover';
+                        card.style.backgroundPosition = 'center';
+                        card.innerText = lang === 'ar' ? cat.nameAr : cat.nameEn;
+                        card.onclick = () => window.location.href = `products.html?category=${encodeURIComponent(cat.linkedCategory)}`;
+                        catGrid.appendChild(card);
+                    });
+                } else {
+                    // Fallback to basic categories if none defined
+                    const fallbackCats = [
+                        { nameAr: 'أوكر وكوالين', nameEn: 'Handles', image: 'images/banner.jpg', linkedCategory: 'أوكر وكوالين' },
+                        { nameAr: 'ديكورات', nameEn: 'Decorations', image: 'images/banner.jpg', linkedCategory: 'ديكورات' },
+                        { nameAr: 'إكسسوارات', nameEn: 'Accessories', image: 'images/banner.jpg', linkedCategory: 'إكسسوارات' }
+                    ];
+                    fallbackCats.forEach((cat, index) => {
+                        const delay = (index + 1) * 100;
+                        const card = document.createElement('div');
+                        card.className = `category-card reveal delay-${delay}`;
+                        card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${cat.image}')`;
+                        card.style.backgroundSize = 'cover';
+                        card.style.backgroundPosition = 'center';
+                        card.innerText = lang === 'ar' ? cat.nameAr : cat.nameEn;
+                        card.onclick = () => window.location.href = `products.html?category=${encodeURIComponent(cat.linkedCategory)}`;
+                        catGrid.appendChild(card);
+                    });
+                }
             }
 
             // 4. Render Reviews

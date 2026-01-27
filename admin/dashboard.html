@@ -146,36 +146,6 @@
                 z-index: 999;
             }
 
-            /* Global UI Caret Fix */
-            * {
-                caret-color: transparent !important;
-            }
-
-            input,
-            textarea,
-            [contenteditable="true"],
-            [contenteditable="true"] * {
-                caret-color: auto !important;
-            }
-
-            .sidebar,
-            .stat-card,
-            .btn,
-            .menu-item,
-            .page-header,
-            .sidebar-brand,
-            .card,
-            th,
-            td,
-            span,
-            h1,
-            h2,
-            h3,
-            p {
-                user-select: none;
-                -webkit-user-select: none;
-            }
-
             .sidebar-overlay.active {
                 display: block;
             }
@@ -191,6 +161,43 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            caret-color: transparent !important;
+        }
+
+        input,
+        textarea,
+        select,
+        [contenteditable="true"],
+        [contenteditable="true"] * {
+            caret-color: auto !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+
+        .sidebar,
+        .stat-card,
+        .btn,
+        .menu-item,
+        .page-header,
+        .sidebar-brand,
+        .card,
+        th,
+        td,
+        span,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        a,
+        label,
+        li {
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            outline: none !important;
         }
 
         body {
@@ -2874,6 +2881,30 @@
                         </div>
                     </div>
 
+                    <div class="form-group mt-3">
+                        <label>طريقة عرض عرض "البانر الكبير"</label>
+                        <select id="s-offerMode" class="form-control" onchange="toggleOfferMode()">
+                            <option value="link">رابط مخصص (Link)</option>
+                            <option value="manual">يدوي (تحديد منتج معين)</option>
+                        </select>
+                    </div>
+
+                    <div id="link-offer-selector" class="form-group">
+                        <label>رابط الزر (مثال: products.html)</label>
+                        <input type="text" id="s-offerLink" class="form-control" placeholder="products.html">
+                    </div>
+
+                    <div id="manual-offer-selector"
+                        style="display: none; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                        <label style="margin-bottom: 10px; display: block; font-weight: bold;">اختر المنتج الذي تود
+                            عرضه:</label>
+                        <div id="offer-products-list"
+                            style="max-height: 200px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                            <!-- Products injected via JS -->
+                        </div>
+                        <input type="hidden" id="s-offerProductId">
+                    </div>
+
                     <div class="form-section">
                         <h3 class="section-title border-danger">
                             <i class="fas fa-hourglass-half icon-danger"></i> مؤقت العرض (Countdown Timer)
@@ -2898,9 +2929,30 @@
                     </div>
 
                     <div class="form-section mt-4">
-                        <h3 class="section-title border-success">
-                            <i class="fas fa-star icon-success"></i> المنتجات الأكثر رواجاً
+                        <h3 class="section-title border-info">
+                            <i class="fas fa-th-large icon-info"></i> مجموعات الصفحة الرئيسة (Homepage Groups)
                         </h3>
+                    </div>
+                    <p class="text-muted">تحكم في الصور والروابط للأقسام التي تظهر في الصفحة الرئيسية.</p>
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="s-showCollections">
+                        <label for="s-showCollections">عرض قسم المجموعات في الصفحة الرئيسية</label>
+                    </div>
+                    <div id="home-categories-container">
+                        <!-- Categories injected here -->
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-small" onclick="addHomeCategoryField()">
+                        <i class="fas fa-plus"></i> إضافة قسم جديد للمجموعات
+                    </button>
+
+                    <div class="form-section mt-4">
+                        <h3 class="section-title border-success">
+                            <i class="fas fa-star icon-success"></i> التحكم في منتجات "الأكثر رواجاً"
+                        </h3>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="s-showFeatured">
+                        <label for="s-showFeatured">عرض قسم "المنتجات الأكثر رواجاً" في الصفحة الرئيسية</label>
                     </div>
                     <div class="stats-grid">
                         <div class="form-group">
@@ -3000,22 +3052,6 @@
                         + إضافة رأي عميل جديد
                     </button>
 
-                    <div class="form-section mt-4">
-                        <h3 class="section-title border-success">
-                            <i class="fas fa-layer-group icon-success"></i> المجموعات (Collections)
-                        </h3>
-                    </div>
-                    <div class="form-group checkbox-group">
-                        <input type="checkbox" id="s-showCollections">
-                        <label for="s-showCollections">عرض قسم المجموعات في الصفحة الرئيسية</label>
-                    </div>
-                    <div id="collections-container">
-                        <!-- Dynamic Collections -->
-                    </div>
-                    <button type="button" class="btn btn-secondary" onclick="addCollectionField()"
-                        style="margin-bottom: 2rem;">
-                        + إضافة مجموعة جديدة
-                    </button>
 
 
                     <div class="form-section mt-4">
@@ -3758,83 +3794,88 @@
     <div id="product-modal" class="modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 2rem;">إضافة منتج جديد</h3>
-            <form id="product-form">
+            <div class="form-group checkbox-group"
+                style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid var(--primary-color);">
+                <input type="checkbox" id="p-visible" checked>
+                <label for="p-visible" style="font-weight: bold; color: var(--secondary-color);">عرض المنتج في المتجر
+                    (نشط)</label>
+            </div>
+            <div class="form-group">
+                <label>اسم المنتج</label>
+                <input type="text" id="p-name" required class="form-control">
+            </div>
+            <div class="stats-grid grid-3-col">
                 <div class="form-group">
-                    <label>اسم المنتج</label>
-                    <input type="text" id="p-name" required class="form-control">
-                </div>
-                <div class="stats-grid grid-3-col">
-                    <div class="form-group">
-                        <label>السعر بعد الخصم (ج.م)</label>
-                        <input type="number" id="p-price" required class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>السعر قبل الخصم (اختياري)</label>
-                        <input type="number" id="p-old-price" placeholder="مثال: 1200" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>الكمية المتوفرة</label>
-                        <input type="number" id="p-qty" placeholder="مثال: 50" class="form-control">
-                    </div>
+                    <label>السعر بعد الخصم (ج.م)</label>
+                    <input type="number" id="p-price" required class="form-control">
                 </div>
                 <div class="form-group">
-                    <label>المجموعة الأساسية</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <select id="p-category" class="form-control" style="flex: 1;">
-                            <!-- Will be populated dynamically -->
-                            <option value="أوكر وكوالين">أوكر وكوالين</option>
-                            <option value="ديكورات">ديكورات</option>
-                            <option value="إكسسوارات">إكسسوارات</option>
-                        </select>
-                        <button type="button" class="btn btn-secondary btn-icon" onclick="addNewCategoryPrompt()"
-                            title="إضافة مجموعة جديدة">
-                            <i class="fas fa-plus-circle"></i>
-                        </button>
-                    </div>
+                    <label>السعر قبل الخصم (اختياري)</label>
+                    <input type="number" id="p-old-price" placeholder="مثال: 1200" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label>الألوان (مفصولة بفاصلة - اختياري)</label>
-                    <input type="text" id="p-color" placeholder="مثال: أسود, أبيض, أزرق" class="form-control">
+                    <label>الكمية المتوفرة</label>
+                    <input type="number" id="p-qty" placeholder="مثال: 50" class="form-control">
                 </div>
-                <div class="form-group">
-                    <label>المقاسات (مفصولة بفاصلة - اختياري)</label>
-                    <input type="text" id="p-sizes" placeholder="مثال: 40, 41, 42, 43" class="form-control">
-                </div>
-
-                <!-- Variants Selection Section -->
-                <div class="form-section"
-                    style="margin-top: 20px; border: 1px solid #eee; padding: 15px; border-radius: 12px; background: #fafafa;">
-                    <h4 style="margin-bottom: 15px; color: #2c3e50;"><i class="fas fa-tags"
-                            style="margin-left: 8px;"></i> إدارة المقاسات والكميات</h4>
-                    <p class="text-muted small" style="margin-bottom: 10px;">أضف المقاسات المتوفرة وحدد السعر والكمية
-                        المتاحة لكل مقاس. إذا لم تضف شيئاً، سيتم استخدام السعر والكمية الأساسية أعلاه.</p>
-                    <div id="variants-container">
-                        <!-- Variants will be added here -->
-                    </div>
-                    <button type="button" class="btn btn-secondary btn-small" onclick="addVariantRow()"
-                        style="margin-top: 10px; width: 100%;">
-                        <i class="fas fa-plus"></i> إضافة مقاس/سعر/كمية
+            </div>
+            <div class="form-group">
+                <label>المجموعة الأساسية</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="p-category" class="form-control" style="flex: 1;">
+                        <!-- Will be populated dynamically -->
+                        <option value="أوكر وكوالين">أوكر وكوالين</option>
+                        <option value="ديكورات">ديكورات</option>
+                        <option value="إكسسوارات">إكسسوارات</option>
+                    </select>
+                    <button type="button" class="btn btn-secondary btn-icon" onclick="addNewCategoryPrompt()"
+                        title="إضافة مجموعة جديدة">
+                        <i class="fas fa-plus-circle"></i>
                     </button>
                 </div>
-                <div class="form-group">
-                    <label>صور المنتج (اسحب الصور هنا)</label>
-                    <div class="drop-zone" id="image-drop-zone">
-                        <i class="fas fa-cloud-upload-alt icon-upload"></i>
-                        <span>اسحب الصور أو اضغط للاختيار</span>
-                        <input type="file" id="p-images-input" multiple accept="image/*" style="display: none;">
-                    </div>
-                    <div class="image-previews" id="image-previews-container"></div>
-                </div>
+            </div>
+            <div class="form-group">
+                <label>الألوان (مفصولة بفاصلة - اختياري)</label>
+                <input type="text" id="p-color" placeholder="مثال: أسود, أبيض, أزرق" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>المقاسات (مفصولة بفاصلة - اختياري)</label>
+                <input type="text" id="p-sizes" placeholder="مثال: 40, 41, 42, 43" class="form-control">
+            </div>
 
-                <div class="form-group">
-                    <label>وصف المنتج</label>
-                    <div id="p-desc-editor" class="editor-container"></div>
+            <!-- Variants Selection Section -->
+            <div class="form-section"
+                style="margin-top: 20px; border: 1px solid #eee; padding: 15px; border-radius: 12px; background: #fafafa;">
+                <h4 style="margin-bottom: 15px; color: #2c3e50;"><i class="fas fa-tags" style="margin-left: 8px;"></i>
+                    إدارة المقاسات والكميات</h4>
+                <p class="text-muted small" style="margin-bottom: 10px;">أضف المقاسات المتوفرة وحدد السعر والكمية
+                    المتاحة لكل مقاس. إذا لم تضف شيئاً، سيتم استخدام السعر والكمية الأساسية أعلاه.</p>
+                <div id="variants-container">
+                    <!-- Variants will be added here -->
                 </div>
+                <button type="button" class="btn btn-secondary btn-small" onclick="addVariantRow()"
+                    style="margin-top: 10px; width: 100%;">
+                    <i class="fas fa-plus"></i> إضافة مقاس/سعر/كمية
+                </button>
+            </div>
+            <div class="form-group">
+                <label>صور المنتج (اسحب الصور هنا)</label>
+                <div class="drop-zone" id="image-drop-zone">
+                    <i class="fas fa-cloud-upload-alt icon-upload"></i>
+                    <span>اسحب الصور أو اضغط للاختيار</span>
+                    <input type="file" id="p-images-input" multiple accept="image/*" style="display: none;">
+                </div>
+                <div class="image-previews" id="image-previews-container"></div>
+            </div>
 
-                <div class="modal-actions">
-                    <button type="submit" class="btn btn-primary">حفظ</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeProductModal()">إلغاء</button>
-                </div>
+            <div class="form-group">
+                <label>وصف المنتج</label>
+                <div id="p-desc-editor" class="editor-container"></div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">حفظ</button>
+                <button type="button" class="btn btn-secondary" onclick="closeProductModal()">إلغاء</button>
+            </div>
             </form>
         </div>
     </div>

@@ -23,23 +23,35 @@
         }
 
         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             caret-color: transparent !important;
         }
 
         input,
         textarea,
+        select,
         [contenteditable="true"] {
             caret-color: auto !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
         }
 
         .login-card,
         .logo-box,
         .btn,
         span,
+        h1,
         h2,
-        p {
+        h3,
+        p,
+        a,
+        label {
             user-select: none;
             -webkit-user-select: none;
+            -ms-user-select: none;
+            outline: none !important;
         }
 
         body {

@@ -425,14 +425,30 @@
                     console.warn("Product sync failed", e);
                 }
             }
+
+            // Check for category parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryParam = urlParams.get('category');
+            if (categoryParam) {
+                selectedCategories = [categoryParam];
+            }
+
+            const offersParam = urlParams.get('offers');
+            if (offersParam === 'true') {
+                const settings = JSON.parse(localStorage.getItem('site_settings') || '{}');
+                const offerIds = settings.offerProductIds || [];
+                if (offerIds.length > 0) {
+                    window.offerFilterIds = offerIds.map(id => id.toString());
+                }
+            }
+
             refreshAll();
         });
 
         function refreshAll() {
             allProducts = db.getProducts();
-            filteredProducts = allProducts;
             initializeFilters();
-            renderProducts();
+            applyFilters();
         }
 
         window.addEventListener('productsUpdated', refreshAll);
@@ -495,7 +511,8 @@
             categories.forEach(cat => {
                 const catDiv = document.createElement('div');
                 catDiv.className = 'category-option';
-                catDiv.style = "padding: 8px 15px; background: #f0f0f0; border-radius: 20px; cursor: pointer; font-size: 0.9rem;";
+                const isActive = selectedCategories.includes(cat);
+                catDiv.style = `padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; background: ${isActive ? 'var(--color-primary)' : '#f0f0f0'}; color: ${isActive ? 'white' : '#333'};`;
                 catDiv.textContent = cat;
                 catDiv.onclick = () => toggleCategory(cat, catDiv);
                 catContainer.appendChild(catDiv);
@@ -568,8 +585,11 @@
             const searchQuery = document.getElementById('store-search').value.toLowerCase().trim();
 
             filteredProducts = allProducts.filter(p => {
-                // Filter out archived products from storefront
-                if (p.archived === true) return false;
+                // Filter out archived or hidden products from storefront
+                if (p.archived === true || p.isVisible === false) return false;
+
+                // Special Offer Filter (from URL)
+                if (window.offerFilterIds && !window.offerFilterIds.includes(p.id.toString())) return false;
 
                 // Search filter
                 if (searchQuery && !p.name.toLowerCase().includes(searchQuery)) return false;

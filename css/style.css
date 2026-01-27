@@ -35,9 +35,17 @@
 
 input,
 textarea,
+select,
 [contenteditable="true"],
 [contenteditable="true"] * {
     caret-color: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+}
+
+html,
+body {
+    -webkit-tap-highlight-color: transparent;
 }
 
 .menu-item,
@@ -52,9 +60,18 @@ span,
 h1,
 h2,
 h3,
-p {
+h4,
+h5,
+h6,
+p,
+a,
+label,
+li,
+div:not(.editable) {
     user-select: none;
     -webkit-user-select: none;
+    -ms-user-select: none;
+    outline: none !important;
 }
 
 html {

@@ -711,6 +711,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     images: currentProductImages,
                     image: currentProductImages[0] || '',
                     description: (quill && quill.root) ? quill.root.innerHTML : '',
+                    isVisible: document.getElementById('p-visible').checked,
                     archived: false
                 };
 
@@ -1952,6 +1953,7 @@ async function openProductModal(productId = null) {
             document.getElementById('p-category').value = product.category;
             document.getElementById('p-color').value = Array.isArray(product.color) ? product.color.join(', ') : (product.color || '');
             document.getElementById('p-sizes').value = (product.size || []).join(', ');
+            document.getElementById('p-visible').checked = product.isVisible !== false;
             // Removed p-collections as per request
 
             if (quill) {
@@ -1974,6 +1976,7 @@ async function openProductModal(productId = null) {
     } else {
         title.innerText = 'إضافة منتج جديد';
         document.getElementById('product-form').reset();
+        document.getElementById('p-visible').checked = true;
     }
 
     populateCategoryDropdown();
@@ -2271,7 +2274,11 @@ function refreshSettings() {
     document.getElementById('s-offerTitle').value = settings.offerTitle !== undefined ? settings.offerTitle : 'تخفيضات نهاية العام';
     document.getElementById('s-offerDesc').value = settings.offerDesc !== undefined ? settings.offerDesc : 'احصل على خصم يصل إلى 40% على منتجات مختارة.';
     document.getElementById('s-offerBtn').value = settings.offerBtn !== undefined ? settings.offerBtn : 'عرض العروض';
+    document.getElementById('s-offerLink').value = settings.offerLink || 'products.html';
     document.getElementById('s-offerEnabled').checked = settings.offerEnabled === undefined ? true : settings.offerEnabled;
+    document.getElementById('s-offerMode').value = settings.offerMode || 'link';
+    document.getElementById('s-offerProductId').value = (settings.offerProductIds || []).join(', ');
+    document.getElementById('s-showFeatured').checked = settings.showFeatured !== false;
     document.getElementById('s-showCollections').checked = settings.showCollections === undefined ? true : settings.showCollections;
     document.getElementById('s-reviewsEnabled').checked = settings.reviewsEnabled === undefined ? true : settings.reviewsEnabled;
     document.getElementById('s-allowCustomerReviews').checked = settings.allowCustomerReviews === undefined ? true : settings.allowCustomerReviews;
@@ -2301,11 +2308,16 @@ function refreshSettings() {
         (settings.reviews || []).forEach(rev => addReviewField(rev));
     }
 
-    const container = document.getElementById('collections-container');
-    container.innerHTML = '';
-    (settings.collections || []).forEach((col, index) => {
-        addCollectionField(col);
-    });
+    const homeCatContainer = document.getElementById('home-categories-container');
+    if (homeCatContainer) {
+        homeCatContainer.innerHTML = '';
+        (settings.homeCategories || []).forEach(cat => addHomeCategoryField(cat));
+    }
+
+    // Load Featured Selection
+    if (typeof loadFeaturedSettings === 'function') {
+        loadFeaturedSettings(settings);
+    }
 
     // Load Bosta Settings
     if (typeof loadBostaSettings === 'function') {
@@ -2347,59 +2359,59 @@ function addReviewField(data = null) {
     container.appendChild(div);
 }
 
-function addCollectionField(data = null) {
-    const container = document.getElementById('collections-container');
+function addHomeCategoryField(data = null) {
+    const container = document.getElementById('home-categories-container');
+    if (!container) return;
     const div = document.createElement('div');
     div.className = 'card';
-    div.style.background = '#f9f9f9';
-    div.style.marginBottom = '1rem';
+    div.style.background = '#f0f4f8';
+    div.style.marginBottom = '1.5rem';
+    div.style.border = '1px solid #d1d9e6';
+
+    // Get all existing product categories for the dropdown
+    const products = db.getProducts();
+    const categories = [...new Set(products.map(p => p.category).filter(c => c))];
+    let catOptions = categories.map(c => `<option value="${c}" ${data && data.linkedCategory === c ? 'selected' : ''}>${c}</option>`).join('');
+
     div.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <strong>مجموعة #${container.children.length + 1}</strong>
-            <button type="button" class="btn-delete" onclick="this.parentElement.parentElement.remove()" style="padding: 5px 10px; border-radius: 4px; border:none; cursor:pointer;">إزالة</button>
+            <button type="button" class="btn-delete" onclick="this.parentElement.parentElement.remove()" style="padding: 5px 10px; border-radius: 4px; border:none; cursor:pointer; background:#ff4757; color:white;">إزالة</button>
         </div>
         <div class="stats-grid" style="grid-template-columns: 1fr 1fr; gap: 10px;">
             <div class="form-group">
-                <label>الاسم (عربي)</label>
-                <input type="text" class="col-nameAr" value="${data ? data.nameAr : ''}" required>
+                <label>الاسم الظاهر (عربي)</label>
+                <input type="text" class="hc-nameAr form-control" value="${data ? data.nameAr : ''}" required>
             </div>
             <div class="form-group">
-                <label>Name (English)</label>
-                <input type="text" class="col-nameEn" value="${data ? data.nameEn : ''}" required>
+                <label>Display Name (English)</label>
+                <input type="text" class="hc-nameEn form-control" value="${data ? data.nameEn : ''}" required>
             </div>
         </div>
-        <div class="form-group">
-            <label>رابط الصورة</label>
-            <input type="url" class="col-image" value="${data ? data.image : ''}" required>
-        </div>
-        <div class="form-group">
-            <label>الرابط (Link)</label>
-            <input type="text" class="col-link" value="${data ? data.link : 'products.html'}" required>
+        <div class="stats-grid" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+                <label>رابط الصورة</label>
+                <input type="url" class="hc-image form-control" value="${data ? data.image : ''}" required>
+            </div>
+            <div class="form-group">
+                <label>الفئة المرتبطة (للفلترة)</label>
+                <select class="hc-linkedCategory form-control">
+                    <option value="">-- اختر الفئة --</option>
+                    ${catOptions}
+                </select>
+            </div>
         </div>
     `;
     container.appendChild(div);
 }
 
+
 document.getElementById('settings-form').addEventListener('submit', (e) => {
     e.preventDefault();
 
     try {
-        const collections = [];
-        document.querySelectorAll('#collections-container .card').forEach(card => {
-            const nameArEl = card.querySelector('.col-nameAr');
-            const nameEnEl = card.querySelector('.col-nameEn');
-            const imageEl = card.querySelector('.col-image');
-            const linkEl = card.querySelector('.col-link');
-
-            if (nameArEl && nameEnEl && imageEl && linkEl) {
-                collections.push({
-                    nameAr: nameArEl.value,
-                    nameEn: nameEnEl.value,
-                    image: imageEl.value,
-                    link: linkEl.value
-                });
-            }
-        });
+        const existingSettings = db.getSettings();
+        const collections = existingSettings.collections || [];
 
         const settings = {
             heroTitleAr: document.getElementById('s-heroTitleAr').value,
@@ -2430,7 +2442,11 @@ document.getElementById('settings-form').addEventListener('submit', (e) => {
             offerTitle: document.getElementById('s-offerTitle').value,
             offerDesc: document.getElementById('s-offerDesc').value,
             offerBtn: document.getElementById('s-offerBtn').value,
+            offerLink: document.getElementById('s-offerLink').value,
             offerEnabled: document.getElementById('s-offerEnabled').checked,
+            offerMode: document.getElementById('s-offerMode').value,
+            offerProductIds: getSelectedOfferIds(),
+            showFeatured: document.getElementById('s-showFeatured').checked,
             showCollections: document.getElementById('s-showCollections').checked,
             reviewsEnabled: document.getElementById('s-reviewsEnabled').checked,
             maintenanceMode: document.getElementById('s-maintenanceMode').checked,
@@ -2456,6 +2472,17 @@ document.getElementById('settings-form').addEventListener('submit', (e) => {
                 id: Date.now() + Math.random()
             }))
         };
+
+        const homeCategories = [];
+        document.querySelectorAll('#home-categories-container .card').forEach(card => {
+            homeCategories.push({
+                nameAr: card.querySelector('.hc-nameAr').value,
+                nameEn: card.querySelector('.hc-nameEn').value,
+                image: card.querySelector('.hc-image').value,
+                linkedCategory: card.querySelector('.hc-linkedCategory').value
+            });
+        });
+        settings.homeCategories = homeCategories;
 
         // Save Bosta Settings
         if (typeof saveBostaSettings === 'function') {
