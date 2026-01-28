@@ -1,4 +1,4 @@
-// Bosta Admin Settings Management
+﻿// Bosta Admin Settings Management
 
 // Load Bosta Settings into Form
 function loadBostaSettings() {

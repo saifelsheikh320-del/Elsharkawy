@@ -1,4 +1,4 @@
-
+﻿
 // Helper for Featured Selection
 function toggleFeaturedMode() {
     const mode = document.getElementById('s-featuredMode').value;

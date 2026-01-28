@@ -1,4 +1,4 @@
-// Bosta Integration - VERSION 6.0 (THE ONLY ACTIVE VERSION)
+﻿// Bosta Integration - VERSION 6.0 (THE ONLY ACTIVE VERSION)
 const BostaIntegration = {
     config: {
         enabled: localStorage.getItem('bosta_enabled') === 'true',

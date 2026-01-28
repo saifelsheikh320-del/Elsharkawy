@@ -1,4 +1,4 @@
-
+﻿
 document.addEventListener('DOMContentLoaded', () => {
     // Wait for main.js to set language first if needed, though DOMContentLoaded fires in order.
     // We can rely on renderCart being called, or call it.
@@ -19,7 +19,7 @@ function renderCart() {
     cartContainer.innerHTML = '';
 
     // Get current Lang text
-    const lang = localStorage.getItem('forto_lang') || 'ar';
+    const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
     const t = translations[lang] || translations['ar'];
 
     if (cart.length === 0) {

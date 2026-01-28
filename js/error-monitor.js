@@ -1,5 +1,5 @@
-/**
- * Error Monitor for Forto Store
+﻿/**
+ * Error Monitor for الشرقاوي
  * يراقب الأخطاء ويرسل تقارير للأدمن
  */
 

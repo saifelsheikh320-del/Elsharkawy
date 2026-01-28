@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
@@ -1324,13 +1324,44 @@
         .keyword-tag {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 25px;
-            margin: 5px;
+            gap: 10px;
+            background: #fff;
+            color: #3498db;
+            padding: 8px 18px;
+            border-radius: 12px;
+            margin: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border: 2px solid #3498db;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.1);
+            transition: all 0.2s;
+        }
+
+        .keyword-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+        }
+
+        .suggested-keyword {
+            cursor: pointer;
+            background: #f1f9f1;
+            color: #27ae60;
+            padding: 8px 18px;
+            border-radius: 50px;
+            border: 2px solid #d4edda;
+            font-weight: bold;
             font-size: 0.9rem;
+            display: inline-block;
+            margin: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        }
+
+        .suggested-keyword:hover {
+            background: #d4edda;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            border-color: #27ae60;
         }
 
         .remove-keyword {
@@ -2577,19 +2608,8 @@
                         <i class="fas fa-lightbulb icon-warning"></i>
                         كلمات مفتاحية مقترحة
                     </h4>
-                    <div class="keywords-list">
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('متجر فورتو')">متجر فورتو</span>
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('Forto Store')">Forto Store</span>
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('أحذية مصر')">أحذية مصر</span>
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('سنيكرز')">سنيكرز</span>
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('كوتشيات رياضية')">كوتشيات
-                            رياضية</span>
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('buy shoes Egypt')">buy shoes
-                            Egypt</span>
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('sneakers online')">sneakers
-                            online</span>
-                        <span class="suggested-keyword" onclick="addSuggestedKeyword('أحذية رياضية')">أحذية
-                            رياضية</span>
+                    <div class="keywords-list" id="suggested-keywords-container">
+                        <!-- Suggested keywords will be injected here dynamically -->
                     </div>
                 </div>
             </div>
@@ -2606,8 +2626,8 @@
 
                 <div class="form-group">
                     <label><i class="fas fa-heading" style="margin-left: 5px;"></i> عنوان الموقع (Title)</label>
-                    <input type="text" id="meta-title" class="form-control" placeholder="متجر فورتو | Forto Store"
-                        maxlength="60">
+                    <input type="text" id="meta-title" class="form-control"
+                        placeholder="متجر الشرقاوي | Elsharkawy Store" maxlength="60">
                     <small class="text-muted">
                         <span id="title-length">0</span>/60 حرف - يظهر في نتائج البحث
                     </small>
@@ -4078,8 +4098,8 @@
                     الكلمة المفتاحية
                 </label>
                 <input type="text" id="keyword-input" class="form-control"
-                    placeholder="مثال: متجر فورتو، Forto Store، أحذية مصر..." style="font-size: 1rem; padding: 14px;"
-                    autofocus>
+                    placeholder="مثال: اكسسوارات موبيليا، مقابض أبواب، الشرقاوي..."
+                    style="font-size: 1rem; padding: 14px;" autofocus>
                 <small style="color: #7f8c8d; display: block; margin-top: 8px;">
                     <i class="fas fa-info-circle"></i>
                     يمكنك إضافة كلمات بالعربي أو الإنجليزي
@@ -4261,6 +4281,13 @@
     <script>
         // SEO Data Storage
         let seoKeywords = [];
+        const SUGGESTED_KEYWORDS = [
+            'اكسسوارات موبيليا', 'مقابض أبواب', 'مفصلات مطابخ', 'مجاري أدراج',
+            'مقابض دواليب', 'مقابض مودرن', 'مستلزمات نجارة', 'مقابض كلاسيك',
+            'ترابيس أبواب', 'إكسسوارات غرف نوم', 'مستلزمات موبيليا في مصر',
+            'أفضل محل مقابض', 'شحن اكسسوارات موبيليا', 'متجر الشرقاوي',
+            'Elsharkawy Store', 'الشرقاوي لاكسسوارات الأثاث'
+        ];
         let seoMetaData = {
             title: '',
             description: '',
@@ -4285,6 +4312,7 @@
             }
 
             renderKeywords();
+            renderSuggestedKeywords();
             updateKeywordsCount();
             updateCharacterCounters();
             updateGoogleVerifyStatus();
@@ -4315,6 +4343,7 @@
                     seoKeywords.push(keyword);
                     saveKeywords();
                     renderKeywords();
+                    renderSuggestedKeywords();
                     updateKeywordsCount();
                     closeKeywordModal();
                     showToast('تمت إضافة الكلمة المفتاحية بنجاح', 'success');
@@ -4344,11 +4373,29 @@
                 seoKeywords.push(keyword);
                 saveKeywords();
                 renderKeywords();
+                renderSuggestedKeywords();
                 updateKeywordsCount();
                 showToast(`تمت إضافة "${keyword}" بنجاح`, 'success');
             } else {
                 showToast('هذه الكلمة موجودة بالفعل', 'info');
             }
+        }
+
+        // Render Suggested Keywords
+        function renderSuggestedKeywords() {
+            const container = document.getElementById('suggested-keywords-container');
+            if (!container) return;
+
+            const filteredSuggestions = SUGGESTED_KEYWORDS.filter(k => !seoKeywords.includes(k));
+
+            if (filteredSuggestions.length === 0) {
+                container.innerHTML = '<p style="color: #7f8c8d; font-size: 0.9rem; text-align: center; width: 100%;">تمت إضافة جميع الكلمات المقترحة</p>';
+                return;
+            }
+
+            container.innerHTML = filteredSuggestions.map(keyword => `
+                <span class="suggested-keyword" onclick="addSuggestedKeyword('${keyword}')">${keyword}</span>
+            `).join('');
         }
 
         // Remove Keyword
@@ -4360,6 +4407,7 @@
                     seoKeywords.splice(index, 1);
                     saveKeywords();
                     renderKeywords();
+                    renderSuggestedKeywords();
                     updateKeywordsCount();
                     showToast('تم حذف الكلمة المفتاحية', 'success');
                 }
@@ -4377,17 +4425,21 @@
                         <p style="margin: 10px 0 0 0; font-size: 0.9rem;">استخدم الكلمات المقترحة أدناه أو أضف كلمات خاصة بك</p>
                     </div>
                 `;
+                renderSuggestedKeywords();
                 return;
             }
 
             container.innerHTML = seoKeywords.map((keyword, index) => `
                 <div class="keyword-tag">
                     <span>${keyword}</span>
-                    <button class="remove-keyword" onclick="removeKeyword(${index})">
+                    <button class="remove-keyword" onclick="removeKeyword(${index})" style="color: #e74c3c; margin-right: 5px;">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             `).join('');
+
+            // Always sync suggested keywords
+            renderSuggestedKeywords();
         }
 
         // Save Keywords
@@ -4504,7 +4556,7 @@
 
             const guideContent = {
                 'SEO_README.md': `
-                    <h2>📚 دليل البدء السريع لـ SEO</h2>
+                < h2 >📚 دليل البدء السريع لـ SEO</h2 >
                     <p>أهلاً بك في مركز تحسين محركات البحث. لقد قمنا بتجهيز متجرك تقنياً ليكون صديقاً لجوجل، وهذه الأدلة ستساعدك على إكمال المسيرة.</p>
                     
                     <div class="info-box">
@@ -4525,9 +4577,9 @@
                         <i class="fas fa-lightbulb" style="margin-left: 10px;"></i>
                         <strong>نصيحة ذهبية:</strong> الاستمرار في إضافة منتجات جديدة وتحديث الأوصاف هو مفتاح النجاح في جوجل.
                     </div>
-                `,
+            `,
                 'SEARCH_ENGINE_STEPS.md': `
-                    <h2>✅ خطوات الظهور في محركات البحث</h2>
+                < h2 >✅ خطوات الظهور في محركات البحث</h2 >
                     <p>اتبع هذه الخطوات الثلاث الأساسية لتبدأ في جلب الزوار من جوجل و Bing.</p>
 
                     <div class="step-card">
@@ -4552,35 +4604,35 @@
                         <h3><span style="background: #27ae60; color: white; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.9rem; margin-left: 10px;">3</span> تحديث المحتوى</h3>
                         <p>عند إضافة أي منتج جديد، جوجل سيلاحظه تلقائياً. لكن إعادة إرسال الـ Sitemap يجعل الأمر أسرع.</p>
                     </div>
-                `,
+            `,
                 'KEYWORDS.md': `
-                    <h2>🔑 أسرار الكلمات المفتاحية</h2>
+                < h2 >🔑 أسرار الكلمات المفتاحية</h2 >
                     <p>الكلمات المفتاحية هي الكلمات التي يستخدمها العميل في جوجل ليجد متجرك.</p>
 
                     <h3 style="color: #27ae60;"><i class="fas fa-star"></i> الكلمات الأكثر أهمية</h3>
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;">
-                        <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">متجر فورتو</span>
-                        <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">أحذية رياضية مصر</span>
-                        <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">سنيكرز اونلاين</span>
-                        <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">أفضل كوتشيات رياضية</span>
+                        <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">متجر الشرقاوي</span>
+                        <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">مقابض أبواب مودرن</span>
+                        <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">اكسسوارات موبيليا</span>
+                        <span style="background: #f1f9f1; color: #27ae60; padding: 5px 15px; border-radius: 50px; border: 1px solid #d4edda; font-weight: bold;">أفضل محل مقابض</span>
                     </div>
 
                     <div class="info-box" style="background: #fff8e1; border-right-color: #ffc107;">
                         <h4 style="margin: 0 0 10px; color: #856404;"><i class="fas fa-pencil-alt"></i> كيف تستخدمها؟</h4>
-                        <p style="margin: 0; color: #856404; font-size: 0.95rem;">ضع هذه الكلمات داخل <strong>وصف المنتج</strong> بشكل طبيعي. مثلاً: "هذا السنيكرز هو الأفضل في فورتو متجر الأحذية..."</p>
+                        <p style="margin: 0; color: #856404; font-size: 0.95rem;">ضع هذه الكلمات داخل <strong>وصف المنتج</strong> بشكل طبيعي. مثلاً: "تعتبر هذه المقابض هي الأفضل في متجر الشرقاوي لاكسسوارات الأثاث..."</p>
                     </div>
 
                     <h3><i class="fas fa-language" style="color: #3498db;"></i> لا تنسَ الإنجليزية!</h3>
                     <p>الكثير من الناس يبحثون بالإنجليزية. تأكد من استخدام كلمات مثل:</p>
                     <ul style="column-count: 2;">
-                        <li>Forto Store</li>
-                        <li>Shoes Egypt</li>
-                        <li>Buy Sneakers</li>
-                        <li>Best Shoes</li>
+                        <li>Elsharkawy Store</li>
+                        <li>Furniture Accessories</li>
+                        <li>Door Handles</li>
+                        <li>Best Hardware Shop</li>
                     </ul>
-                `,
+            `,
                 'SEO_GUIDE.md': `
-                    <h2>📖 الدليل التقني الشامل</h2>
+                < h2 >📖 الدليل التقني الشامل</h2 >
                     <p>لقد صممنا النظام ليعمل خلف الكواليس لضمان أفضل ترتيب ممكن.</p>
 
                     <div class="step-card">

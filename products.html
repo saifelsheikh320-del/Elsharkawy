@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
@@ -481,7 +481,7 @@
                     'Beige': 'بيج'
                 };
 
-                const lang = localStorage.getItem('forto_lang') || 'ar';
+                const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
                 let displayText = color;
                 if (lang === 'ar' && colorNames[color]) {
                     displayText = colorNames[color];
@@ -655,7 +655,7 @@
         function renderProducts() {
             const container = document.getElementById('product-container');
             container.innerHTML = '';
-            const lang = localStorage.getItem('forto_lang') || 'ar';
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
             const currency = translations[lang]['currency'];
 
             const offers = db.getSpecialOffers();

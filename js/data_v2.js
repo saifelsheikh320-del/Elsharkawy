@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Data Layer Simulation (Local Storage)
  */
 
@@ -1014,6 +1014,12 @@ class StoreDB {
     saveShippingRates(rates) {
         localStorage.setItem('shipping_rates', JSON.stringify(rates));
         this.updateCloud('shipping_rates');
+    }
+
+    deleteShippingArea(id) {
+        let rates = this.getShippingRates();
+        rates = rates.filter(r => r.id != id);
+        this.saveShippingRates(rates);
     }
 
     // Database Maintenance

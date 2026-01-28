@@ -1,4 +1,4 @@
-var translations = {
+﻿var translations = {
     ar: {
         // Nav
         home: "الرئيسية",

@@ -1,6 +1,6 @@
-
+﻿
 /**
- * Mobile App & Security Logic for Forto Store Admin
+ * Mobile App & Security Logic for الشرقاوي Admin
  * Handles App Lock, Biometrics, and Mobile Interactions
  */
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Hybrid Cloudflare Adapter - VERSION 3.0 (PROTECTED SYNC)
  * Bridges the gap between Client Layouts & Cloud Infrastructure
  */

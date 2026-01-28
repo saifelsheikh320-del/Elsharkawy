@@ -1,4 +1,4 @@
-const CACHE_NAME = 'forto-admin-v2';
+﻿const CACHE_NAME = 'elsharkawy-admin-v2';
 const ASSETS = [
     'dashboard.html',
     '../css/style.css',

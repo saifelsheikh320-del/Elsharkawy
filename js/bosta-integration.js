@@ -1,4 +1,4 @@
-// Bosta Integration - VERSION 26.0 (WEBHOOK SUPPORT)
+﻿// Bosta Integration - VERSION 26.0 (WEBHOOK SUPPORT)
 const BostaIntegration = {
     config: {
         get enabled() { return localStorage.getItem('bosta_enabled') === 'true'; },

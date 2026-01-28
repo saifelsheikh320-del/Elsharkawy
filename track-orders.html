@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
@@ -144,7 +144,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const publicOrderId = urlParams.get('id');
-            const lang = localStorage.getItem('forto_lang') || 'ar';
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
             const t = translations[lang];
             const container = document.getElementById('orders-list');
 
@@ -291,7 +291,7 @@
         }
 
         async function handleCancel(orderId) {
-            const lang = localStorage.getItem('forto_lang') || 'ar';
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
             const confirmMsg = lang === 'ar' ? 'هل أنت متأكد من إلغاء هذا الطلب؟' : 'Are you sure you want to cancel this order?';
             const successMsg = lang === 'ar' ? 'تم إلغاء الطلب بنجاح' : 'Order cancelled successfully';
 

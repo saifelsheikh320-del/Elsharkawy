@@ -1,4 +1,4 @@
-
+﻿
 // --- Coupon Logic ---
 if (typeof showToast !== 'function') {
     window.showToast = function (msg, type = 'info') {
