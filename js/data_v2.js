@@ -2,7 +2,7 @@
  * Data Layer Simulation (Local Storage)
  */
 
-const INITIAL_PRODUCTS = []; // 🔴 تم مسح جميع المنتجات الافتراضية للبدء من جديد
+let INITIAL_PRODUCTS = []; // 🔴 تم مسح جميع المنتجات الافتراضية للبدء من جديد
 
 class StoreDB {
     constructor() {
@@ -55,14 +55,7 @@ class StoreDB {
         const collections = ['products', 'orders', 'abandoned_carts', 'site_settings', 'coupons', 'staff', 'shipping_rates', 'pending_reviews', 'customers'];
 
         collections.forEach(collection => {
-            // ✅ SKIP Firebase listener for collections managed by Cloudflare Hybrid System
-            if (typeof HYBRID_CONFIG !== 'undefined' && HYBRID_CONFIG.enabled) {
-                if (collection === 'products') {
-                    console.log(`Hybrid Mode: Skipping Firebase listener for ${collection} (Using Cloudflare)`);
-                    return;
-                }
-            }
-
+            // we no longer skip 'products' to allow real-time sync between local and hosting environments
             database.ref(collection).on('value', (snapshot) => {
                 const data = snapshot.val();
 

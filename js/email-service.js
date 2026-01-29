@@ -46,14 +46,25 @@ class GoogleEmailService {
     }
 
     async sendOrderNotification(order) {
+        if (!order || !order.id) return;
+
         const orderIdShort = order.id.split('-').pop();
         const body = this.getOrderHtmlTemplate(order);
 
         console.log('📧 بدء إرسال إشعارات الطلب #' + orderIdShort);
 
-        // 1. Send to Admin
+        // 1. Get Admin Email from Local Settings or default
+        let adminEmail = 'ibrahimelsharqawi5@gmail.com';
+        try {
+            const settings = JSON.parse(localStorage.getItem('site_settings') || '{}');
+            if (settings.adminEmail && settings.adminEmail.includes('@')) {
+                adminEmail = settings.adminEmail;
+            }
+        } catch (e) {
+            console.warn('Could not read adminEmail from settings:', e);
+        }
+
         const adminSubject = `🛍️ طلب جديد من ${order.customer.name} (#${orderIdShort})`;
-        const adminEmail = 'ibrahimelsharqawi5@gmail.com';
 
         console.log('📤 إرسال إيميل للأدمن:', adminEmail);
         const adminResult = await this.sendEmail({ to: adminEmail, subject: adminSubject, body });
@@ -62,6 +73,10 @@ class GoogleEmailService {
             console.log('✅ تم إرسال الإيميل للأدمن بنجاح');
         } else {
             console.error('❌ فشل إرسال الإيميل للأدمن');
+            // Try fallback if primary failed and was different
+            if (adminEmail !== 'ibrahimelsharqawi5@gmail.com') {
+                await this.sendEmail({ to: 'ibrahimelsharqawi5@gmail.com', subject: adminSubject, body });
+            }
         }
 
         // 2. Send to Customer (if email provided)
