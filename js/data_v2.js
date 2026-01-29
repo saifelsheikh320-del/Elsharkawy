@@ -710,6 +710,35 @@ class StoreDB {
     updateCartQuantityByIndex(index, qty) {
         let cart = this.getCart();
         if (index >= 0 && index < cart.length) {
+            const item = cart[index];
+            const products = this.getProducts();
+            const product = products.find(p => p.id == item.id);
+
+            // Determine Max Limit (Stock Availability)
+            let maxLimit = 999;
+            if (product) {
+                // If variant (Size) is selected, check variant quantity
+                if (item.selectedSize && product.variants) {
+                    // Use loose equality to match string/number types if needed
+                    const variant = product.variants.find(v => v.size == item.selectedSize);
+                    if (variant) maxLimit = variant.quantity;
+                } else {
+                    // Fallback to main product quantity
+                    maxLimit = product.quantity;
+                }
+            }
+
+            // Check if requested quantity exceeds stock
+            if (qty > maxLimit) {
+                if (typeof showAlert !== 'undefined') {
+                    showAlert('عذراً، هذه هي أقصى كمية متوفرة حالياً', 'info');
+                } else {
+                    alert('عذراً، هذه هي أقصى كمية متوفرة حالياً');
+                }
+                // Halt update to prevent exceeding stock
+                return;
+            }
+
             cart[index].quantity = qty;
             if (cart[index].quantity <= 0) {
                 this.removeFromCartByIndex(index);
