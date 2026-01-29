@@ -626,16 +626,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         privacyEditor.format('align', 'right');
     }
 
-    // Sync Total Qty Field with First Variant (per user request)
-    const pQtyInput = document.getElementById('p-qty');
-    if (pQtyInput) {
-        pQtyInput.addEventListener('input', () => {
-            const firstVarQty = document.querySelector('.v-qty');
-            if (firstVarQty) {
-                firstVarQty.value = pQtyInput.value;
-            }
-        });
-    }
 
     // Initialize Product Form Handler
     const productForm = document.getElementById('product-form');
@@ -869,9 +859,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (document.getElementById('section-settings')?.classList.contains('active')) refreshSettings();
     });
 
-    // Initialize Security & Lock
+    // Initialize Security (now with null checks)
     if (typeof initSecurity === 'function') initSecurity();
-    if (typeof checkAppLock === 'function') checkAppLock();
+
+    // Bidirectional Sync for Main Price/Qty and First Variant
+    const pPriceInput = document.getElementById('p-price');
+    if (pPriceInput) {
+        pPriceInput.addEventListener('input', () => {
+            const firstVariantPrice = document.querySelector('#variants-container .variant-row:first-child .v-price');
+            if (firstVariantPrice) firstVariantPrice.value = pPriceInput.value;
+        });
+    }
+
+    const pQtyInput = document.getElementById('p-qty');
+    if (pQtyInput) {
+        pQtyInput.addEventListener('input', () => {
+            const firstVariantQty = document.querySelector('#variants-container .variant-row:first-child .v-qty');
+            if (firstVariantQty) firstVariantQty.value = pQtyInput.value;
+            updateTotalQtyFromVariants();
+        });
+    }
 });
 
 function applyPermissions() {
@@ -1292,8 +1299,24 @@ async function quickUpdateProduct(id, field, value) {
     const product = products.find(p => p.id == id);
     if (!product) return;
 
-    if (field === 'price') product.price = parseFloat(value);
-    if (field === 'sku') product.sku = value.trim(); // Add SKU support
+    if (field === 'price') {
+        const newPrice = parseFloat(value);
+        product.price = newPrice;
+
+        // Sync with first variant Price if exists
+        if (product.variants && product.variants.length > 0) {
+            product.variants[0].price = newPrice;
+        }
+    }
+
+    if (field === 'sku') {
+        const newSku = value.trim();
+        product.sku = newSku;
+
+        // Sync with first variant Size if it's being used as SKU/Identifier (Optional, but keeping consistent)
+        // Usually size is different, so we only sync main fields.
+    }
+
     if (field === 'quantity') {
         const newQty = parseInt(value) || 0;
         product.quantity = newQty;
@@ -2163,7 +2186,8 @@ function addVariantRow(size = '', price = '', quantity = '') {
 
     // Check if this is the FIRST variant row
     const isFirstRow = container.children.length === 0;
-    const syncAttribute = isFirstRow ? 'oninput="syncFirstVariantQty(this)"' : 'oninput="updateTotalQtyFromVariants()"';
+    const syncQtyAttribute = isFirstRow ? 'oninput="syncFirstVariantQty(this)"' : 'oninput="updateTotalQtyFromVariants()"';
+    const syncPriceAttribute = isFirstRow ? 'oninput="syncFirstVariantPrice(this)"' : '';
 
     row.innerHTML = `
         <div>
@@ -2172,11 +2196,11 @@ function addVariantRow(size = '', price = '', quantity = '') {
         </div>
         <div>
             <label class="small" style="display:block; margin-bottom:5px;">السعر</label>
-            <input type="number" class="form-control v-price" value="${price}" placeholder="السعر" style="padding: 8px;">
+            <input type="number" class="form-control v-price" value="${price}" placeholder="السعر" style="padding: 8px;" ${syncPriceAttribute}>
         </div>
         <div>
             <label class="small" style="display:block; margin-bottom:5px;">الكمية</label>
-            <input type="number" class="form-control v-qty" value="${quantity}" placeholder="الكمية" style="padding: 8px;" ${syncAttribute}>
+            <input type="number" class="form-control v-qty" value="${quantity}" placeholder="الكمية" style="padding: 8px;" ${syncQtyAttribute}>
         </div>
         <button type="button" class="btn btn-icon btn-trash" onclick="this.parentElement.remove(); updateTotalQtyFromVariants();" style="margin-top: 18px; color: #e74c3c;">
             <i class="fas fa-trash"></i>
@@ -2184,10 +2208,16 @@ function addVariantRow(size = '', price = '', quantity = '') {
     `;
     container.appendChild(row);
 
-    // Initial sync if first row and quantity provided
-    if (isFirstRow && quantity) {
-        const pQtyInput = document.getElementById('p-qty');
-        if (pQtyInput) pQtyInput.value = quantity;
+    // Initial sync if first row and values provided
+    if (isFirstRow) {
+        if (quantity) {
+            const pQtyInput = document.getElementById('p-qty');
+            if (pQtyInput) pQtyInput.value = quantity;
+        }
+        if (price) {
+            const pPriceInput = document.getElementById('p-price');
+            if (pPriceInput) pPriceInput.value = price;
+        }
     }
 }
 
@@ -2197,7 +2227,13 @@ function syncFirstVariantQty(input) {
     if (pQtyInput) pQtyInput.value = input.value;
     updateTotalQtyFromVariants(); // Also trigger total calculation fallback
 }
+
+function syncFirstVariantPrice(input) {
+    const pPriceInput = document.getElementById('p-price');
+    if (pPriceInput) pPriceInput.value = input.value;
+}
 window.syncFirstVariantQty = syncFirstVariantQty;
+window.syncFirstVariantPrice = syncFirstVariantPrice;
 
 function renderImagePreviews() {
     const container = document.getElementById('image-previews-container');
@@ -3556,8 +3592,7 @@ window.startBulkWhatsApp = startBulkWhatsApp;
 window.sendToCurrentCustomer = sendToCurrentCustomer;
 window.skipCurrentCustomer = skipCurrentCustomer;
 window.stopBulkWhatsApp = stopBulkWhatsApp;
-window.performExport = performExport;
-window.triggerImport = triggerImport;
+// performExport and triggerImport temporarily removed - functions not defined
 window.openManualOrderModal = openManualOrderModal;
 window.closeManualOrderModal = closeManualOrderModal;
 window.addOrderItemRow = addOrderItemRow;
@@ -3852,15 +3887,22 @@ function validatePin() {
 // Security Section Init
 function initSecurity() {
     const admin = db.getLoggedAdmin();
+    const menuSecurity = document.getElementById('menu-security');
+
+    if (!menuSecurity) return; // Element doesn't exist, skip initialization
+
     if (admin.role !== 'admin') {
-        document.getElementById('menu-security').style.display = 'none';
+        menuSecurity.style.display = 'none';
         return;
     }
-    document.getElementById('menu-security').style.display = 'flex';
+    menuSecurity.style.display = 'flex';
 
     const settings = db.getSettings();
-    document.getElementById('sa-email').value = settings.adminEmail || 'admin@elsharkawystore.com';
-    document.getElementById('sa-pin').value = settings.adminPin || '0000';
+    const saEmail = document.getElementById('sa-email');
+    const saPin = document.getElementById('sa-pin');
+
+    if (saEmail) saEmail.value = settings.adminEmail || 'admin@elsharkawystore.com';
+    if (saPin) saPin.value = settings.adminPin || '0000';
 }
 
 // Logic for Super Admin Form
