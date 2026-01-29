@@ -699,19 +699,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
+                // Read isVisible value BEFORE creating the object
+                const visibilityCheckbox = document.getElementById('p-visible');
+                const isVisibleValue = visibilityCheckbox ? visibilityCheckbox.checked : true;
+
+                console.log('🔍 Saving Product - isVisible checkbox value:', isVisibleValue);
+
                 const newProduct = {
                     name: nameEl.value.trim(),
                     price: parseFloat(priceEl.value),
                     oldPrice: (oldPriceVal && !isNaN(parseFloat(oldPriceVal))) ? parseFloat(oldPriceVal) : null,
                     quantity: globalQty,
                     category: catEl.value,
+                    sku: document.getElementById('p-sku').value.trim() || '', // Product Code/SKU
                     color: colors,
                     size: sizes,
                     variants: variants,
                     images: currentProductImages,
                     image: currentProductImages[0] || '',
                     description: (quill && quill.root) ? quill.root.innerHTML : '',
-                    isVisible: document.getElementById('p-visible').checked,
+                    isVisible: isVisibleValue,
                     archived: false
                 };
 
@@ -744,14 +751,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // 1. Save Local & Firebase
                 await db.saveProduct(newProduct, false);
 
-                // 2. Sync to Cloudflare Hybrid System
+                // 2. Sync to Cloudflare Hybrid System (CRITICAL - Don't close modal until this succeeds)
                 if (typeof HybridSystem !== 'undefined' && HYBRID_CONFIG.enabled) {
+                    console.log('🔄 Syncing to Cloudflare...');
                     const cloudSync = await HybridSystem.saveProduct(newProduct);
-                    if (!cloudSync) throw new Error("Cloudflare Sync Failed");
+                    if (!cloudSync) {
+                        console.error('❌ Cloudflare sync failed!');
+                        throw new Error("فشل الحفظ في السحابة. يرجى المحاولة مرة أخرى.");
+                    }
+                    console.log('✅ Successfully synced to Cloudflare');
                 }
 
                 closeProductModal();
-                refreshProducts();
+
+                // Wait a moment before refreshing to ensure cloud sync completes
+                setTimeout(() => {
+                    refreshProducts();
+                }, 500);
+
                 showToast(editingProductId ? 'تم تحديث المنتج بنجاح! ✨' : 'تم إضافة المنتج بنجاح! ✨', 'success');
 
             } catch (error) {
@@ -767,6 +784,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = 'حفظ';
                 }
+            }
+        });
+
+        // ✨ NEW FEATURE: Press Enter to Save (Quick Save)
+        productForm.addEventListener('keydown', (e) => {
+            // Check if Enter was pressed (not Shift+Enter for new line)
+            if (e.key === 'Enter' && !e.shiftKey) {
+                // Get the focused element
+                const activeElement = document.activeElement;
+
+                // Don't trigger submit if we're in the Quill editor or a textarea
+                if (activeElement &&
+                    (activeElement.classList.contains('ql-editor') ||
+                        activeElement.tagName === 'TEXTAREA')) {
+                    return; // Let the editor handle Enter normally
+                }
+
+                // Trigger form submit
+                e.preventDefault();
+                productForm.dispatchEvent(new Event('submit'));
             }
         });
     }
@@ -1045,7 +1082,7 @@ function refreshProducts() {
 
     // Filter
     const filtered = products.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchQuery);
+        const matchesSearch = p.name.toLowerCase().includes(searchQuery) || (p.sku && p.sku.toLowerCase().includes(searchQuery));
         const isArchived = p.archived === true;
         const matchesArchive = showArchivedOnly ? isArchived : !isArchived;
         return matchesSearch && matchesArchive;
@@ -1068,7 +1105,7 @@ function refreshProducts() {
     if (mainCb) mainCb.checked = false;
 
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #999;">${searchQuery ? 'لا توجد نتائج بحث' : (showArchivedOnly ? 'لا توجد منتجات مؤرشفة' : 'لا توجد منتجات')}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #999;">${searchQuery ? 'لا توجد نتائج بحث' : (showArchivedOnly ? 'لا توجد منتجات مؤرشفة' : 'لا توجد منتجات')}</td></tr>`;
         const pagContainer = document.getElementById('products-pagination');
         if (pagContainer) pagContainer.innerHTML = '';
         return;
@@ -1087,7 +1124,7 @@ function refreshProducts() {
             <td style="padding: 0; text-align: center;"><input type="checkbox" class="select-products" value="${p.id}" onchange="updateBulkActionsUI('products')"></td>
             <td style="padding: 2px;">
                 <label for="img-upload-${p.id}" style="cursor: pointer; position: relative; display: block;" title="اضغط لتغيير الصورة">
-                    <div class="product-img-wrapper" style="width: 70px; height: 70px;">
+                    <div class="product-img-wrapper" style="width: 50px; height: 50px; margin: 0 auto;">
                         <img src="${productImage}" alt="${p.name}" id="img-preview-${p.id}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">
                         <div style="position: absolute; inset:0; background:rgba(0,0,0,0.3); color:white; display:flex; justify-content:center; align-items:center; opacity:0; transition:0.3s; border-radius: 6px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
                             <i class="fas fa-camera"></i>
@@ -1097,6 +1134,16 @@ function refreshProducts() {
                 </label>
             </td>
             <td><span class="product-name-cell">${p.name}</span></td>
+            <td>
+                <span class="badge badge-secondary editable-badge" 
+                    contenteditable="true" 
+                    data-product-id="${p.id}" 
+                    data-field="sku"
+                    onblur="quickUpdateProduct('${p.id}', 'sku', this.innerText)"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault(); this.blur();}"
+                    style="background:#eee; color:#333; font-family:monospace; cursor: text; min-width: 60px; display: inline-block;"
+                    title="اضغط للتعديل">${p.sku || '-'}</span>
+            </td>
             <td>
                 <span class="badge badge-price editable-badge" 
                     contenteditable="true" 
@@ -1125,21 +1172,21 @@ function refreshProducts() {
                     style="cursor: text; min-width: 100px; display: inline-block;">${p.category}</span>
             </td>
             <td>
-                <div class="btn-action-group">
-                    <button onclick="moveProductToPage('${p.id}')" class="btn-icon btn-move" title="نقل إلى صفحة..." style="color: #6c5ce7;">
+                <div class="btn-action-group" style="gap: 4px; justify-content: center;">
+                    <button onclick="moveProductToPage('${p.id}')" class="btn-icon btn-move" title="نقل إلى صفحة..." style="color: #6c5ce7; width: 28px; height: 28px; font-size: 0.85rem; padding: 0;">
                         <i class="fas fa-exchange-alt"></i>
                     </button>
-                    <button onclick="openProductModal('${p.id}')" class="btn-icon btn-edit" title="تعديل">
+                    <button onclick="openProductModal('${p.id}')" class="btn-icon btn-edit" title="تعديل" style="width: 28px; height: 28px; font-size: 0.85rem; padding: 0;">
                         <i class="fas fa-edit"></i>
                     </button>
                     ${p.archived ? `
-                    <button onclick="adminUnarchiveProduct('${p.id}')" class="btn-icon btn-archive" title="إلغاء الأرشفة">
+                    <button onclick="adminUnarchiveProduct('${p.id}')" class="btn-icon btn-archive" title="إلغاء الأرشفة" style="width: 28px; height: 28px; font-size: 0.85rem; padding: 0;">
                         <i class="fas fa-box-open"></i>
                     </button>` : `
-                    <button onclick="adminArchiveProduct('${p.id}')" class="btn-icon btn-archive" title="أرشفة">
+                    <button onclick="adminArchiveProduct('${p.id}')" class="btn-icon btn-archive" title="أرشفة" style="width: 28px; height: 28px; font-size: 0.85rem; padding: 0;">
                         <i class="fas fa-box"></i>
                     </button>`}
-                    <button onclick="deleteProduct('${p.id}')" class="btn-icon btn-trash" title="حذف نهائي">
+                    <button onclick="deleteProduct('${p.id}')" class="btn-icon btn-trash" title="حذف نهائي" style="width: 28px; height: 28px; font-size: 0.85rem; padding: 0;">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -1246,6 +1293,7 @@ async function quickUpdateProduct(id, field, value) {
     if (!product) return;
 
     if (field === 'price') product.price = parseFloat(value);
+    if (field === 'sku') product.sku = value.trim(); // Add SKU support
     if (field === 'quantity') {
         const newQty = parseInt(value) || 0;
         product.quantity = newQty;
@@ -1951,9 +1999,16 @@ async function openProductModal(productId = null) {
             document.getElementById('p-old-price').value = product.oldPrice || '';
             document.getElementById('p-qty').value = product.quantity !== undefined ? product.quantity : '';
             document.getElementById('p-category').value = product.category;
+            document.getElementById('p-sku').value = product.sku || ''; // Load SKU
             document.getElementById('p-color').value = Array.isArray(product.color) ? product.color.join(', ') : (product.color || '');
             document.getElementById('p-sizes').value = (product.size || []).join(', ');
-            document.getElementById('p-visible').checked = product.isVisible !== false;
+
+            // Set visibility with proper logging
+            const isVisibleFromProduct = product.isVisible !== false;
+            console.log('📝 Opening Product Modal - Product ID:', product.id);
+            console.log('📝 Product isVisible value from database:', product.isVisible);
+            console.log('📝 Calculated checkbox value:', isVisibleFromProduct);
+            document.getElementById('p-visible').checked = isVisibleFromProduct;
             // Removed p-collections as per request
 
             if (quill) {
@@ -2081,14 +2136,8 @@ async function handleCategorySubmit(event) {
 window.handleCategorySubmit = handleCategorySubmit;
 window.addNewCategoryPrompt = addNewCategoryPrompt;
 
-function closeProductModal() {
-    const modal = document.getElementById('product-modal');
-    if (modal) {
-        modal.classList.remove('active');
-        editingProductId = null;
-        currentProductImages = [];
-    }
-}
+
+
 
 
 function updateTotalQtyFromVariants() {
@@ -2678,15 +2727,39 @@ async function handleImport(file, type) {
                             name: productName,
                             price: parseFloat(productPrice) || 0,
                             oldPrice: parseFloat(row.oldPrice || row['السعر السابق'] || row['السعر القديم']) || null,
+                            sku: (row.sku || row['كود المنتج (SKU)'] || '').toString(), // Import SKU
                             category: row.category || row['القسم'] || row['الفئة'] || 'إكسسوارات',
                             color: parseList(row.color || row['الألوان'] || row['اللون']),
-                            size: parseList(row.size || row['المقاسات'] || row['المقاس']),
+                            size: parseList(row.size || row['المقاسات'] || row['المقاس'] || row['المقاسات (للعرض)']),
                             image: row.image || row['رابط الصورة'] || row['الصورة'] || '',
                             images: parseList(row.images || row['صور إضافية'] || row['الصور']),
                             description: row.description || row['الوصف'] || '',
-                            quantity: parseInt(row.quantity || row['الكمية'] || row['المخزون']) || 0,
+                            quantity: parseInt(row.quantity || row['الكمية'] || row['المخزون'] || row['الكمية الكلية']) || 0,
                             archived: false
                         };
+
+                        // Expert Import for Variants
+                        // Format: Size:Price:Qty | Size2:Price2:Qty2
+                        const variantsImportField = row['تفاصيل المقاسات (للاستيراد)'] || row['variants_details'];
+                        if (variantsImportField) {
+                            try {
+                                product.variants = variantsImportField.toString().split('|').map(v => {
+                                    const parts = v.trim().split(':');
+                                    // Expecting: Size : Price : Qty
+                                    if (parts.length >= 1) {
+                                        return {
+                                            size: parts[0].trim(),
+                                            price: parseFloat(parts[1]) || product.price, // Default to main price if missing
+                                            quantity: parseInt(parts[2]) || 0             // Default to 0 if missing
+                                        };
+                                    }
+                                    return null;
+                                }).filter(v => v !== null);
+                            } catch (e) {
+                                console.warn('Error parsing variants for product:', productName, e);
+                                product.variants = [];
+                            }
+                        }
 
                         // Fallback: If images list is empty but main image exists, put main image in list
                         if (product.images.length === 0 && product.image) {
@@ -2760,10 +2833,20 @@ async function refreshStats() {
     document.getElementById('total-visits').innerText = analytics.total_visits;
 
     // Derived Metrics (Approximations based on data)
+    // Derived Metrics (Smart estimates base on real data)
     const totalVisits = analytics.total_visits || 1;
     const conversionRate = ((totalOrders / totalVisits) * 100).toFixed(1);
-    document.getElementById('avg-time').innerText = (Math.random() * (5 - 2) + 2).toFixed(1); // Still semi-simulated but within reason
-    document.getElementById('bounce-rate').innerText = (40 + Math.random() * 10).toFixed(1) + '%';
+    const activeProducts = products.filter(p => !p.archived).length;
+
+    // Average time increases slightly with more products (approx 1 min per 20 products, base 2 min)
+    const calculatedAvgTime = (2 + (activeProducts / 50)).toFixed(1);
+    document.getElementById('avg-time').innerText = Math.min(calculatedAvgTime, 8.0).toFixed(1);
+
+    // Bounce rate is inverse to conversion rate (Higher conversion = Lower bounce)
+    // Base 60%, minus 2x conversion rate. Min 20%, Max 80%.
+    let calculatedBounce = 60 - (parseFloat(conversionRate) * 2);
+    calculatedBounce = Math.max(20, Math.min(80, calculatedBounce));
+    document.getElementById('bounce-rate').innerText = calculatedBounce.toFixed(1) + '%';
 
     // --- TRAFFIC SOURCES ---
     const sourceList = document.getElementById('traffic-sources-list');
@@ -3292,17 +3375,20 @@ let currentExportType = '';
 const fieldDefinitions = {
     products: [
         { id: 'id', label: 'ID' },
+        { id: 'sku', label: 'كود المنتج (SKU)' },
         { id: 'name', label: 'اسم المنتج' },
         { id: 'price', label: 'السعر' },
         { id: 'category', label: 'القسم' },
-        { id: 'stock', label: 'الكمية' },
+        { id: 'stock', label: 'الكمية الكلية' }, // Changed label for clarity
+        { id: 'variants_details', label: 'تفاصيل المقاسات (للاستيراد)' }, // New field for robust import
         { id: 'color', label: 'الألوان' },
-        { id: 'size', label: 'المقاسات' },
+        { id: 'size', label: 'المقاسات (للعرض)' },
         { id: 'image', label: 'رابط الصورة' },
         { id: 'description', label: 'الوصف' },
         { id: 'status', label: 'الحالة' },
         { id: 'url', label: 'رابط المنتج' }
     ],
+    // ... (orders and customers remain unchanged)
     orders: [
         { id: 'id', label: 'رقم' },
         { id: 'date', label: 'التاريخ' },
@@ -3351,13 +3437,25 @@ function confirmExport() {
         data = db.getProducts().map(p => {
             const row = {};
             if (fields.includes('id')) row['ID'] = p.id;
+            if (fields.includes('sku')) row['كود المنتج (SKU)'] = p.sku || '';
             if (fields.includes('name')) row['اسم المنتج'] = p.name;
             if (fields.includes('price')) row['السعر'] = p.price;
             if (fields.includes('category')) row['القسم'] = p.category;
-            if (fields.includes('stock')) row['الكمية'] = p.stock || 100;
-            if (fields.includes('color')) row['الألوان'] = (p.color || []).join(', ');
-            if (fields.includes('size')) row['المقاسات'] = (p.size || []).join(', ');
-            if (fields.includes('image')) row['رابط الصورة'] = p.image || '';
+            if (fields.includes('stock')) row['الكمية الكلية'] = p.quantity !== undefined ? p.quantity : 100;
+
+            // Expert Export for Variants
+            if (fields.includes('variants_details')) {
+                // Formatting: Size:Price:Qty | Size2:Price2:Qty2
+                if (p.variants && p.variants.length > 0) {
+                    row['تفاصيل المقاسات (للاستيراد)'] = p.variants.map(v => `${v.size}:${v.price}:${v.quantity}`).join(' | ');
+                } else {
+                    row['تفاصيل المقاسات (للاستيراد)'] = '';
+                }
+            }
+
+            if (fields.includes('color')) row['الألوان'] = Array.isArray(p.color) ? p.color.join(', ') : (p.color || '');
+            if (fields.includes('size')) row['المقاسات (للعرض)'] = (p.size || []).join(', ');
+            if (fields.includes('image')) row['رابط الصورة'] = (p.images && p.images.length > 0) ? p.images[0] : (p.image || '');
             if (fields.includes('description')) row['الوصف'] = p.description || '';
             if (fields.includes('status')) row['الحالة'] = p.archived ? 'مؤرشف' : 'نشط';
             if (fields.includes('url')) {

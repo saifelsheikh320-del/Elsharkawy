@@ -27,15 +27,15 @@ class HybridSystem {
             // --- PROTECTION LOGIC ---
             const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
 
-            // We merge instead of overwrite to protect recently updated local stock
+            // We merge instead of overwrite to protect recently updated local data
             const mergedProducts = cloudProducts.map(cloudP => {
                 const localP = localProducts.find(lp => lp.id == cloudP.id);
 
-                // If local product was updated in the last 60 seconds, keep local stock
-                // This prevents race conditions where cloud returns old stock after a purchase
+                // If local product was updated in the last 60 seconds, KEEP THE ENTIRE LOCAL VERSION
+                // This prevents race conditions where cloud returns old data after a recent edit
                 if (localP && localP.lastUpdated && (Date.now() - localP.lastUpdated < 60000)) {
-                    console.log(`🛡️ Protecting local stock for ${localP.name} (Recently Updated)`);
-                    return { ...cloudP, quantity: localP.quantity, variants: localP.variants, lastUpdated: localP.lastUpdated };
+                    console.log(`🛡️ Protecting ALL local changes for ${localP.name} (Recently Updated)`);
+                    return localP; // Return the complete local product, not just quantity
                 }
                 return cloudP;
             });
