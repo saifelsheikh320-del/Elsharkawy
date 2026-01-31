@@ -1759,7 +1759,7 @@ function viewOrder(id) {
                     <p style="margin: 5px 0;"><strong>الاسم:</strong> ${order.customer.name}</p>
                     <p style="margin: 5px 0;"><strong>الهاتف:</strong> ${order.customer.phone}</p>
                     <p style="margin: 5px 0;"><strong>العنوان:</strong> ${order.customer.address}</p>
-                    ${order.customer.province ? `<p style="margin: 5px 0;"><strong>المحافظة:</strong> ${order.customer.province}</p>` : ''}
+                    ${(order.customer.province || order.customer.governorate) ? `<p style="margin: 5px 0;"><strong>المحافظة:</strong> ${order.customer.province || order.customer.governorate}</p>` : ''}
                 </div>
 
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
@@ -2595,10 +2595,122 @@ document.getElementById('settings-form').addEventListener('submit', (e) => {
     }
 });
 
+function initCustomDropdown(containerId, options, onSelect, placeholder = "اختر...", isSearchable = true) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const trigger = container.querySelector('.mo-dropdown-trigger');
+    const menu = container.querySelector('.mo-dropdown-menu');
+    const hiddenInput = container.querySelector('input[type="hidden"]');
+    const triggerSpan = trigger.querySelector('span');
+
+    // Build Menu
+    let menuHTML = '';
+    if (isSearchable) {
+        menuHTML += `
+            <div class="mo-dropdown-search">
+                <input type="text" placeholder="بحث...">
+            </div>
+        `;
+    }
+
+    menuHTML += `<div class="mo-options-list">`;
+    menuHTML += options.map(opt => `
+        <div class="mo-dropdown-option ${opt.disabled ? 'disabled' : ''}" data-value="${opt.value}">
+            ${opt.html || opt.label}
+        </div>
+    `).join('');
+    menuHTML += `</div>`;
+
+    menu.innerHTML = menuHTML;
+
+    const searchInput = menu.querySelector('input');
+    const optionsList = menu.querySelectorAll('.mo-dropdown-option');
+
+    // Trigger Click
+    trigger.onclick = (e) => {
+        e.stopPropagation();
+        const isActive = container.classList.contains('active');
+
+        // Close all other dropdowns
+        document.querySelectorAll('.mo-custom-dropdown').forEach(d => d.classList.remove('active'));
+        document.querySelectorAll('.mo-item-row').forEach(r => r.style.zIndex = '1');
+
+        if (!isActive) {
+            container.classList.add('active');
+            // Bring the whole row to front
+            const row = container.closest('.mo-item-row');
+            if (row) row.style.zIndex = '2000'; // High z-index
+
+            // Always open downwards
+            menu.style.top = '100%';
+            menu.style.bottom = 'auto';
+            menu.style.borderBottom = `2px solid var(--primary-color)`;
+            menu.style.borderTop = 'none';
+            menu.style.borderRadius = '0 0 12px 12px';
+            menu.style.marginTop = '8px';
+            menu.style.marginBottom = '0';
+
+            if (searchInput) searchInput.focus();
+        }
+    };
+
+    // Option Click
+    optionsList.forEach(opt => {
+        opt.onclick = (e) => {
+            e.stopPropagation();
+            if (opt.classList.contains('disabled')) return;
+
+            const val = opt.getAttribute('data-value');
+            const label = opt.innerText.trim();
+
+            triggerSpan.innerText = label;
+            hiddenInput.value = val;
+            container.classList.remove('active');
+
+            // Highlight selected
+            optionsList.forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+
+            if (onSelect) onSelect(val, opt);
+        };
+    });
+
+    // Search Logic
+    if (searchInput) {
+        searchInput.oninput = () => {
+            const term = searchInput.value.toLowerCase();
+            optionsList.forEach(opt => {
+                const text = opt.innerText.toLowerCase();
+                opt.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        };
+    }
+}
+
+// Global listener to close dropdowns and reset z-index when clicking outside
+document.addEventListener('click', () => {
+    document.querySelectorAll('.mo-custom-dropdown').forEach(d => d.classList.remove('active'));
+    document.querySelectorAll('.mo-item-row').forEach(r => r.style.zIndex = '1');
+});
+
 // Manual Order Logic
 function openManualOrderModal() {
     document.getElementById('manual-order-modal').classList.add('active');
     document.getElementById('mo-items-container').innerHTML = '';
+
+    // Reset inputs
+    document.getElementById('mo-governorate').value = '';
+    document.querySelector('#mo-gov-dropdown .mo-dropdown-trigger span').innerText = 'اختر المحافظة...';
+
+    // Initialize Governorate Dropdown
+    const rates = db.getShippingRates();
+    const govOptions = rates.map(r => ({ value: r.city, label: r.city }));
+
+    initCustomDropdown('mo-gov-dropdown', govOptions, (val) => {
+        calculateManualOrderTotal();
+    });
+
     addOrderItemRow();
 }
 
@@ -2609,75 +2721,249 @@ function closeManualOrderModal() {
 
 function addOrderItemRow() {
     const container = document.getElementById('mo-items-container');
-    const products = db.getProducts();
+    const products = db.getProducts().filter(p => !p.archived);
+    const rowId = 'row-' + Date.now();
     const row = document.createElement('div');
+    row.id = rowId;
     row.className = 'mo-item-row';
-    row.style.display = 'grid';
-    row.style.gridTemplateColumns = '2fr 1fr 1fr 1fr auto';
-    row.style.gap = '10px';
-    row.style.marginBottom = '10px';
-    row.style.alignItems = 'end';
-
-    const options = products.map(p => `<option value="${p.id}">${p.name} (${p.price} ج.م)</option>`).join('');
+    row.style = 'display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 15px; align-items: end; pointer-events: auto;';
 
     row.innerHTML = `
         <div class="form-group" style="margin-bottom:0">
-            <label style="font-size:0.8rem">المنتج</label>
-            <select class="mo-product-select" style="width:100%; padding:8px;" onchange="updateRowPrice(this)">
-                <option value="">اختر منتج...</option>
-                ${options}
-            </select>
+            <label style="font-size:0.75rem; color:#666; font-weight:700; display:block; margin-bottom:6px;">المنتج</label>
+            <div id="${rowId}-prod-drop" class="mo-custom-dropdown">
+                <div class="mo-dropdown-trigger" style="padding: 10px;">
+                    <span>اختر منتج...</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="mo-dropdown-menu"></div>
+                <input type="hidden" class="mo-product-select">
+            </div>
         </div>
         <div class="form-group" style="margin-bottom:0">
-            <label style="font-size:0.8rem">اللون</label>
-            <input type="text" class="mo-color" placeholder="اختياري" style="width:100%; padding:8px;">
+            <label style="font-size:0.75rem; color:#666; font-weight:700; display:block; margin-bottom:6px;">اللون</label>
+            <div id="${rowId}-color-drop" class="mo-custom-dropdown">
+                <div class="mo-dropdown-trigger" style="padding: 10px; opacity: 0.5;">
+                    <span>اختياري</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="mo-dropdown-menu"></div>
+                <input type="hidden" class="mo-color">
+            </div>
         </div>
         <div class="form-group" style="margin-bottom:0">
-            <label style="font-size:0.8rem">المقاس</label>
-            <input type="text" class="mo-size" placeholder="اختياري" style="width:100%; padding:8px;">
+            <label style="font-size:0.75rem; color:#666; font-weight:700; display:block; margin-bottom:6px;">المقاس</label>
+            <div id="${rowId}-size-drop" class="mo-custom-dropdown">
+                <div class="mo-dropdown-trigger" style="padding: 10px; opacity: 0.5;">
+                    <span>اختياري</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="mo-dropdown-menu"></div>
+                <input type="hidden" class="mo-size">
+            </div>
         </div>
         <div class="form-group" style="margin-bottom:0">
-            <label style="font-size:0.8rem">الكمية</label>
-            <input type="number" class="mo-qty" value="1" min="1" style="width:100%; padding:8px;" onchange="calculateManualOrderTotal()">
+            <label style="font-size:0.75rem; color:#666; font-weight:700; display:block; margin-bottom:6px;">الكمية</label>
+            <input type="number" class="mo-qty" value="1" min="1" style="width:100%; padding:10px; border-radius:12px; border:2px solid #f0f0f0; outline:none; height:44px;" onchange="calculateManualOrderTotal()">
         </div>
-        <button type="button" class="btn-delete" onclick="this.parentElement.remove(); calculateManualOrderTotal();" style="height:35px; width:35px; border-radius:4px; border:none; cursor:pointer;">
+        <button type="button" class="btn-delete" onclick="this.parentElement.remove(); calculateManualOrderTotal();" style="height:44px; width:44px; border-radius:12px; border:none; cursor:pointer; background:#fff2f2; color:#ff4757; transition:all 0.3s; display:flex; align-items:center; justify-content:center;">
             <i class="fas fa-trash"></i>
         </button>
     `;
     container.appendChild(row);
+
+    // Init Product Dropdown
+    const prodOptions = products.map(p => {
+        const stock = parseInt(p.quantity) || 0;
+        return {
+            value: p.id,
+            label: p.name,
+            disabled: stock <= 0,
+            html: `
+                <div style="display:flex; align-items:center; gap:10px; width:100%; ${stock <= 0 ? 'opacity:0.6;' : ''}">
+                    <img src="${p.image || (p.images && p.images[0]) || '../assets/placeholder.png'}" style="width:30px; height:30px; border-radius:4px; object-fit:cover;">
+                    <div style="flex:1">
+                        <div style="font-weight:700; font-size:0.85rem">${p.name}</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.75rem; color:#666">${p.price} ج.م</span>
+                            <span style="font-size:0.7rem; padding:2px 6px; border-radius:10px; ${stock > 0 ? 'background:#e6f4ea; color:#1e7e34;' : 'background:#fce8e6; color:#c5221f;'}">
+                                ${stock > 0 ? `متاح: ${stock}` : 'نفذ المخزن'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+    });
+
+    initCustomDropdown(`${rowId}-prod-drop`, prodOptions, (val) => {
+        updateRowPrice(row, val);
+    });
 }
 
-function updateRowPrice(select) {
+function updateRowPrice(row, productId) {
+    const colorDropId = row.id + '-color-drop';
+    const sizeDropId = row.id + '-size-drop';
+
+    const colorHidden = row.querySelector('.mo-color');
+    const sizeHidden = row.querySelector('.mo-size');
+    const qtyInput = row.querySelector('.mo-qty');
+    const colorTrigger = document.querySelector(`#${colorDropId} .mo-dropdown-trigger`);
+    const sizeTrigger = document.querySelector(`#${sizeDropId} .mo-dropdown-trigger`);
+
+    // Reset
+    colorHidden.value = '';
+    sizeHidden.value = '';
+    colorTrigger.querySelector('span').innerText = 'اختياري';
+    sizeTrigger.querySelector('span').innerText = 'اختياري';
+    colorTrigger.style.opacity = '0.5';
+    sizeTrigger.style.opacity = '0.5';
+    qtyInput.max = 999; // Default
+
+    if (productId) {
+        const product = db.getProduct(productId);
+        if (product) {
+            qtyInput.max = product.quantity || 0;
+            if (parseInt(qtyInput.value) > parseInt(qtyInput.max)) qtyInput.value = qtyInput.max;
+
+            // Colors
+            const colors = Array.isArray(product.color) ? product.color : (product.color ? product.color.split(/[,،/|]/).map(s => s.trim()).filter(s => s) : []);
+            if (colors.length > 0) {
+                const colorOptions = colors.map(c => ({ value: c, label: c }));
+                initCustomDropdown(colorDropId, colorOptions, () => calculateManualOrderTotal(), "اختر لون...", false);
+                colorTrigger.style.opacity = '1';
+                colorTrigger.querySelector('span').innerText = 'اختر لون...';
+            } else {
+                initCustomDropdown(colorDropId, [], null, "لا يوجد ألوان", false);
+            }
+
+            // Sizes
+            const sizes = Array.isArray(product.size) ? product.size : (product.size ? product.size.split(/[,،/|]/).map(s => s.trim()).filter(s => s) : []);
+            if (sizes.length > 0) {
+                const sizeOptions = sizes.map(s => {
+                    // Try to find variant stock
+                    let isDisabled = false;
+                    let vStockHTML = '';
+                    if (product.variants) {
+                        const v = product.variants.find(v => v.size === s);
+                        if (v) {
+                            const vQty = v.quantity || 0;
+                            vStockHTML = vQty > 0
+                                ? ` <span style="font-size:0.75rem; color:#666">(${vQty} متاح)</span>`
+                                : ` <span style="font-size:0.75rem; color:#c5221f; font-weight:700;">(نفذ المخزن)</span>`;
+                            isDisabled = vQty <= 0;
+                        }
+                    }
+                    return {
+                        value: s,
+                        label: s,
+                        disabled: isDisabled,
+                        html: `<span>${s}${vStockHTML}</span>`
+                    };
+                });
+
+                initCustomDropdown(sizeDropId, sizeOptions, (sizeVal) => {
+                    // Update max quantity based on variant
+                    if (product.variants) {
+                        const variant = product.variants.find(v => v.size === sizeVal);
+                        if (variant) {
+                            qtyInput.max = variant.quantity || 0;
+                            if (parseInt(qtyInput.value) > parseInt(qtyInput.max)) qtyInput.value = qtyInput.max;
+                        }
+                    }
+                    calculateManualOrderTotal();
+                }, "اختر مقاس...", false);
+
+                sizeTrigger.style.opacity = '1';
+                sizeTrigger.querySelector('span').innerText = 'اختر مقاس...';
+            } else {
+                initCustomDropdown(sizeDropId, [], null, "لا يوجد مقاسات", false);
+            }
+        }
+    }
     calculateManualOrderTotal();
 }
 
 function calculateManualOrderTotal() {
-    let total = 0;
+    let subtotal = 0;
     document.querySelectorAll('.mo-item-row').forEach(row => {
         const productId = row.querySelector('.mo-product-select').value;
+        const size = row.querySelector('.mo-size').value;
         const qty = parseInt(row.querySelector('.mo-qty').value) || 0;
+
         if (productId) {
             const product = db.getProduct(productId);
             if (product) {
-                total += product.price * qty;
+                let currentPrice = parseFloat(product.price) || 0;
+
+                // Check for variant specific price
+                if (size && product.variants && product.variants.length > 0) {
+                    const variant = product.variants.find(v => v.size === size);
+                    if (variant && variant.price) {
+                        currentPrice = parseFloat(variant.price);
+                    }
+                }
+
+                subtotal += currentPrice * qty;
             }
         }
     });
-    document.getElementById('mo-total').value = total;
+
+    // Shipping Cost based on Governorate
+    const gov = document.getElementById('mo-governorate').value;
+    let shippingCost = 0;
+    if (gov) {
+        const rates = db.getShippingRates();
+        const areaRate = rates.find(r => r.city === gov) || rates.find(r => r.city === 'المحافظات الأخرى');
+        shippingCost = areaRate ? areaRate.rate : 0;
+    }
+
+    const shippingEl = document.getElementById('mo-shipping-cost');
+    if (shippingEl) shippingEl.value = shippingCost;
+
+    const totalEl = document.getElementById('mo-total');
+    if (totalEl) totalEl.value = subtotal + shippingCost;
 }
 
-document.getElementById('manual-order-form').addEventListener('submit', (e) => {
-    e.preventDefault();
+// Global function to handle manual order submission
+window.submitManualOrder = async function () {
+    const btn = document.querySelector('button[onclick="submitManualOrder()"]');
+    const originalContent = btn ? btn.innerHTML : 'إتمام إنشاء الطلب';
+
+    const name = document.getElementById('mo-name').value.trim();
+    const phone = document.getElementById('mo-phone').value.trim();
+    const address = document.getElementById('mo-address').value.trim();
+    const gov = document.getElementById('mo-governorate').value;
+
+    if (!name || !phone || !gov || !address) {
+        showAlert('يرجى ملء جميع بيانات العميل (الاسم، الهاتف، المحافظة، العنوان بالتفصيل)', 'error');
+        return;
+    }
+
+    const rows = document.querySelectorAll('.mo-item-row');
     const items = [];
-    document.querySelectorAll('.mo-item-row').forEach(row => {
+
+    for (const row of rows) {
         const productId = row.querySelector('.mo-product-select').value;
-        const qty = parseInt(row.querySelector('.mo-qty').value);
+        const qty = parseInt(row.querySelector('.mo-qty').value) || 0;
         const color = row.querySelector('.mo-color').value;
         const size = row.querySelector('.mo-size').value;
 
         if (productId && qty > 0) {
             const product = db.getProduct(productId);
             if (product) {
+                // Final Stock Validation
+                let availableStock = product.quantity || 0;
+                if (size && product.variants) {
+                    const v = product.variants.find(v => v.size === size);
+                    if (v) availableStock = v.quantity || 0;
+                }
+
+                if (qty > availableStock) {
+                    showAlert(`الكمية المطلوبة للمنتج "${product.name}" تتجاوز المخزون المتاح (${availableStock})`, 'error');
+                    return;
+                }
+
                 items.push({
                     ...product,
                     quantity: qty,
@@ -2686,7 +2972,7 @@ document.getElementById('manual-order-form').addEventListener('submit', (e) => {
                 });
             }
         }
-    });
+    }
 
     if (items.length === 0) {
         showAlert('يرجى إضافة منتج واحد على الأقل للطلب', 'info');
@@ -2695,24 +2981,44 @@ document.getElementById('manual-order-form').addEventListener('submit', (e) => {
 
     const order = {
         customer: {
-            name: document.getElementById('mo-name').value,
-            phone: document.getElementById('mo-phone').value,
+            name: name,
+            phone: phone,
             email: '',
-            address: document.getElementById('mo-address').value
+            province: gov,
+            address: address
         },
         items: items,
+        shippingCost: parseFloat(document.getElementById('mo-shipping-cost').value) || 0,
         total: parseFloat(document.getElementById('mo-total').value),
         paymentMethod: document.getElementById('mo-payment').value,
-        status: 'Confirmed' // Manual orders are usually confirmed
+        status: 'Confirmed'
     };
 
-    db.saveOrder(order);
-    closeManualOrderModal();
-    refreshOrders();
-    showToast('تم إنشاء الطلب اليدوي بنجاح!', 'success');
-});
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-left:8px"></i> جاري الحفظ...';
+        }
 
-window.openManualOrderModal = openManualOrderModal;
+        await db.saveOrder(order);
+        closeManualOrderModal();
+
+        // Refresh UI
+        if (typeof refreshOrders === 'function') refreshOrders();
+        if (typeof refreshProducts === 'function') refreshProducts();
+        if (typeof refreshDashboard === 'function') refreshDashboard();
+
+        showToast('تم إنشاء الطلب اليدوي بنجاح! ✅', 'success');
+    } catch (error) {
+        console.error('Manual order failed:', error);
+        showAlert('حدث خطأ أثناء حفظ الطلب: ' + error.message, 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+    }
+};
 window.closeManualOrderModal = closeManualOrderModal;
 window.addOrderItemRow = addOrderItemRow;
 window.updateRowPrice = updateRowPrice;
@@ -3794,7 +4100,7 @@ function printShippingLabel(orderId) {
                             <p><strong>الاسم:</strong> ${order.customer.name}</p>
                             <p><strong>الهاتف:</strong> ${order.customer.phone}</p>
                             <p><strong>العنوان:</strong> ${order.customer.address}</p>
-                            ${order.customer.province ? `<p><strong>المحافظة:</strong> ${order.customer.province}</p>` : ''}
+                            ${(order.customer.province || order.customer.governorate) ? `<p><strong>المحافظة:</strong> ${order.customer.province || order.customer.governorate}</p>` : ''}
                         </div>
                         <div class="info-box">
                             <div class="section-title">تفاصيل الشحن</div>
