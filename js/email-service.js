@@ -122,34 +122,14 @@ class GoogleEmailService {
     }
 
     async sendErrorReport(errorContext, errorDetails) {
+        console.warn('⚠️ sendErrorReport called but disabled by user request:', errorContext);
+        console.log('Error Details:', errorDetails);
+        return { success: true, message: 'Skipped' };
+        /* Original Code:
         const subject = `🚨 خطأ تقني في المتجر: ${errorContext}`;
-        const time = new Date().toLocaleString('ar-EG');
-        const userAgent = navigator.userAgent;
-
-        const body = `
-            <div dir="rtl" style="font-family: Arial; padding: 20px; border: 2px solid #e74c3c; border-radius: 10px; background: #fff;">
-                <h2 style="color: #c0392b; text-align: center; border-bottom: 2px solid #e74c3c; padding-bottom: 10px;">تقرير خطأ تلقائي</h2>
-                
-                <div style="background: #fdfdfd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffcccc;">
-                    <h3 style="color: #c0392b; margin-top: 0;">🛑 الملخص</h3>
-                    <p><strong>السبب:</strong> ${errorContext}</p>
-                    <p><strong>الوقت:</strong> ${time}</p>
-                </div>
-
-                <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
-                    <h3 style="color: #2c3e50; margin-top: 0;">🔧 التفاصيل التقنية</h3>
-                    <pre style="direction: ltr; background: #eee; padding: 10px; border-radius: 5px; overflow-x: auto;">${errorDetails}</pre>
-                </div>
-
-                <div style="font-size: 0.9rem; color: #666;">
-                    <p><strong>المتصفح:</strong> ${userAgent}</p>
-                    <p><strong>الصفحة:</strong> ${window.location.href}</p>
-                </div>
-            </div>
-        `;
-
-        // Send only to Admin
+        ...
         return await this.sendEmail({ to: 'ibrahimelsharqawi5@gmail.com', subject, body });
+        */
     }
 
     getOrderHtmlTemplate(order) {

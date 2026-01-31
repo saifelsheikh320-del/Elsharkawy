@@ -2742,14 +2742,22 @@ async function handleImport(file, type) {
             const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
             if (type === 'products') {
+                const totalRows = rows.length;
+                const shouldClear = await showConfirm(`تم العثور على ${totalRows} منتج. هل تريد مسح المنتجات الحالية قبل الاستيراد لضمان عدم وجود تكرار؟`);
+                if (shouldClear) {
+                    await db.clearAllProducts();
+                }
+
                 showToast('بدء استيراد المنتجات... يرجى الانتظار', 'info');
                 let count = 0;
+                const existingProducts = db.getProducts();
 
                 for (let i = 0; i < rows.length; i++) {
                     const row = rows[i];
                     try {
                         const productName = row.name || row['الاسم'] || row['اسم المنتج'];
                         const productPrice = row.price || row['السعر'] || row['سعر المنتج'];
+                        const productSku = (row.sku || row['كود المنتج (SKU)'] || '').toString().trim();
 
                         if (!productName) continue;
 
@@ -2763,7 +2771,7 @@ async function handleImport(file, type) {
                             name: productName,
                             price: parseFloat(productPrice) || 0,
                             oldPrice: parseFloat(row.oldPrice || row['السعر السابق'] || row['السعر القديم']) || null,
-                            sku: (row.sku || row['كود المنتج (SKU)'] || '').toString(), // Import SKU
+                            sku: productSku, // Import SKU
                             category: row.category || row['القسم'] || row['الفئة'] || 'إكسسوارات',
                             color: parseList(row.color || row['الألوان'] || row['اللون']),
                             size: parseList(row.size || row['المقاسات'] || row['المقاس'] || row['المقاسات (للعرض)']),
@@ -2771,22 +2779,21 @@ async function handleImport(file, type) {
                             images: parseList(row.images || row['صور إضافية'] || row['الصور']),
                             description: row.description || row['الوصف'] || '',
                             quantity: parseInt(row.quantity || row['الكمية'] || row['المخزون'] || row['الكمية الكلية']) || 0,
-                            archived: false
+                            archived: false,
+                            lastUpdated: Date.now()
                         };
 
                         // Expert Import for Variants
-                        // Format: Size:Price:Qty | Size2:Price2:Qty2
                         const variantsImportField = row['تفاصيل المقاسات (للاستيراد)'] || row['variants_details'];
                         if (variantsImportField) {
                             try {
                                 product.variants = variantsImportField.toString().split('|').map(v => {
                                     const parts = v.trim().split(':');
-                                    // Expecting: Size : Price : Qty
                                     if (parts.length >= 1) {
                                         return {
                                             size: parts[0].trim(),
-                                            price: parseFloat(parts[1]) || product.price, // Default to main price if missing
-                                            quantity: parseInt(parts[2]) || 0             // Default to 0 if missing
+                                            price: parseFloat(parts[1]) || product.price,
+                                            quantity: parseInt(parts[2]) || 0
                                         };
                                     }
                                     return null;
@@ -2797,16 +2804,31 @@ async function handleImport(file, type) {
                             }
                         }
 
-                        // Fallback: If images list is empty but main image exists, put main image in list
                         if (product.images.length === 0 && product.image) {
                             product.images = [product.image];
                         }
 
+                        // SMART DUPLICATE DETECTION
                         const rowId = row.id || row['ID'] || row['المعرف'];
+                        let matchedProduct = null;
+
                         if (rowId) {
                             product.id = rowId.toString();
                         } else {
-                            product.id = Date.now().toString() + i;
+                            // Try to find by SKU if provided
+                            if (productSku) {
+                                matchedProduct = existingProducts.find(p => p.sku === productSku);
+                            }
+                            // If not found by SKU, try by Name
+                            if (!matchedProduct) {
+                                matchedProduct = existingProducts.find(p => p.name === productName);
+                            }
+
+                            if (matchedProduct) {
+                                product.id = matchedProduct.id;
+                            } else {
+                                product.id = Date.now().toString() + i;
+                            }
                         }
 
                         await db.saveProduct(product, true);
@@ -2815,6 +2837,10 @@ async function handleImport(file, type) {
                         console.error(`Error processing row ${i}:`, rowError);
                     }
                 }
+
+                // FORCE SYNC ALL AT ONCE
+                showToast('جاري مزامنة البيانات مع السحاب...', 'info');
+                await db.updateCloud('products');
 
                 refreshProducts();
                 showToast(`تم استيراد ${count} منتج بنجاح! ✅`, 'success');
@@ -3462,6 +3488,12 @@ function openExportModal(type) {
     document.getElementById('export-modal').classList.add('active');
 }
 
+// Compatibility function for old buttons
+function exportCustomersToExcel() {
+    openExportModal('customers');
+}
+
+
 function confirmExport() {
     const fields = Array.from(document.querySelectorAll('#export-fields-container input:checked')).map(cb => cb.value);
     if (fields.length === 0) return showToast('اختر حقلاً واحداً على الأقل', 'error');
@@ -3611,7 +3643,7 @@ window.closeShippingModal = closeShippingModal;
 window.editShipping = editShipping;
 window.deleteShipping = deleteShipping;
 window.exportCustomersToExcel = exportCustomersToExcel;
-window.adminDeleteCoupon = adminDeleteCoupon;
+if (typeof adminDeleteCoupon === 'function') window.adminDeleteCoupon = adminDeleteCoupon;
 window.removeProductImage = removeProductImage;
 window.initImageDropZone = initImageDropZone;
 window.toggleSelectAll = toggleSelectAll;

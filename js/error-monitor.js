@@ -20,7 +20,8 @@
 
         console.log('🚨 Caught Error:', message);
 
-        // تأكد من أن emailService جاهز
+        // COMMENTED OUT: User requested to disable error notifications via email
+        /*
         if (window.emailService) {
             window.emailService.sendErrorReport(type, `${message}\n\nStack/Details:\n${details || 'No details provided'}`)
                 .then(res => {
@@ -28,6 +29,8 @@
                 })
                 .catch(err => console.error('Failed to send error report email', err));
         }
+        */
+        console.log('ℹ️ Error report skipped (Email notifications disabled for technical errors)');
     }
 
     // 1. مراقبة أخطاء JavaScript العامة

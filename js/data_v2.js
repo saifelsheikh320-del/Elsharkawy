@@ -11,13 +11,9 @@ class StoreDB {
     }
 
     init() {
-        // SAFETY RESTORE: If products are missing or empty, restore from backup
-        const currentProducts = JSON.parse(localStorage.getItem('products') || '[]');
-        if (currentProducts.length === 0) {
-            console.log("⚠️ Products empty! Restoring from INITIAL_PRODUCTS backup...");
-            localStorage.setItem('products', JSON.stringify(INITIAL_PRODUCTS));
-            // Force push to cloud to restore the online DB
-            setTimeout(() => this.updateCloud('products'), 2000);
+        // Initialize collections if they don't exist
+        if (!localStorage.getItem('products')) {
+            localStorage.setItem('products', JSON.stringify([]));
         }
 
         if (!localStorage.getItem('orders')) {
@@ -156,10 +152,12 @@ class StoreDB {
                 return true;
             } catch (error) {
                 console.error(`Sync error for ${collection}:`, error);
-                // 🚨 التنبيه بالبريد عند فشل المزامنة السحابية
+                // 🚨 التنبيه بالبريد عند فشل المزامنة السحابية (Disabled per user request)
+                /*
                 if (typeof emailService !== 'undefined') {
                     emailService.sendErrorReport(`فشل مزامنة ${collection} مع Firebase`, error.message);
                 }
+                */
                 const msg = `خطأ في المزامنة: ${error.message}\nتأكد من إعدادات قواعد البيانات (Rules) في Firebase Console وتغييرها لـ true.`;
                 if (typeof showAlert !== 'undefined') showAlert(msg, 'error');
                 else showAlert(msg, 'success');

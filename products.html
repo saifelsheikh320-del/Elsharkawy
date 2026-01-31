@@ -19,13 +19,29 @@
         content="تسوق أوكر, شراء كوالين, الشرقاوي, إكسسوارات موبيليا, ديكورات, shop tassels, buy trims, El Sharkawy Store">
 
     <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="الشرقاوي">
     <meta property="og:title" content="تسوق إكسسوارات الموبيليا | الشرقاوي">
-    <meta property="og:description" content="اكتشف أحدث تشكيلة من الأوكر والكوالين والديكورات">
-    <meta property="og:image" content="https://elsharkawystore.com/images/banner.jpg">
-    <meta property="twitter:image" content="https://elsharkawystore.com/images/banner.jpg">
-    <meta property="twitter:card" content="summary_large_image">
+    <meta property="og:description"
+        content="تسوق أحدث تشكيلة من إكسسوارات الموبيليا في متجر الشرقاوي. أفضل الأسعار، جودة عالية، وتوصيل سريع في مصر.">
     <meta property="og:url" content="https://elsharkawystore.com/products.html">
-    <meta property="fb:app_id" content="1214265283946236">
+
+    <!-- WhatsApp & Social Preview Image -->
+    <meta property="og:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="og:image:secure_url" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="متجر الشرقاوي لإكسسوارات الموبيليا">
+    <link itemprop="image" href="https://elsharkawystore.com/images/banner.jpg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://elsharkawystore.com/products.html">
+    <meta name="twitter:title" content="تسوق إكسسوارات الموبيليا | الشرقاوي">
+    <meta name="twitter:description" content="تسوق أحدث تشكيلة من الأوكر والكوالين والديكورات الفاخرة.">
+    <meta name="twitter:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta name="fb:app_id" content="1214265283946236">
 
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cairo:wght@400;700;900&display=swap"
@@ -454,7 +470,6 @@
         window.addEventListener('productsUpdated', refreshAll);
 
         function initializeFilters() {
-            // Get unique colors
             // Get unique colors - handle both string and array formats
             const allColors = allProducts.flatMap(p => {
                 if (Array.isArray(p.color)) return p.color;
@@ -463,10 +478,12 @@
             });
             const colors = [...new Set(allColors)].filter(c => c);
             const colorContainer = document.getElementById('color-filters');
+            if (colorContainer) colorContainer.innerHTML = ''; // Clear first
 
             colors.forEach(color => {
                 const colorDiv = document.createElement('div');
                 colorDiv.className = 'color-option';
+                if (selectedColors.includes(color)) colorDiv.classList.add('active'); // Maintain active state
 
                 const colorNames = {
                     'Black': 'أسود',
@@ -496,10 +513,12 @@
             // Get unique sizes
             const sizes = [...new Set(allProducts.flatMap(p => p.size || []))].sort((a, b) => a - b);
             const sizeContainer = document.getElementById('size-filters');
+            if (sizeContainer) sizeContainer.innerHTML = ''; // Clear first
 
             sizes.forEach(size => {
                 const sizeDiv = document.createElement('div');
                 sizeDiv.className = 'size-option';
+                if (selectedSizes.includes(size)) sizeDiv.classList.add('active'); // Maintain active state
                 sizeDiv.textContent = size;
                 sizeDiv.onclick = () => toggleSize(size, sizeDiv);
                 sizeContainer.appendChild(sizeDiv);
@@ -508,6 +527,8 @@
             // Get unique categories (المجموعة الأساسية)
             const categories = [...new Set(allProducts.map(p => p.category).filter(c => c))];
             const catContainer = document.getElementById('category-filters');
+            if (catContainer) catContainer.innerHTML = ''; // Clear first
+
             categories.forEach(cat => {
                 const catDiv = document.createElement('div');
                 catDiv.className = 'category-option';
@@ -521,10 +542,13 @@
             // Get unique collections (مجموعات إضافية)
             const collections = [...new Set(allProducts.flatMap(p => p.collections || []))].filter(c => c);
             const colContainer = document.getElementById('collection-filters');
+            if (colContainer) colContainer.innerHTML = ''; // Clear first
+
             collections.forEach(col => {
                 const colDiv = document.createElement('div');
                 colDiv.className = 'collection-option';
-                colDiv.style = "padding: 8px 15px; background: #f0f0f0; border-radius: 20px; cursor: pointer; font-size: 0.9rem;";
+                const isActive = selectedCollections.includes(col);
+                colDiv.style = `padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; background: ${isActive ? 'var(--color-primary)' : '#f0f0f0'}; color: ${isActive ? 'white' : '#333'};`;
                 colDiv.textContent = col;
                 colDiv.onclick = () => toggleCollection(col, colDiv);
                 colContainer.appendChild(colDiv);
