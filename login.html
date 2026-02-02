@@ -1,0 +1,523 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول | الشرقاوي</title>
+    <link rel="icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="shortcut icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="apple-touch-icon" href="https://elsharkawystore.com/images/logo.png">
+    <meta name="theme-color" content="#486b65">
+    <!-- Open Graph / Meta -->
+    <meta property="og:title" content="تسجيل الدخول | الشرقاوي">
+    <meta property="og:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="twitter:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="twitter:card" content="summary_large_image">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/toast.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            caret-color: transparent !important;
+        }
+
+        input,
+        textarea,
+        select,
+        [contenteditable="true"] {
+            caret-color: auto !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+
+        .tab,
+        .logo,
+        .btn,
+        span,
+        h1,
+        h2,
+        h3,
+        p,
+        a,
+        label {
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            outline: none !important;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .logo p {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            color: #7f8c8d;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #486b65;
+            border-bottom-color: #486b65;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #486b65;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: #486b65;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #3a5651;
+        }
+
+        .admin-link a {
+            color: #486b65;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .admin-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Password Toggle Styles */
+        .password-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            left: 15px;
+            /* Adjust for RTL */
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #7f8c8d;
+            transition: color 0.3s;
+            z-index: 10;
+        }
+
+        body.rtl .password-toggle {
+            left: auto;
+            right: 15px;
+        }
+
+        body.rtl .password-group input {
+            padding-right: 40px;
+            /* Space for icon in RTL */
+        }
+
+        body:not(.rtl) .password-group input {
+            padding-left: 40px;
+            /* Space for icon in LTR */
+        }
+    </style>
+    <!-- SMTP.js Library for SendPulse -->
+    <script src="https://smtpjs.com/v3/smtp.js"></script>
+    <!-- Web3Forms Email Service (No Business Email Required!) -->
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <img src="images/logo.png" alt="الشرقاوي" class="login-logo"
+                style="height: 120px; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <p>سجل دخولك للمتابعة</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('login')">تسجيل الدخول</div>
+            <div class="tab" onclick="switchTab('register')">إنشاء حساب</div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-tab" class="tab-content active">
+            <form id="login-form">
+                <div class="form-group">
+                    <label>البريد الإلكتروني أو رقم الهاتف</label>
+                    <input type="text" id="login-identifier" required placeholder="البريد الإلكتروني أو رقم الهاتف">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <div class="password-group">
+                        <input type="password" id="login-password" required placeholder="••••••••">
+                        <i class="fas fa-eye password-toggle" onclick="togglePassword('login-password', this)"></i>
+                    </div>
+                </div>
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <a href="#" onclick="openForgotModal()"
+                        style="color: #486b65; text-decoration: none; font-size: 0.9rem;">نسيت كلمة المرور؟</a>
+                </div>
+                <button type="submit" class="btn-submit">تسجيل الدخول</button>
+            </form>
+        </div>
+
+        <!-- Register Form -->
+        <div id="register-tab" class="tab-content">
+            <form id="register-form">
+                <div class="form-group">
+                    <label>الاسم الكامل</label>
+                    <input type="text" id="register-name" required placeholder="أحمد محمد">
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="register-email" required placeholder="example@email.com">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" id="register-phone" required placeholder="01234567890">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <div class="password-group">
+                        <input type="password" id="register-password" required placeholder="••••••••">
+                        <i class="fas fa-eye password-toggle" onclick="togglePassword('register-password', this)"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">إنشاء حساب</button>
+            </form>
+        </div>
+
+        <div class="admin-link">
+            <p style="color: #7f8c8d; font-size: 0.9rem;">جميع الحقوق محفوظة © 2026 الشرقاوي</p>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-modal" class="modal-overlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="login-container"
+            style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; position: relative;">
+            <button onclick="closeForgotModal()"
+                style="position: absolute; left: 15px; top: 15px; border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <div id="step-email">
+                <h3 style="margin-bottom: 15px;">استعادة كلمة المرور</h3>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">أدخل بريدك الإلكتروني لإرسال رمز التحقق
+                    (OTP)</p>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="forgot-email" required placeholder="example@email.com">
+                </div>
+                <button onclick="sendOTP()" class="btn-submit">إرسال الرمز</button>
+            </div>
+            <div id="step-otp" style="display: none;">
+                <h3 style="margin-bottom: 15px;">التحقق من الرمز</h3>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">أدخل الرمز المكون من 4 أرقام الذي وصلك
+                </p>
+                <div class="form-group">
+                    <label>رمز التحقق (OTP)</label>
+                    <input type="text" id="otp-input" maxlength="4"
+                        style="text-align: center; font-size: 1.5rem; letter-spacing: 10px;">
+                </div>
+                <button onclick="verifyOTP()" class="btn-submit">تحقق</button>
+            </div>
+            <div id="step-reset" style="display: none;">
+                <h3 style="margin-bottom: 15px;">تعيين كلمة مرور جديدة</h3>
+                <div class="form-group">
+                    <label>كلمة المرور الجديدة</label>
+                    <div class="password-group">
+                        <input type="password" id="new-password" required placeholder="••••••••">
+                        <i class="fas fa-eye password-toggle" onclick="togglePassword('new-password', this)"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>تأكيد كلمة المرور</label>
+                    <div class="password-group">
+                        <input type="password" id="confirm-password" required placeholder="••••••••">
+                        <i class="fas fa-eye password-toggle" onclick="togglePassword('confirm-password', this)"></i>
+                    </div>
+                </div>
+                <button onclick="resetPassword()" class="btn-submit">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <script src="js/email-service.js"></script>
+    <script src="js/data_v2.js?v=fix001"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            if (tab === 'login') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('login-tab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('register-tab').classList.add('active');
+            }
+        }
+
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Login
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const identifier = document.getElementById('login-identifier').value;
+            const password = document.getElementById('login-password').value;
+
+            // 1. Try Admin Login if it's the admin email
+            if (identifier === 'admin@elsharkawy.com' || identifier === 'admin@elsherkaystore.com') {
+                const res = db.loginAdmin(identifier, password);
+                if (res.success) {
+                    window.location.href = 'admin/dashboard.html';
+                    return;
+                } else {
+                    showToast('كلمة مرور المسؤول غير صحيحة', 'error');
+                    return;
+                }
+            }
+
+            // 2. Try Customer Login (email or phone)
+            const result = db.loginCustomer(identifier, password);
+            if (result.success) {
+                showToast('تم تسجيل الدخول بنجاح!', 'success');
+                setTimeout(() => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect');
+                    window.location.href = redirect || 'index.html';
+                }, 1000);
+            } else {
+                // Check if account exists to give specific error
+                const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+                const accountExists = customers.find(c => c.email === identifier || c.phone === identifier);
+
+                if (accountExists) {
+                    showToast('كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.', 'error');
+                } else {
+                    showToast('هذا الحساب غير موجود. يرجى التأكد من البيانات أو إنشاء حساب جديد.', 'error');
+                }
+            }
+        });
+
+        // Register
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const phone = document.getElementById('register-phone').value;
+            const password = document.getElementById('register-password').value;
+
+            const result = db.registerCustomer(name, email, password, phone);
+            if (result.success) {
+                showToast(result.message, 'success');
+                db.loginCustomer(email, password);
+                setTimeout(() => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect');
+                    window.location.href = redirect || 'index.html';
+                }, 1000);
+            } else {
+                showToast(result.message, 'error');
+            }
+        });
+
+        // Redirect if already logged in
+        if (db.isCustomerLoggedIn()) {
+            window.location.href = 'index.html';
+        }
+
+        // Forgot Password Logic
+        let generatedOTP = '';
+        let targetEmail = '';
+
+        function openForgotModal() {
+            document.getElementById('forgot-modal').style.display = 'flex';
+            document.getElementById('step-email').style.display = 'block';
+            document.getElementById('step-otp').style.display = 'none';
+            document.getElementById('step-reset').style.display = 'none';
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgot-modal').style.display = 'none';
+        }
+
+        async function sendOTP() {
+            const email = document.getElementById('forgot-email').value;
+            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+            const exists = customers.find(c => c.email === email);
+
+            if (!exists) {
+                showToast('هذا الحساب غير موجود', 'error');
+                return;
+            }
+
+            targetEmail = email;
+            generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+
+            // إرسال إيميل حقيقي عبر SMTP.js (Unlimited Free)
+            try {
+                await emailService.sendPasswordResetOTP(email, exists.name, generatedOTP);
+                showToast('تم إرسال رمز التحقق إلى بريدك الإلكتروني بنجاح!', 'success');
+                document.getElementById('step-email').style.display = 'none';
+                document.getElementById('step-otp').style.display = 'block';
+            } catch (error) {
+                console.error('Email failed:', error);
+                showToast('فشل في إرسال الإيميل. الرمز: ' + generatedOTP, 'error');
+                // عرض الرمز في حالة الفشل للتجربة
+                document.getElementById('step-email').style.display = 'none';
+                document.getElementById('step-otp').style.display = 'block';
+            }
+        }
+
+        function verifyOTP() {
+            const input = document.getElementById('otp-input').value;
+            if (input === generatedOTP) {
+                document.getElementById('step-otp').style.display = 'none';
+                document.getElementById('step-reset').style.display = 'block';
+            } else {
+                showToast('الرمز غير صحيح، حاول مرة أخرى', 'error');
+            }
+        }
+
+        function resetPassword() {
+            const pass = document.getElementById('new-password').value;
+            const confirm = document.getElementById('confirm-password').value;
+
+            if (pass.length < 6) {
+                showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error');
+                return;
+            }
+
+            if (pass !== confirm) {
+                showToast('كلمة المرور غير متطابقة', 'error');
+                return;
+            }
+
+            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+            const index = customers.findIndex(c => c.email === targetEmail);
+
+            if (index !== -1) {
+                customers[index].password = pass;
+                localStorage.setItem('customers', JSON.stringify(customers));
+                showToast('تم تغيير كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول.', 'success');
+                setTimeout(() => {
+                    closeForgotModal();
+                    switchTab('login');
+                }, 1500);
+            }
+        }
+    </script>
+</body>
+
+</html>

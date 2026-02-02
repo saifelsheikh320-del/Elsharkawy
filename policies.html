@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سياسات المتجر | الشرقاوي</title>
+    <link rel="icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="shortcut icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="apple-touch-icon" href="https://elsharkawystore.com/images/logo.png">
+    <meta name="theme-color" content="#486b65">
+    <!-- Open Graph / Meta -->
+    <meta property="og:title" content="سياسات المتجر | الشرقاوي">
+    <meta property="og:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="twitter:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="twitter:card" content="summary_large_image">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Meta Pixel Code -->
+    <script src="js/pixel.js"></script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=2734165686928707&ev=PageView&noscript=1" />
+    </noscript>
+    <!-- End Meta Pixel Code -->
+
+    <style>
+        /* Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #121212;
+            /* Dark Background */
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Back Button Container (Top of Page) */
+        .header-actions {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: flex-start;
+            /* Right aligned in RTL */
+            margin-bottom: 25px;
+            padding-top: 20px;
+        }
+
+        /* Back Button Style */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #4ade80;
+            /* Distinctive Green */
+            color: #0b2515;
+            padding: 12px 25px;
+            border-radius: 50px;
+            /* Rounded Corners */
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.2);
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 222, 128, 0.3);
+        }
+
+        /* Main Card Container */
+        .policy-card {
+            background-color: #ffffff;
+            /* Light Card */
+            width: 100%;
+            max-width: 900px;
+            border-radius: 24px;
+            /* Soft Rounded Corners */
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            /* Soft Deep Shadow */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.6s ease-out;
+            margin-bottom: 40px;
+        }
+
+        /* Card Header / Title */
+        .card-header {
+            padding: 40px 40px 20px 40px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .card-header h1 {
+            color: #1a1a1a;
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        /* Decorative Line under title */
+        .title-underline {
+            width: 60px;
+            height: 4px;
+            background-color: #4ade80;
+            margin: 0 auto;
+            border-radius: 10px;
+        }
+
+        /* Content Area */
+        .card-content {
+            padding: 40px;
+            font-size: 1.1rem;
+            color: #444;
+            line-height: 2;
+            text-align: justify;
+
+            /* Scrollable Area Specs */
+            max-height: 70vh;
+            /* Visible height limits */
+            overflow-y: auto;
+            /* Scrollable */
+            scrollbar-width: thin;
+            scrollbar-color: #ccc #f9f9f9;
+        }
+
+        /* Custom Scrollbar for Webkit */
+        .card-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .card-content::-webkit-scrollbar-track {
+            background: #f9f9f9;
+        }
+
+        .card-content::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 20px;
+        }
+
+        /* Typography improvements */
+        .card-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .card-content h2,
+        .card-content h3 {
+            color: #222;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-content ul {
+            margin-right: 20px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .header-actions {
+                margin-bottom: 15px;
+            }
+
+            .policy-card {
+                border-radius: 16px;
+            }
+
+            .card-header {
+                padding: 30px 20px 15px 20px;
+            }
+
+            .card-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .card-content {
+                padding: 20px 25px;
+                font-size: 1rem;
+                max-height: 65vh;
+            }
+        }
+
+        /* Animation */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Top Action Bar -->
+    <div class="header-actions">
+        <a href="index.html" class="btn-back">
+            <i class="fas fa-arrow-right"></i>
+            <span>العودة للمتجر</span>
+        </a>
+    </div>
+
+    <!-- Main Content Card -->
+    <div class="policy-card">
+        <div class="card-header">
+            <h1 id="page-title"></h1>
+            <div class="title-underline"></div>
+        </div>
+
+        <div id="policy-content" class="card-content">
+            <!-- Dynamic Content Loaded Here -->
+            <div style="text-align: center; color: #999; padding: 20px;">
+                <i class="fas fa-circle-notch fa-spin"></i> جاري التحميل...
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data_v2.js?v=fix001"></script>
+    <script src="js/translations.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const settings = db.getSettings();
+            const lang = 'ar'; // Force Arabic
+
+            function showPolicy() {
+                // Get policy type from Hash (default to terms)
+                const hash = window.location.hash.replace('#', '') || 'terms';
+
+                const titleEl = document.getElementById('page-title');
+                const contentEl = document.getElementById('policy-content');
+
+                let title = '';
+                let content = '';
+
+                if (hash === 'terms') {
+                    title = 'الشروط والأحكام';
+                    content = settings.termsAr;
+                } else if (hash === 'shipping') {
+                    title = 'سياسة الشحن والتوصيل';
+                    content = settings.shippingPolicyAr;
+                } else if (hash === 'refund') {
+                    title = 'سياسة الاسترجاع والاستبدال';
+                    content = settings.refundPolicyAr;
+                } else if (hash === 'privacy') {
+                    title = 'سياسة الخصوصية';
+                    content = settings.privacyPolicyAr;
+                } else {
+                    // Fallback
+                    title = 'سياسة المتجر';
+                    content = 'لم يتم العثور على السياسة المطلوبة.';
+                }
+
+                titleEl.innerText = title;
+
+                // Wrap plain text content if necessary for styling
+                if (content && !content.trim().startsWith('<')) {
+                    content = `<p>${content.replace(/\n/g, '<br>')}</p>`;
+                }
+
+                contentEl.innerHTML = content || '<p style="text-align:center; color:#777;">لم يتم إضافة محتوى لهذه السياسة بعد.</p>';
+            }
+
+            // Initial Load
+            showPolicy();
+
+            // Listen for hash changes (if user navigates between policies)
+            window.addEventListener('hashchange', showPolicy);
+        });
+    </script>
+</body>
+
+</html>

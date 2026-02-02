@@ -1,0 +1,209 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>السلة | الشرقاوي</title>
+    <link rel="icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="shortcut icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="apple-touch-icon" href="https://elsharkawystore.com/images/logo.png">
+    <meta name="theme-color" content="#486b65">
+
+    <!-- Open Graph / Meta -->
+    <meta property="og:title" content="السلة | الشرقاوي">
+    <meta property="og:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="twitter:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="twitter:card" content="summary_large_image">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cairo:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+
+    <!-- Meta Pixel Code -->
+    <script src="js/pixel.js"></script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=2734165686928707&ev=PageView&noscript=1" />
+    </noscript>
+    <!-- End Meta Pixel Code -->
+    <style>
+        .cart-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .cart-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        th {
+            background: #f5f5f5;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        body.rtl th {
+            text-align: right;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-summary {
+            background: #f9f9f9;
+            padding: 2rem;
+            border-radius: 8px;
+            height: fit-content;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .total-row {
+            font-weight: 800;
+            font-size: 1.5rem;
+            border-top: 2px solid #ddd;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body class="rtl">
+    <div class="scroll-progress"></div>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">
+                    <img src="images/logo.png" alt="الشرقاوي" style="height: 75px; width: auto; max-height: 80px;">
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                    <li><a href="products.html" data-i18n="shop">المتجر</a></li>
+                    <li id="auth-link"><a href="login.html" data-i18n="login">دخول</a></li>
+                </ul>
+                <div class="nav-icons">
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-header reveal">
+        <div class="container">
+            <h1 data-i18n="cart_title">حقيبة التسوق</h1>
+        </div>
+    </div>
+
+    <main class="container reveal delay-100"
+        style="padding-top: 2rem; padding-bottom: 4rem; padding-left: 15px; padding-right: 15px;">
+        <div class="cart-layout">
+            <div class="cart-items">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="product_col">المنتج</th>
+                            <th data-i18n="price_col">السعر</th>
+                            <th data-i18n="qty_col">الكمية</th>
+                            <th data-i18n="total_col">المجموع</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-items">
+                        <!-- JS Rendered -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="cart-summary reveal delay-200">
+                <h2 data-i18n="summary">الملخص</h2>
+                <div style="margin: 20px 0;">
+                    <div class="summary-row">
+                        <span data-i18n="subtotal">المجموع الفرعي</span>
+                        <span id="cart-total">$0</span>
+                    </div>
+                </div>
+                <div class="summary-row total-row">
+                    <span data-i18n="total">الإجمالي</span>
+                    <span id="final-total">$0</span>
+                </div>
+                <button onclick="goToCheckout()" class="btn btn-primary" style="width: 100%; margin-top: 20px;"
+                    data-i18n="proceed_checkout">إتمام الشراء</button>
+            </div>
+        </div>
+        <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <div>
+                        <h3>الشرقاوي</h3>
+                        <p style="margin-top: 20px; color: #888;" data-i18n="premium_exp">تجربة تسوق فاخرة.</p>
+                    </div>
+                    <div>
+                        <h4 data-i18n="links">روابط</h4>
+                        <ul style="list-style: none; margin-top: 20px; line-height: 2;">
+                            <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                            <li><a href="products.html" data-i18n="shop">المتجر</a></li>
+                            <li><a href="cart.html" data-i18n="cart_title">السلة</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 data-i18n="policies">السياسات</h4>
+                        <ul style="list-style: none; margin-top: 20px; line-height: 2;">
+                            <li><a href="policies.html#terms">الشروط والأحكام</a></li>
+                            <li><a href="policies.html#shipping">سياسة الشحن</a></li>
+                            <li><a href="policies.html#refund">سياسة الاسترجاع</a></li>
+                            <li><a href="policies.html#privacy">سياسة الخصوصية</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 data-i18n="contact">تواصل معنا</h4>
+                        <p style="margin-top: 20px; color: #888;">ibrahimelsharqawi5@gmail.com</p>
+                        <p style="color: #888;">+20 115 402 5770</p>
+                    </div>
+                </div>
+                <div
+                    style="margin-top: 4rem; border-top: 1px solid #333; padding-top: 2rem; text-align: center; color: #666;">
+                    &copy; 2026 الشرقاوي. All rights reserved.
+                </div>
+            </div>
+        </footer>
+
+        <!-- Firebase SDK -->
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+        <script src="js/firebase-config.js"></script>
+
+        <script src="js/data_v2.js?v=fix001"></script>
+        <script src="js/translations.js"></script>
+        <script src="js/main.js"></script>
+        <script src="js/cart.js"></script>
+</body>
+
+</html>

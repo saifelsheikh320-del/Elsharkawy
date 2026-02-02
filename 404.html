@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script>
+        // GitHub Pages URL Rewriting
+        (function () {
+            const path = window.location.pathname;
+            const hash = window.location.hash;
+            const search = window.location.search;
+
+            // List of valid pages
+            const validPages = [
+                'index',
+                'products',
+                'product',
+                'cart',
+                'checkout',
+                'login',
+                'track-orders',
+                'order-confirmation',
+                'admin-login'
+            ];
+
+            // Extract page name from path
+            const pageName = path.split('/').pop().replace('.html', '');
+
+            // Special case: redirect /index to / (root)
+            if (pageName === 'index') {
+                window.location.replace('/' + search + hash);
+                return;
+            }
+
+            // If path doesn't end with .html and is a valid page, redirect to .html version
+            if (pageName && validPages.includes(pageName) && !path.endsWith('.html')) {
+                const newPath = path.replace(/\/$/, '') + '.html' + search + hash;
+                window.location.replace(newPath);
+            }
+        })();
+    </script>
+</head>
+
+<body>
+    <p style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
+        جاري التحميل... Loading...
+    </p>
+</body>
+
+</html>
+

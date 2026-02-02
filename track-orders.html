@@ -1,0 +1,321 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>طلباتي | الشرقاوي</title>
+    <link rel="icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="shortcut icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="apple-touch-icon" href="https://elsharkawystore.com/images/logo.png">
+    <meta name="theme-color" content="#486b65">
+    <!-- Open Graph / Meta -->
+    <meta property="og:title" content="تتبع طلبك | الشرقاوي">
+    <meta property="og:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="twitter:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="twitter:card" content="summary_large_image">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cairo:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/toast.css">
+    <style>
+        .orders-container {
+            padding: 8rem 0;
+            min-height: 80vh;
+        }
+
+        .order-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .order-card:hover {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-shipped {
+            background: #eae1ff;
+            color: #6a1b9a;
+        }
+
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-archived {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .order-items {
+            list-style: none;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .no-orders {
+            text-align: center;
+            padding: 4rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">
+                    <img src="images/logo.png" alt="الشرقاوي" style="height: 75px; width: auto; max-height: 80px;">
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                    <li><a href="products.html" data-i18n="shop">المتجر</a></li>
+                    <li id="auth-link"></li>
+                </ul>
+                <div class="nav-icons">
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container orders-container">
+        <h1 style="margin-bottom: 2rem;" data-i18n="my_orders">طلباتي</h1>
+        <div id="orders-list">
+            <!-- Injected via JS -->
+            <div class="no-orders">
+                <i class="fas fa-box-open" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                <p data-i18n="no_orders">لا توجد طلبات سابقة</p>
+                <a href="products.html" class="btn btn-primary" style="margin-top: 1.5rem;" data-i18n="shop_now">تسوق
+                    الآن</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <script src="js/data_v2.js?v=fix001"></script>
+    <script src="js/email-service.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const publicOrderId = urlParams.get('id');
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+            const t = translations[lang];
+            const container = document.getElementById('orders-list');
+
+            if (publicOrderId) {
+                // Public tracking mode
+                container.innerHTML = '<div style="text-align:center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i></div>';
+                const order = await db.getOrderAsync(publicOrderId);
+
+                if (order) {
+                    renderOrders([order], container, lang, t, true);
+                    document.querySelector('h1').innerText = lang === 'ar' ? 'تتبع طلب' : 'Track Order';
+
+                    // Add a "Back to Home" for public users
+                    const backBtn = document.createElement('div');
+                    backBtn.style.textAlign = 'center';
+                    backBtn.style.marginTop = '2rem';
+                    backBtn.innerHTML = `<a href="index.html" class="btn btn-secondary">${t.home}</a>`;
+                    container.appendChild(backBtn);
+                    return;
+                } else {
+                    container.innerHTML = `<div class="no-orders"><p>${lang === 'ar' ? 'عذراً، لم يتم العثور على هذا الطلب' : 'Sorry, this order was not found'}</p></div>`;
+                    return;
+                }
+            }
+
+            if (!db.isCustomerLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const customer = db.getCustomer();
+            const orders = db.getCustomerOrders(customer.email);
+            renderOrders(orders, container, lang, t, false);
+        });
+
+        function renderOrders(orders, container, lang, t, isPublic = false) {
+            if (orders.length > 0) {
+                container.innerHTML = '';
+                orders.forEach(order => {
+                    const card = document.createElement('div');
+                    card.className = 'order-card reveal';
+
+                    const statusClass = 'status-' + order.status.toLowerCase();
+                    const statusText = t['status_' + order.status.toLowerCase()] || order.status;
+                    const canCancel = !isPublic && order.status === 'Pending';
+
+                    card.innerHTML = `
+                        <div class="order-header">
+                            <div>
+                                <strong data-i18n="order_no">${t.order_no}: ${order.id}</strong>
+                                <div style="font-size: 0.85rem; color: #888; margin-top: 4px;">${new Date(order.date).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US')}</div>
+                            </div>
+                            <div style="text-align: left; display: flex; align-items: center; gap: 10px;">
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Tracking Progress Bar -->
+                        <div style="margin: 20px 0 30px 0; padding: 0 10px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.8rem; color: #888;">
+                                <span style="${order.status === 'Pending' ? 'color: #f39c12; font-weight: bold;' : ''}">${lang === 'ar' ? 'جاري التجهيز' : 'Processing'}</span>
+                                <span style="${['Confirmed', 'Shipped', 'Delivered', 'Archived'].includes(order.status) ? 'color: #3498db; font-weight: bold;' : ''}">${t.status_confirmed}</span>
+                                <span style="${['Shipped', 'Delivered', 'Archived'].includes(order.status) ? 'color: #9b59b6; font-weight: bold;' : ''}">${t.status_shipped}</span>
+                                <span style="${['Delivered', 'Archived'].includes(order.status) ? 'color: #27ae60; font-weight: bold;' : ''}">${t.status_delivered}</span>
+                            </div>
+                            <div style="height: 6px; background: #eee; border-radius: 10px; position: relative; overflow: hidden;">
+                                <div style="height: 100%; background: #27ae60; width: ${order.status === 'Pending' ? '15%' :
+                            (order.status === 'Confirmed' ? '45%' :
+                                (order.status === 'Shipped' ? '75%' :
+                                    (order.status === 'Delivered' || order.status === 'Archived' ? '100%' : '0%')))
+                        }; transition: width 1s ease-in-out;"></div>
+                            </div>
+                        </div>
+                        <ul class="order-items">
+                            ${order.items.map(item => {
+                            const itemImg = (item.images && item.images.length > 0) ? item.images[0] : (item.image || 'https://via.placeholder.com/100');
+                            return `
+                                <li class="order-item" style="align-items: center; gap: 15px; margin-bottom: 10px;">
+                                    <img src="${itemImg}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: #333;">
+                                            ${item.name} (${item.quantity}x)
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: #888;">
+                                            ${item.selectedColor ? `<span style="display:inline-block; width:10px; height:10px; background:${item.selectedColor}; border-radius:50%; margin:0 3px; border:1px solid #ddd; vertical-align: middle;"></span>` : ''}
+                                            ${item.selectedSize ? `<span style="background: #f0f0f0; padding: 1px 4px; border-radius: 3px;">${item.selectedSize}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div style="font-weight: 700; color: var(--color-blue);">${item.price * item.quantity} ${t.currency}</div>
+                                </li>
+                                `;
+                        }).join('')}
+                        </ul>
+                        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dotted var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; gap: 10px;">
+                                ${canCancel ? `<button onclick="handleCancel('${order.id}')" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: #fee; color: #c00; border-color: #fcc;">إلغاء الطلب</button>` : ''}
+                                <button onclick="shareTracking('${order.id}')" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+                                    <i class="fas fa-share-alt"></i> ${lang === 'ar' ? 'مشاركة رابط التتبع' : 'Share Tracking Link'}
+                                </button>
+                            </div>
+                            <div style="font-weight: 800;">
+                                <span data-i18n="order_total">${t.order_total}</span>: 
+                                <span>${order.total} ${t.currency}</span>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+                initScrollAnimations();
+            } else if (!isPublic) {
+                container.innerHTML = `
+                    <div class="no-orders">
+                        <i class="fas fa-box-open" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                        <p data-i18n="no_orders">${t.no_orders}</p>
+                        <a href="products.html" class="btn btn-primary" style="margin-top: 1.5rem;" data-i18n="shop_now">${t.shop_now}</a>
+                    </div>
+                `;
+            }
+        }
+
+        function shareTracking(orderId) {
+            const url = window.location.origin + window.location.pathname + '?id=' + orderId;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'تتبع طلبي من متجر الشرقاوي',
+                    text: 'رابط تتبع الطلب الخاص بي في الشرقاوي:',
+                    url: url
+                }).catch(e => {
+                    copyToClipboard(url);
+                });
+            } else {
+                copyToClipboard(url);
+            }
+        }
+
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('تم نسخ رابط التتبع!', 'success');
+        }
+
+        async function handleCancel(orderId) {
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+            const confirmMsg = lang === 'ar' ? 'هل أنت متأكد من إلغاء هذا الطلب؟' : 'Are you sure you want to cancel this order?';
+            const successMsg = lang === 'ar' ? 'تم إلغاء الطلب بنجاح' : 'Order cancelled successfully';
+
+            showConfirm(confirmMsg, async () => {
+                const orders = db.getOrders();
+                const order = orders.find(o => o.id === orderId);
+
+                if (order && db.cancelOrder(orderId)) {
+                    // Send notification to Admin
+                    if (typeof emailService !== 'undefined') {
+                        emailService.sendOrderCancellationNotification(order).catch(e => console.error("Email failed:", e));
+                    }
+
+                    showToast(successMsg, 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

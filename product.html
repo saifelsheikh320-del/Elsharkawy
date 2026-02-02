@@ -1,0 +1,1191 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المنتج | الشرقاوي</title>
+    <link rel="icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="shortcut icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="apple-touch-icon" href="https://elsharkawystore.com/images/logo.png">
+    <meta name="theme-color" content="#486b65">
+
+    <!-- Open Graph / Meta -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="الشرقاوي">
+    <meta property="og:title" content="متجر الشرقاوي | Elsharqawi Store">
+    <meta property="og:description"
+        content="اكتشف أحدث تشكيلة من الأوكر والكوالين والديكورات الفاخرة في متجر الشرقاوي.">
+    <meta property="og:url" content="https://elsharkawystore.com/product.html">
+
+    <!-- WhatsApp & Social Preview Image -->
+    <meta property="og:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="og:image:secure_url" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <link itemprop="image" href="https://elsharkawystore.com/images/banner.jpg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="الشرقاوي | متجر إكسسوارات الموبيليا">
+    <meta name="twitter:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta name="fb:app_id" content="1214265283946236">
+
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/detail.css">
+    <link rel="stylesheet" href="css/toast.css">
+
+    <!-- Meta Pixel Code -->
+    <script src="js/pixel.js"></script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=2734165686928707&ev=PageView&noscript=1" />
+    </noscript>
+    <!-- End Meta Pixel Code -->
+    <style>
+        @media (max-width: 768px) {
+            .whatsapp-float {
+                bottom: 90px !important;
+                /* Move up to avoid sticky bar */
+            }
+        }
+
+        .logo {
+            padding-top: 15px !important;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Enhanced Related Products Section - Carousel Mode */
+        .carousel-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-top: 2rem;
+        }
+
+        #related-products-grid {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 10px 5px 25px 5px;
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE/Edge */
+        }
+
+        #related-products-grid::-webkit-scrollbar {
+            display: none;
+            /* Chrome/Safari */
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 45px;
+            height: 45px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+            color: var(--color-primary);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-btn:hover {
+            background: var(--color-primary);
+            color: white;
+            box-shadow: 0 6px 20px rgba(72, 107, 101, 0.3);
+        }
+
+        .carousel-btn.prev {
+            right: -22.5px;
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-btn.next {
+            left: -22.5px;
+            opacity: 1;
+            visibility: visible;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-btn.visible {
+            opacity: 1;
+            pointer-events: all;
+            visibility: visible;
+        }
+
+        .carousel-btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .carousel-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+
+            .carousel-btn.prev {
+                right: -10px;
+                left: auto;
+            }
+
+            .carousel-btn.next {
+                left: -10px;
+                right: auto;
+            }
+
+            #related-products-grid {
+                gap: 10px;
+                padding: 10px 0 20px 0;
+            }
+        }
+
+        .related-card {
+            flex: 0 0 calc((100% - 60px) / 4);
+            /* 4 items on desktop */
+            min-width: 250px;
+            background: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        @media (max-width: 1024px) {
+            .related-card {
+                flex: 0 0 calc((100% - 40px) / 3);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .related-card {
+                flex: 0 0 calc((100% - 10px) / 2);
+                min-width: 140px;
+            }
+        }
+
+        .related-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(72, 107, 101, 0.1);
+            border-color: var(--color-primary);
+        }
+
+        .related-img-wrapper {
+            position: relative;
+            padding-top: 100%;
+            /* square aspect ratio */
+            background: #fdfdfd;
+            overflow: hidden;
+        }
+
+        .related-img-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4757;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 900;
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
+            direction: ltr;
+        }
+
+        .related-card:hover .related-img-wrapper img {
+            transform: scale(1.08);
+        }
+
+        .related-content {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .related-content h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 700;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 2.8rem;
+            line-height: 1.4;
+        }
+
+        .related-price {
+            font-size: 1.25rem;
+            color: var(--color-primary);
+            font-weight: 900;
+            margin: 10px 0;
+        }
+
+        .related-btn {
+            margin-top: auto;
+            background: #f0f7f6;
+            color: var(--color-primary);
+            border: 1.5px solid var(--color-primary);
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .related-card:hover .related-btn {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            #related-products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .related-content {
+                padding: 12px;
+            }
+
+            .related-content h3 {
+                font-size: 0.9rem;
+                height: 2.4rem;
+            }
+
+            .related-price {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Quantity Selector */
+        /* Quantity Selector */
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 15px;
+        }
+
+        .quantity-selector label {
+            font-weight: 800;
+            color: #2c3e50;
+            min-width: 60px;
+            font-size: 1.05rem;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            background: #f5f8f7;
+            border-radius: 12px;
+            padding: 5px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .qty-btn {
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 1.2rem;
+            color: var(--color-primary);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .qty-btn:hover {
+            background: var(--color-primary);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 107, 101, 0.2);
+            border-color: var(--color-primary);
+        }
+
+        .qty-btn:active {
+            transform: scale(0.95);
+        }
+
+        .qty-input {
+            width: 50px;
+            height: 36px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: #2c3e50;
+            outline: none;
+            font-family: 'Tajawal', sans-serif;
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+
+        .qty-input::-webkit-outer-spin-button,
+        .qty-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body class="rtl">
+    <div class="scroll-progress"></div>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">
+                    <img src="images/logo.png" alt="الشرقاوي" style="height: 80px; width: auto;">
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                    <li><a href="products.html" data-i18n="shop">المتجر</a></li>
+                    <li id="auth-link"><a href="login.html" data-i18n="login">دخول</a></li>
+                </ul>
+                <div class="nav-icons">
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+                <!-- Add Hamburger Menu for mobile -->
+                <div class="mobile-menu-btn hide-desktop"
+                    onclick="document.querySelector('nav').classList.toggle('active'); this.classList.toggle('open')">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="margin-top: 85px;">
+        <div class="product-detail-layout" id="product-detail">
+            <!-- Injected via JS -->
+            <div class="detail-image skeleton"></div>
+            <div class="detail-info skeleton"></div>
+        </div>
+
+        <!-- Related Products Section -->
+        <section class="container" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+            <div class="reveal">
+                <h2 style="margin-bottom: 2rem; border-right: 4px solid var(--color-primary); padding-right: 15px;"
+                    data-i18n="related_products">منتجات قد تعجبك</h2>
+            </div>
+            <div class="carousel-wrapper">
+                <button class="carousel-btn prev" onclick="scrollCarousel('right')"><i
+                        class="fas fa-chevron-right"></i></button>
+                <div class="featured-grid" id="related-products-grid">
+                    <!-- Injected via JS -->
+                </div>
+                <button class="carousel-btn next" onclick="scrollCarousel('left')"><i
+                        class="fas fa-chevron-left"></i></button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>الشرقاوي</h3>
+                    <p style="margin-top: 20px; color: #888;" data-i18n="premium_exp">تجربة تسوق فاخرة.</p>
+                </div>
+                <div>
+                    <h4 data-i18n="links">روابط</h4>
+                    <ul style="list-style: none; margin-top: 20px; line-height: 2;">
+                        <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                        <li><a href="products.html" data-i18n="shop">المتجر</a></li>
+                        <li><a href="cart.html" data-i18n="cart_title">السلة</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 data-i18n="policies">السياسات</h4>
+                    <ul style="list-style: none; margin-top: 20px; line-height: 2;">
+                        <li><a href="policies.html#terms">الشروط والأحكام</a></li>
+                        <li><a href="policies.html#shipping">سياسة الشحن</a></li>
+                        <li><a href="policies.html#refund">سياسة الاسترجاع</a></li>
+                        <li><a href="policies.html#privacy">سياسة الخصوصية</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 data-i18n="contact">تواصل معنا</h4>
+                    <p style="margin-top: 20px; color: #888;">ibrahimelsharqawi5@gmail.com</p>
+                    <p style="color: #888;">+20 115 402 5770</p>
+                </div>
+            </div>
+            <div
+                style="margin-top: 4rem; border-top: 1px solid #333; padding-top: 2rem; text-align: center; color: #666;">
+                &copy; 2026 الشرقاوي. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/hybrid-adapter_v2.js"></script>
+
+    <script src="js/data_v2.js?v=fix001"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let selectedColor = null;
+        let selectedSize = null;
+        let currentProduct = null;
+        let selectedQuantity = 1;
+
+        function updateMetaTag(property, content) {
+            let meta = document.querySelector(`meta[property="${property}"]`);
+            if (!meta) {
+                meta = document.querySelector(`meta[name="${property}"]`);
+            }
+            if (meta) {
+                meta.setAttribute('content', content);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Init Hybrid Sync
+            if (typeof HybridSystem !== 'undefined') {
+                try {
+                    await HybridSystem.getProducts();
+                } catch (e) {
+                    console.warn("Product sync failed", e);
+                }
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            const product = db.getProduct(productId);
+            currentProduct = product;
+
+            // SEO Logic
+            if (product) {
+                const storeName = "الشرقاوي";
+                const pageTitle = `${product.name} - ${storeName}`;
+                document.title = pageTitle;
+
+                // Update Meta Tags for Social Sharing
+                updateMetaTag('og:title', pageTitle);
+                updateMetaTag('og:description', product.description.substring(0, 160));
+                updateMetaTag('og:image', product.image);
+                updateMetaTag('twitter:title', pageTitle);
+                updateMetaTag('twitter:description', product.description.substring(0, 160));
+
+                // Inject Structured Data
+                const schema = {
+                    "@context": "https://schema.org/",
+                    "@type": "Product",
+                    "name": product.name,
+                    "image": [product.image, ...(product.images || [])],
+                    "description": product.description,
+                    "sku": `SHARQ-${product.id}`,
+                    "brand": {
+                        "@type": "Brand",
+                        "name": "Al-Sharqawi"
+                    },
+                    "offers": {
+                        "@type": "Offer",
+                        "url": window.location.href,
+                        "priceCurrency": "EGP",
+                        "price": product.price,
+                        "availability": "https://schema.org/InStock",
+                        "itemCondition": "https://schema.org/NewCondition"
+                    }
+                };
+                const script = document.createElement('script');
+                script.type = 'application/ld+json';
+                script.text = JSON.stringify(schema);
+                document.head.appendChild(script);
+            }
+
+            // Track ViewContent Event
+            if (product && typeof trackEvent === 'function') {
+                trackEvent('ViewContent', {
+                    content_name: product.name,
+                    content_ids: [product.id],
+                    content_type: 'product',
+                    value: product.price,
+                    currency: 'EGP'
+                });
+            }
+            const container = document.getElementById('product-detail');
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+            const t = translations[lang] || translations['ar'];
+
+            if (!product) {
+                // Try fetching if not found immediately (Hybrid logic)
+                if (typeof db.fetchProductsFromCloud === 'function') {
+                    db.fetchProductsFromCloud().then(() => {
+                        const freshProduct = db.getProduct(productId);
+                        if (freshProduct) {
+                            renderProduct(freshProduct, container, t);
+                        } else {
+                            container.innerHTML = `<h2 data-i18n="product_not_found">${t.product_not_found}</h2>`;
+                        }
+                    });
+                } else {
+                    container.innerHTML = `<h2 data-i18n="product_not_found">${t.product_not_found}</h2>`;
+                }
+                return;
+            }
+
+            if (product) {
+                renderProduct(product, container, t);
+            }
+
+            // Also listen for cloud updates while viewing
+            window.addEventListener('productsUpdated', () => {
+                const updated = db.getProduct(productId);
+                if (updated) renderProduct(updated, container, t);
+            });
+        });
+
+        function renderProduct(product, container, t) {
+            const productId = product.id;
+            // Variants Logic
+            const colors = Array.isArray(product.color) ? product.color : (product.color ? product.color.split(',').map(c => c.trim()) : []);
+            const sizes = Array.isArray(product.size) ? product.size : (product.size ? product.size.split(',').map(s => s.trim()) : []);
+
+            // Restore pending selections from localStorage
+            const pendingParams = localStorage.getItem('pending_product_options');
+            if (pendingParams) {
+                const data = JSON.parse(pendingParams);
+                if (data.id == productId) {
+                    selectedColor = data.color;
+                    selectedSize = data.size;
+                    selectedQuantity = data.quantity || 1;
+
+                    // If now logged in, auto-buy and proceed to checkout for a seamless experience
+                    if (db.isCustomerLoggedIn()) {
+                        localStorage.removeItem('pending_product_options');
+                        db.addToCart(product, selectedColor, selectedSize, selectedQuantity);
+                        window.location.href = 'checkout.html';
+                        return;
+                    }
+                }
+                localStorage.removeItem('pending_product_options');
+            }
+
+            // Smart Defaults
+            if (!selectedColor && colors.length > 0) selectedColor = colors[0];
+            if (!selectedSize && sizes.length > 0) {
+                // Prefer selecting a size that is actually in stock
+                const inStockSize = sizes.find(s => {
+                    const v = product.variants ? product.variants.find(varEntry => varEntry.size === s) : null;
+                    return v ? v.quantity > 0 : product.quantity > 0;
+                });
+                selectedSize = inStockSize || sizes[0];
+            }
+
+            let colorsHTML = '';
+            if (colors.length > 0) {
+                colorsHTML = `
+                    <div class="variant-selector">
+                        <label>${t.color}</label>
+                        <div class="variant-options">
+                            ${colors.map(c => `<div class="color-option ${selectedColor === c ? 'selected' : ''}" onclick="selectColor('${c}', this)">${c}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let sizesHTML = '';
+            if (sizes.length > 0) {
+                sizesHTML = `
+                    <div class="variant-selector">
+                        <label>${t.size}</label>
+                        <div class="variant-options">
+                            ${sizes.map(s => {
+                    const variant = product.variants ? product.variants.find(v =>
+                        (v.size === s) && (!selectedColor || !v.color || v.color === selectedColor)
+                    ) : null;
+                    const isOutOfStock = variant ? variant.quantity <= 0 : (product.quantity <= 0);
+                    return `<div class="size-option ${selectedSize === s ? 'selected' : ''} ${isOutOfStock ? 'out-of-stock' : ''}" 
+                                         onclick="${isOutOfStock ? '' : `selectSize('${s}', this)`}">${s}</div>`;
+                }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            const quantitySelectorHTML = `
+                <div class="quantity-selector">
+                    <label>${t.quantity || 'الكمية'}</label>
+                    <div class="quantity-controls">
+                        <button class="qty-btn" onclick="decreaseQty()">-</button>
+                        <input type="number" class="qty-input" id="qty-input" value="${selectedQuantity}" min="1" onchange="updateQty(this)">
+                        <button class="qty-btn" onclick="increaseQty()">+</button>
+                    </div>
+                </div>
+            `;
+
+            const images = product.images || [product.image];
+            const thumbsHTML = images.map((img, idx) => `
+                <img src="${img}" class="thumb ${idx === 0 ? 'active' : ''}" onclick="changeMainImage('${img}', this)" alt="${product.name} - ${idx + 1}">
+            `).join('');
+
+            container.innerHTML = `
+                <div class="reveal">
+                    <div class="detail-image" style="height: 450px;">
+                        <img src="${images[0]}" alt="${product.name}" id="main-img" onmousemove="zoom(event)">
+                    </div>
+                    ${images.length > 1 ? `<div class="thumbnail-gallery">${thumbsHTML}</div>` : ''}
+                </div>
+                <div class="detail-info reveal delay-200">
+                    <h1 style="font-size: 2rem;">${product.name}</h1>
+                    <span class="detail-price" style="color: var(--color-primary); font-weight: bold; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        ${(product.oldPrice && parseFloat(product.oldPrice) > parseFloat(product.price)) ? `
+                            <span id="old-price-display" style="text-decoration: line-through; color: #999; font-size: 1.1rem;">${t.currency} ${product.oldPrice}</span>
+                            <span id="discount-badge-display" style="background: #ff4757; color: white; padding: 2px 10px; border-radius: 8px; font-size: 0.9rem; font-weight: 800; direction: ltr; box-shadow: 0 4px 10px rgba(255, 71, 87, 0.2);">
+                                -${Math.round(((parseFloat(product.oldPrice) - parseFloat(product.price)) / parseFloat(product.oldPrice)) * 100)}%
+                            </span>
+                            <span id="saved-amount-display" style="color: #27ae60; font-size: 0.9rem; font-weight: 600;">(وفرت ${t.currency} ${Math.round(parseFloat(product.oldPrice) - parseFloat(product.price))})</span>
+                        ` : `
+                            <!-- Hidden elements for dynamic toggle -->
+                            <span id="old-price-display" style="display: none; text-decoration: line-through; color: #999; font-size: 1.1rem;"></span>
+                            <span id="discount-badge-display" style="display: none; background: #ff4757; color: white; padding: 2px 10px; border-radius: 8px; font-size: 0.9rem; font-weight: 800; direction: ltr;"></span>
+                            <span id="saved-amount-display" style="display: none; color: #27ae60; font-size: 0.9rem; font-weight: 600;"></span>
+                        `}
+                        <span style="font-size: 2.2rem; color: var(--color-primary);"><small style="font-size: 1rem;">${t.currency}</small> <span id="main-price-display">${product.price}</span></span>
+                    </span>
+                    
+                    <div style="margin-bottom: 1.5rem;">${colorsHTML}</div>
+                    <div style="margin-bottom: 1.5rem;">${sizesHTML}</div>
+                    ${quantitySelectorHTML}
+
+                    <div class="action-buttons" id="main-action-buttons" style="flex-wrap: wrap; gap: 0.8rem; margin-top: 1.5rem;">
+                        <button class="btn btn-primary" onclick="addToCartClick('${product.id}', this)" ${product.quantity <= 0 ? 'disabled style="opacity: 0.5; background: #999; border-color: #999; cursor: not-allowed;"' : ''}>
+                            <i class="fas fa-shopping-cart" style="margin-right: 10px;"></i> <span data-i18n="add_to_cart">${t.add_to_cart}</span>
+                        </button>
+                        <button class="btn btn-primary" onclick="buyNowClick('${product.id}')" style="${product.quantity <= 0 ? 'opacity: 0.5; background: #ccc; border-color: #ccc; cursor: not-allowed;' : 'background-color: var(--color-primary); border-color: var(--color-primary);'}" ${product.quantity <= 0 ? 'disabled' : ''}>
+                             <i class="fas fa-bolt" style="margin-right: 10px;"></i> <span data-i18n="buy_now">${t.buy_now}</span>
+                        </button>
+                    </div>
+
+                    <p class="detail-desc" style="margin-top: 2rem; margin-bottom: 1.5rem; line-height: 1.6; border-top: 1px solid #eee; padding-top: 1.5rem;">${product.description}</p>
+                </div>
+
+                <!-- Floating Sticky Bar -->
+                <div class="floating-purchase-bar" id="sticky-bar">
+                    <div class="floating-product-info">
+                        <img src="${images[0]}" alt="${product.name}">
+                        <div class="p-name">${product.name}</div>
+                    </div>
+                    <div class="floating-actions">
+                        <button class="btn btn-primary btn-outline" onclick="addToCartClick('${product.id}', this)" ${product.quantity <= 0 ? 'disabled' : ''}>
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                        <button class="btn btn-primary" onclick="buyNowClick('${product.id}')" ${product.quantity <= 0 ? 'disabled' : ''}>
+                            <span data-i18n="buy_now">${t.buy_now}</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Scroll Logic for Sticky Bar
+            window.addEventListener('scroll', () => {
+                const mainButtons = document.getElementById('main-action-buttons');
+                const stickyBar = document.getElementById('sticky-bar');
+                if (mainButtons && stickyBar) {
+                    const rect = mainButtons.getBoundingClientRect();
+                    // Show bar if main buttons are above the viewport (scrolled past)
+                    if (rect.bottom < 0) {
+                        stickyBar.classList.add('visible');
+                    } else {
+                        stickyBar.classList.remove('visible');
+                    }
+                }
+            });
+
+            // Initial Availability Check
+            updateVariantDisplay();
+
+            renderRelatedProducts(productId);
+            // Re-init generic animations if function exists
+            if (typeof initScrollAnimations === 'function') initScrollAnimations();
+        }
+
+        function syncWithCart() {
+            if (!currentProduct || currentProduct.quantity <= 0) return;
+
+            // Requirements check
+            const colors = Array.isArray(currentProduct.color) ? currentProduct.color : (currentProduct.color ? currentProduct.color.split(',').map(c => c.trim()) : []);
+            const sizes = Array.isArray(currentProduct.size) ? currentProduct.size : (currentProduct.size ? currentProduct.size.split(',').map(s => s.trim()) : []);
+
+            // Only sync if they've made the necessary choices OR if there's only one option
+            const colorReady = colors.length === 0 || selectedColor;
+            const sizeReady = sizes.length === 0 || selectedSize;
+
+            if (colorReady && sizeReady) {
+                db.syncProductToCart(currentProduct, selectedColor, selectedSize, selectedQuantity);
+                console.log('🔄 Cart synced automatically');
+            }
+        }
+
+        function selectColor(color, el) {
+            selectedColor = color;
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            updateVariantDisplay();
+            syncWithCart();
+        }
+
+        function selectSize(size, el) {
+            selectedSize = size;
+            document.querySelectorAll('.size-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            updateVariantDisplay();
+            syncWithCart();
+        }
+
+        function updateVariantDisplay() {
+            if (!currentProduct) return;
+
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+            const t = translations[lang] || translations['ar'];
+
+            // Find variant based on BOTH color and size
+            let variant = null;
+            if (currentProduct.variants) {
+                variant = currentProduct.variants.find(v =>
+                    (selectedSize ? v.size === selectedSize : true) &&
+                    (selectedColor ? v.color === selectedColor : true)
+                );
+            }
+
+            const priceDisplay = document.getElementById('main-price-display');
+            const oldPriceEl = document.getElementById('old-price-display');
+            const discountBadgeEl = document.getElementById('discount-badge-display');
+            const savedAmountEl = document.getElementById('saved-amount-display');
+
+            let currentPrice = currentProduct.price;
+            let oldPrice = currentProduct.oldPrice;
+
+            if (variant && variant.price) {
+                currentPrice = variant.price;
+            }
+
+            // Update Main Price
+            if (priceDisplay) priceDisplay.innerText = currentPrice;
+
+            // Update Discount Logic
+            if (oldPrice && parseFloat(oldPrice) > parseFloat(currentPrice)) {
+                const discountPercent = Math.round(((parseFloat(oldPrice) - parseFloat(currentPrice)) / parseFloat(oldPrice)) * 100);
+                const savedAmount = Math.round(parseFloat(oldPrice) - parseFloat(currentPrice));
+
+                if (oldPriceEl) {
+                    oldPriceEl.innerText = `${t.currency} ${oldPrice}`;
+                    oldPriceEl.style.display = 'inline';
+                }
+                if (discountBadgeEl) {
+                    discountBadgeEl.innerText = `-${discountPercent}%`;
+                    discountBadgeEl.style.display = 'inline-block';
+                }
+                if (savedAmountEl) {
+                    savedAmountEl.innerText = `(وفرت ${t.currency} ${savedAmount})`;
+                    savedAmountEl.style.display = 'inline';
+                }
+            } else {
+                if (oldPriceEl) oldPriceEl.style.display = 'none';
+                if (discountBadgeEl) discountBadgeEl.style.display = 'none';
+                if (savedAmountEl) savedAmountEl.style.display = 'none';
+            }
+
+            // Update Availability UI
+            const isAvailable = variant ? variant.quantity > 0 : currentProduct.quantity > 0;
+            updateAvailabilityUI(isAvailable);
+
+            // Update individual size options stock status based on current color
+            document.querySelectorAll('.size-option').forEach(opt => {
+                const s = opt.innerText.trim();
+                const v = currentProduct.variants ? currentProduct.variants.find(v =>
+                    v.size === s && (!selectedColor || !v.color || v.color === selectedColor)
+                ) : null;
+                const oos = v ? v.quantity <= 0 : (currentProduct.quantity <= 0);
+
+                if (oos) {
+                    opt.classList.add('out-of-stock');
+                    opt.onclick = null;
+                } else {
+                    opt.classList.remove('out-of-stock');
+                    opt.onclick = function () { selectSize(s, this); };
+                }
+            });
+        }
+
+        function updateAvailabilityUI(isAvailable) {
+            const btns = document.querySelectorAll('.action-buttons button, .floating-actions button');
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+            const outOfStockText = lang === 'ar' ? 'نفذت الكمية' : 'Out of Stock';
+            const addToCartText = lang === 'ar' ? 'أضف للسلة' : 'Add to Cart';
+
+            btns.forEach(btn => {
+                btn.disabled = !isAvailable;
+                btn.style.opacity = isAvailable ? '1' : '0.5';
+                btn.style.cursor = isAvailable ? 'pointer' : 'not-allowed';
+
+                const span = btn.querySelector('span');
+                if (span && (span.getAttribute('data-i18n') === 'add_to_cart' || span.innerText === addToCartText || span.innerText === outOfStockText)) {
+                    span.innerText = isAvailable ? addToCartText : outOfStockText;
+                }
+            });
+        }
+
+        function increaseQty() {
+            if (!currentProduct) return;
+
+            // Determine max available for current selection
+            let maxQty = currentProduct.quantity || 0;
+            if (currentProduct.variants) {
+                const variant = currentProduct.variants.find(v =>
+                    (selectedSize ? v.size === selectedSize : true) &&
+                    (selectedColor ? v.color === selectedColor : true)
+                );
+                if (variant) maxQty = variant.quantity;
+            }
+
+            if (selectedQuantity < maxQty) {
+                selectedQuantity++;
+                const input = document.getElementById('qty-input');
+                if (input) input.value = selectedQuantity;
+                syncWithCart();
+            } else {
+                const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+                showToast(lang === 'ar' ? 'عذراً، هذه هي أقصى كمية متوفرة حالياً' : 'Sorry, this is the maximum available quantity', 'info');
+            }
+        }
+
+        function decreaseQty() {
+            if (selectedQuantity > 1) {
+                selectedQuantity--;
+                const input = document.getElementById('qty-input');
+                if (input) input.value = selectedQuantity;
+                syncWithCart();
+            }
+        }
+
+        function updateQty(input) {
+            if (!currentProduct) return;
+
+            let val = parseInt(input.value);
+            if (isNaN(val) || val < 1) val = 1;
+
+            // Determine max available
+            let maxQty = currentProduct.quantity || 0;
+            if (currentProduct.variants) {
+                const variant = currentProduct.variants.find(v =>
+                    (selectedSize ? v.size === selectedSize : true) &&
+                    (selectedColor ? v.color === selectedColor : true)
+                );
+                if (variant) maxQty = variant.quantity;
+            }
+
+            if (val > maxQty) {
+                val = maxQty;
+                const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+                showToast(lang === 'ar' ? `أقصى كمية متوفرة هي ${maxQty}` : `Maximum available is ${maxQty}`, 'info');
+            }
+
+            selectedQuantity = val;
+            input.value = val;
+            syncWithCart();
+        }
+
+        function addToCartClick(id, btn) {
+            const product = db.getProduct(id);
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+            const t = translations[lang] || translations['ar'];
+
+            // Validation
+            const colors = Array.isArray(product.color) ? product.color : (product.color ? product.color.split(',').map(c => c.trim()) : []);
+            const sizes = Array.isArray(product.size) ? product.size : (product.size ? product.size.split(',').map(s => s.trim()) : []);
+
+            if (colors.length > 0 && !selectedColor) {
+                showToast(lang === 'ar' ? 'من فضلك اختر اللون' : 'Please select a color', 'error');
+                return;
+            }
+            if (sizes.length > 0 && !selectedSize) {
+                showToast(lang === 'ar' ? 'من فضلك اختر المقاس' : 'Please select a size', 'error');
+                return;
+            }
+
+            // Determine final price and stock check based on variant
+            let finalPrice = product.price;
+            let maxQty = product.quantity || 0;
+
+            if (product.variants) {
+                const variant = product.variants.find(v =>
+                    (selectedSize ? v.size === selectedSize : true) &&
+                    (selectedColor ? v.color === selectedColor : true)
+                );
+                if (variant) {
+                    if (variant.price) finalPrice = variant.price;
+                    maxQty = variant.quantity;
+                }
+            }
+
+            // Double check availability before adding
+            if (selectedQuantity > maxQty) {
+                showToast(lang === 'ar' ? 'الكمية المطلوبة غير متوفرة بالكامل' : 'Requested quantity is not fully available', 'error');
+                return;
+            }
+
+            db.addToCart({ ...product, price: finalPrice }, selectedColor, selectedSize, selectedQuantity);
+
+            // Track AddToCart Event
+            if (typeof trackEvent === 'function') {
+                trackEvent('AddToCart', {
+                    content_name: product.name,
+                    content_ids: [product.id],
+                    content_type: 'product',
+                    value: product.price,
+                    currency: 'EGP'
+                });
+            }
+
+            // Visual feedback
+            if (btn) {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = `<i class="fas fa-check"></i> <span data-i18n="added">${t.added}</span>`;
+                btn.style.background = '#486b65';
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.background = '';
+                }, 2000);
+            }
+        }
+
+        function buyNowClick(id) {
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+
+            if (!db.isCustomerLoggedIn()) {
+                const msg = lang === 'ar' ? 'يجب تسجيل الدخول لإتمام عملية الشراء. هل تريد تسجيل الدخول الآن؟' : 'You must be logged in to proceed. Do you want to login now?';
+                localStorage.setItem('pending_product_options', JSON.stringify({
+                    id: id,
+                    color: selectedColor,
+                    size: selectedSize,
+                    quantity: selectedQuantity
+                }));
+                showConfirm(msg, () => {
+                    window.location.href = `login.html?redirect=product.html?id=${id}`;
+                });
+                return;
+            }
+
+            const product = db.getProduct(id);
+            const t = translations[lang] || translations['ar'];
+
+            const colors = Array.isArray(product.color) ? product.color : (product.color ? product.color.split(',').map(c => c.trim()) : []);
+            const sizes = Array.isArray(product.size) ? product.size : (product.size ? product.size.split(',').map(s => s.trim()) : []);
+
+            if (colors.length > 0 && !selectedColor) {
+                showToast(lang === 'ar' ? 'من فضلك اختر اللون' : 'Please select a color', 'error');
+                return;
+            }
+            if (sizes.length > 0 && !selectedSize) {
+                showToast(lang === 'ar' ? 'من فضلك اختر المقاس' : 'Please select a size', 'error');
+                return;
+            }
+
+            // Determine final price and check availability
+            let finalPrice = product.price;
+            let maxQty = product.quantity || 0;
+
+            if (product.variants) {
+                const variant = product.variants.find(v =>
+                    (selectedSize ? v.size === selectedSize : true) &&
+                    (selectedColor ? v.color === selectedColor : true)
+                );
+                if (variant) {
+                    if (variant.price) finalPrice = variant.price;
+                    maxQty = variant.quantity;
+                }
+            }
+
+            if (selectedQuantity > maxQty) {
+                showToast(lang === 'ar' ? 'عذراً، الكمية المطلوبة غير متوفرة' : 'Sorry, requested quantity is not available', 'error');
+                return;
+            }
+
+            // Normal Buy Now behavior: Only checkout this item
+            const buyNowItem = {
+                ...product,
+                price: finalPrice,
+                quantity: selectedQuantity,
+                selectedColor,
+                selectedSize,
+                // Ensure weight is passed correctly
+                weight: product.weight !== undefined ? product.weight : 0.5
+            };
+
+            localStorage.setItem('buynow_item', JSON.stringify(buyNowItem));
+            localStorage.setItem('checkout_mode', 'buynow');
+
+            window.location.href = 'checkout.html';
+        }
+
+        function changeMainImage(src, el) {
+            document.getElementById('main-img').src = src;
+            document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function zoom(e) { }
+
+        function renderRelatedProducts(currentId) {
+            const allProducts = db.getProducts();
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+            const currency = translations[lang]['currency'];
+            const btnText = translations[lang]['view_details'] || 'عرض التفاصيل';
+
+            let related = allProducts.filter(p => p.id != currentId);
+            related.sort(() => 0.5 - Math.random());
+            related = related.slice(0, 10); // Show more products for the carousel
+
+            const container = document.getElementById('related-products-grid');
+            if (!container) return;
+
+            if (related.length === 0) {
+                container.innerHTML = '<p style="text-align:center; width:100%; color:#888;">No suggested products found.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            related.forEach((p, index) => {
+                const card = document.createElement('div');
+                card.className = 'related-card reveal';
+                card.style.transitionDelay = `${index * 0.1}s`;
+                card.onclick = () => window.location.href = `product.html?id=${p.id}`;
+
+                let priceHtml = ``;
+                let discountHtml = '';
+                if (p.oldPrice && parseFloat(p.oldPrice) > parseFloat(p.price)) {
+                    const discount = Math.round(((parseFloat(p.oldPrice) - parseFloat(p.price)) / parseFloat(p.oldPrice)) * 100);
+                    discountHtml = `<div class="discount-badge">-${discount}%</div>`;
+                    priceHtml = `<span style="text-decoration: line-through; color: #999; font-size: 0.9rem; margin-left: 5px;">${currency} ${p.oldPrice}</span> ${currency} ${p.price}`;
+                } else {
+                    priceHtml = `${currency} ${p.price}`;
+                }
+
+                card.innerHTML = `
+                    <div class="related-img-wrapper">
+                        ${discountHtml}
+                        <img src="${p.image}" alt="${p.name}">
+                    </div>
+                    <div class="related-content">
+                        <h3>${p.name}</h3>
+                        <div class="related-price">${priceHtml}</div>
+                        <div class="related-btn">${btnText}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Initialize arrows after rendering
+            const grid = document.getElementById('related-products-grid');
+            if (grid) {
+                grid.addEventListener('scroll', updateCarouselArrows);
+                // Trigger once
+                setTimeout(updateCarouselArrows, 100);
+            }
+        }
+
+        function updateCarouselArrows() {
+            const grid = document.getElementById('related-products-grid');
+            const prevBtn = document.querySelector('.carousel-btn.prev');
+            const nextBtn = document.querySelector('.carousel-btn.next');
+            if (!grid || !prevBtn || !nextBtn) return;
+
+            // In RTL modern browsers:
+            // scrollLeft is 0 at far right (start)
+            // scrollLeft is negative at far left (end)
+            const sl = Math.abs(grid.scrollLeft);
+            const sw = grid.scrollWidth;
+            const cw = grid.clientWidth;
+
+            // Show prev if we have scrolled left at all
+            if (sl > 10) {
+                prevBtn.classList.add('visible');
+            } else {
+                prevBtn.classList.remove('visible');
+            }
+
+            // Hide next if we reached the end
+            if (sl + cw >= sw - 10) {
+                nextBtn.classList.add('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+            }
+        }
+
+        function scrollCarousel(direction) {
+            const grid = document.getElementById('related-products-grid');
+            if (grid) {
+                // If desktop, scroll more (4 items), if mobile scroll less (2 items)
+                const isMobile = window.innerWidth <= 768;
+                const scrollAmount = isMobile ? grid.clientWidth : grid.clientWidth;
+
+                // In RTL:
+                // button on the left (Next) should scroll LEFT (negative)
+                // button on the right (Prev) should scroll RIGHT (positive)
+                if (direction === 'left') {
+                    grid.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                } else {
+                    grid.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

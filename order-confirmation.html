@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تم استلام الطلب | الشرقاوي</title>
+    <link rel="icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="shortcut icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="apple-touch-icon" href="https://elsharkawystore.com/images/logo.png">
+    <meta name="theme-color" content="#486b65">
+    <!-- Open Graph / Meta -->
+    <meta property="og:title" content="تم تأكيد طلبك | الشرقاوي">
+    <meta property="og:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="twitter:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="twitter:card" content="summary_large_image">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cairo:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        .success-icon {
+            font-size: 80px;
+            color: #27ae60;
+            margin-bottom: 20px;
+            display: block;
+            animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+
+            70% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Review Form Styles */
+        .review-form-container {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            max-width: 500px;
+            width: 100%;
+            display: none;
+            /* Shown via JS */
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 2.5rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover~label,
+        .star-rating input:checked~label {
+            color: #f1c40f;
+        }
+    </style>
+</head>
+
+<body class="rtl">
+    <div class="container"
+        style="min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 40px 20px;">
+
+        <div class="reveal-zoom">
+            <img src="images/logo.png" alt="الشرقاوي"
+                style="height: 120px; margin-bottom: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+            <h1>تم استلام الطلب!</h1>
+            <div id="order-id-display"
+                style="font-weight: 900; color: var(--color-primary); margin: 10px 0; font-size: 1.2rem; display: none;">
+                رقم الطلب: <span id="order-id-value"></span>
+            </div>
+
+            <div id="tracking-notice"
+                style="margin: 20px auto; padding: 15px; background: #f0f5f4; border: 1px solid var(--color-primary); border-radius: 12px; color: var(--color-primary); font-weight: 700; font-size: 0.95rem; max-width: 450px; display: none; animation: slideUp 0.5s ease-out;">
+                <div style="margin-bottom: 8px;">
+                    <i class="fas fa-truck-loading" style="font-size: 1.2rem; margin-left: 8px;"></i>
+                    يمكنك الآن تتبع شحنتك لحظة بلحظة
+                </div>
+                <div style="font-size: 0.85rem; font-weight: 400; color: #444; margin-bottom: 12px;">
+                    تابع حالة طلبك وتفاصيل التوصيل من خلال صفحة "طلباتي"
+                </div>
+                <a href="track-orders.html" class="btn btn-primary btn-small"
+                    style="background: var(--color-primary); border: none;">
+                    انتقل لتتبع الطلب
+                </a>
+            </div>
+
+            <p style="color: #666; max-width: 400px; margin: 20px auto;">شكراً لشرائك. تم استلام طلبك وجاري تجهيزه.</p>
+
+            <!-- Review Form -->
+            <div id="post-purchase-review" class="review-form-container">
+                <h3 style="margin-bottom: 10px;">ما رأيك في تجربة التسوق؟</h3>
+                <p style="font-size: 0.9rem; color: #777;">رأيك يهمنا ويساعدنا على التحسن.</p>
+                <form id="review-form">
+                    <div class="star-rating">
+                        <input type="radio" id="star5" name="rating" value="5" required /><label for="star5">★</label>
+                        <input type="radio" id="star4" name="rating" value="4" /><label for="star4">★</label>
+                        <input type="radio" id="star3" name="rating" value="3" /><label for="star3">★</label>
+                        <input type="radio" id="star2" name="rating" value="2" /><label for="star2">★</label>
+                        <input type="radio" id="star1" name="rating" value="1" /><label for="star1">★</label>
+                    </div>
+                    <textarea id="review-comment" placeholder="اكتب رأيك هنا..." required
+                        style="width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; font-family: 'Cairo', sans-serif;"></textarea>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">إرسال التقييم</button>
+                </form>
+            </div>
+
+            <div id="thank-you-msg" style="display: none; margin-top: 30px; color: #2ecc71; font-weight: bold;">
+                <i class="fas fa-check-circle"></i> تم إرسال تقييمك بنجاح، شكراً لك!
+            </div>
+
+            <div style="margin-top: 30px;">
+                <a href="index.html" class="btn btn-secondary">تابع التسوق</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <script src="js/data_v2.js?v=fix001"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/pixel.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const settings = db.getSettings();
+
+            // 1. Show review form if enabled
+            if (settings.allowCustomerReviews) {
+                document.getElementById('post-purchase-review').style.display = 'block';
+            }
+
+            // 2. Track Purchase Event & Show Order ID
+            const lastOrder = localStorage.getItem('lastOrderTotal');
+            const lastOrderId = localStorage.getItem('lastOrderId');
+
+            if (lastOrderId) {
+                const orderDisplay = document.getElementById('order-id-display');
+                const orderValue = document.getElementById('order-id-value');
+                const trackingNotice = document.getElementById('tracking-notice');
+
+                if (orderValue) orderValue.innerText = lastOrderId;
+                if (orderDisplay) orderDisplay.style.display = 'block';
+                if (trackingNotice) trackingNotice.style.display = 'block';
+
+                localStorage.removeItem('lastOrderId');
+            }
+
+            if (lastOrder && typeof trackEvent === 'function') {
+                trackEvent('Purchase', {
+                    value: parseFloat(lastOrder),
+                    currency: 'EGP'
+                });
+                localStorage.removeItem('lastOrderTotal');
+            }
+
+            // 3. Handle Review Submission
+            document.getElementById('review-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const rating = document.querySelector('input[name="rating"]:checked').value;
+                const comment = document.getElementById('review-comment').value;
+                const customer = db.getCustomer();
+
+                const review = {
+                    name: customer ? customer.name : 'عميل الشرقاوي',
+                    rating: parseInt(rating),
+                    comment: comment
+                };
+
+                db.saveUserReview(review);
+
+                document.getElementById('post-purchase-review').style.display = 'none';
+                document.getElementById('thank-you-msg').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+
+</html>

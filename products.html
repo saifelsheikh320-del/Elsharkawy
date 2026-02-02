@@ -1,0 +1,812 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الشرقاوي | المتجر</title>
+    <link rel="icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="shortcut icon" type="image/png" href="https://elsharkawystore.com/images/logo.png">
+    <link rel="apple-touch-icon" href="https://elsharkawystore.com/images/logo.png">
+    <meta name="theme-color" content="#486b65">
+    <link rel="canonical" href="https://elsharkawystore.com/products.html">
+    <link rel="alternate" hreflang="ar" href="https://elsharkawystore.com/products.html">
+    <link rel="alternate" hreflang="en" href="https://elsharkawystore.com/products.html">
+    <link rel="alternate" hreflang="x-default" href="https://elsharkawystore.com/products.html">
+    <meta name="description"
+        content="تسوق أحدث تشكيلة من إكسسوارات الموبيليا في متجر الشرقاوي. أفضل الأسعار، جودة عالية، وتوصيل سريع في مصر.">
+    <meta name="keywords"
+        content="تسوق أوكر, شراء كوالين, الشرقاوي, إكسسوارات موبيليا, ديكورات, shop tassels, buy trims, El Sharkawy Store">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="الشرقاوي">
+    <meta property="og:title" content="تسوق إكسسوارات الموبيليا | الشرقاوي">
+    <meta property="og:description"
+        content="تسوق أحدث تشكيلة من إكسسوارات الموبيليا في متجر الشرقاوي. أفضل الأسعار، جودة عالية، وتوصيل سريع في مصر.">
+    <meta property="og:url" content="https://elsharkawystore.com/products.html">
+
+    <!-- WhatsApp & Social Preview Image -->
+    <meta property="og:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="og:image:secure_url" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="متجر الشرقاوي لإكسسوارات الموبيليا">
+    <link itemprop="image" href="https://elsharkawystore.com/images/banner.jpg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://elsharkawystore.com/products.html">
+    <meta name="twitter:title" content="تسوق إكسسوارات الموبيليا | الشرقاوي">
+    <meta name="twitter:description" content="تسوق أحدث تشكيلة من الأوكر والكوالين والديكورات الفاخرة.">
+    <meta name="twitter:image" content="https://elsharkawystore.com/images/banner.jpg">
+    <meta name="fb:app_id" content="1214265283946236">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cairo:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/shop.css">
+
+    <!-- Meta Pixel Code -->
+    <script src="js/pixel.js"></script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=2734165686928707&ev=PageView&noscript=1" />
+    </noscript>
+    <!-- End Meta Pixel Code -->
+    <style>
+        /* Filter Modal */
+        .filter-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-modal.active {
+            display: flex;
+        }
+
+        .filter-modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .filter-close {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        body.rtl .filter-close {
+            left: auto;
+            right: 15px;
+        }
+
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+
+        .filter-section h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .color-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .color-option.active {
+            border-color: var(--color-primary);
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .size-option {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .size-option.active {
+            border-color: var(--color-primary);
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .price-range {
+            margin-top: 1rem;
+        }
+
+        .price-inputs {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .price-inputs input {
+            flex: 1;
+        }
+
+        .filter-btn-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .filter-toggle-btn {
+            background: var(--color-primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .filter-toggle-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Pagination Styles */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 4rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            min-width: 45px;
+            height: 45px;
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: white;
+            border: 1.5px solid #eaeaea;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #333;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .page-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 16px rgba(72, 107, 101, 0.3);
+        }
+
+        .page-btn:hover:not(.active) {
+            background: #fdfdfd;
+            border-color: var(--color-primary);
+            transform: translateY(-3px);
+            color: var(--color-primary);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+
+<body class="rtl">
+    <div class="scroll-progress"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">
+                    <img src="images/logo.png" alt="الشرقاوي" style="height: 75px; width: auto; max-height: 80px;">
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                    <li><a href="products.html" data-i18n="shop">المتجر</a></li>
+                    <li id="auth-link"><a href="login.html" data-i18n="login">دخول</a></li>
+                </ul>
+                <div class="nav-icons">
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-header" style="padding: 6rem 0 1rem; margin-bottom: 0;">
+        <div class="container">
+            <h1 data-i18n="shop_header_title" style="font-size: 2.2rem; margin-bottom: 0.2rem;">تسوق إكسسوارات الموبيليا
+            </h1>
+            <p data-i18n="shop_header_desc" style="margin-bottom: 1.5rem; font-size: 1rem;">أحدث تشكيلة من الأوكر
+                والكوالين والديكورات
+                .</p>
+
+            <!-- Search Container -->
+            <div class="search-container" style="position: relative; max-width: 550px; margin-inline: auto;">
+                <input type="text" id="store-search" placeholder="ما الذي تبحث عنه؟ ..." oninput="applyFilters()"
+                    style="width: 100%; padding: 12px 45px 12px 15px; border-radius: 10px; border: 2px solid #ddd; font-family: 'Cairo', sans-serif; font-size: 1rem; transition: all 0.3s; outline: none; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                <i class="fas fa-search"
+                    style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--color-primary); font-size: 1rem; pointer-events: none;"></i>
+            </div>
+        </div>
+    </div>
+
+    <main class="container" style="padding-top: 1rem;">
+        <!-- Filter Button -->
+        <div class="filter-btn-container">
+            <button class="filter-toggle-btn" onclick="openFilterModal()"
+                style="padding: 10px 20px; font-size: 0.95rem;">
+                <i class="fas fa-filter"></i>
+                <span data-i18n="filter_btn">تصفية المنتجات</span>
+            </button>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="product-grid" id="product-container" style="width: 100%;">
+            <!-- Injected via JS -->
+        </div>
+
+        <!-- Pagination Container -->
+        <div id="products-pagination" class="pagination"></div>
+    </main>
+
+    <!-- Filter Modal -->
+    <div id="filter-modal" class="filter-modal">
+        <div class="filter-modal-content">
+            <button class="filter-close" onclick="closeFilterModal()">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <h2 style="margin-bottom: 2rem;" data-i18n="filter_title">تصفية المنتجات</h2>
+
+            <!-- Categories -->
+            <div class="filter-section">
+                <h3 data-i18n="filter_category">المجموعة الأساسية</h3>
+                <div class="category-options" id="category-filters" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Collections -->
+            <div class="filter-section">
+                <h3 data-i18n="collections">مجموعات إضافية</h3>
+                <div class="collection-options" id="collection-filters"
+                    style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Price Range -->
+            <div class="filter-section">
+                <h3 data-i18n="price_range">نطاق السعر</h3>
+                <div class="price-inputs">
+                    <input type="number" id="min-price" placeholder="من" min="0">
+                    <input type="number" id="max-price" placeholder="إلى" min="0">
+                </div>
+            </div>
+
+            <!-- Colors -->
+            <div class="filter-section">
+                <h3 data-i18n="colors">الألوان</h3>
+                <div class="color-options" id="color-filters">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Sizes -->
+            <div class="filter-section">
+                <h3 data-i18n="sizes">المقاسات</h3>
+                <div class="size-options" id="size-filters">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Apply Button -->
+            <button class="btn btn-primary" style="width: 100%; margin-top: 2rem;"
+                onclick="applyFilters(); closeFilterModal();">
+                <span data-i18n="apply_filters">تطبيق الفلاتر</span>
+            </button>
+            <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem;" onclick="resetFilters()">
+                <span data-i18n="reset_filters">إعادة تعيين</span>
+            </button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <img src="images/logo.png" alt="الشرقاوي"
+                        style="height: 60px; margin-bottom: 15px; border-radius: 8px;">
+                    <h3>الشرقاوي</h3>
+                    <p style="margin-top: 20px; color: #888;" data-i18n="premium_exp">تجربة تسوق فاخرة.</p>
+                    <div class="social-links" style="margin-top: 20px; display: flex; gap: 15px;">
+                        <a href="https://www.facebook.com/profile.php?id=61579631342353" target="_blank"
+                            style="color: #888; font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/elsharkawyfurnitureaccessories?igsh=MXRxdzZtNHd0cGV5Ng=="
+                            target="_blank" style="color: #888; font-size: 1.5rem;"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 data-i18n="links">روابط</h4>
+                    <ul style="list-style: none; margin-top: 20px; line-height: 2;">
+                        <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                        <li><a href="products.html" data-i18n="shop">المتجر</a></li>
+                        <li><a href="cart.html" data-i18n="cart_title">السلة</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 data-i18n="policies">السياسات</h4>
+                    <ul style="list-style: none; margin-top: 20px; line-height: 2;">
+                        <li><a href="policies.html#terms">الشروط والأحكام</a></li>
+                        <li><a href="policies.html#shipping">سياسة الشحن</a></li>
+                        <li><a href="policies.html#refund">سياسة الاسترجاع</a></li>
+                        <li><a href="policies.html#privacy">سياسة الخصوصية</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 data-i18n="contact">تواصل معنا</h4>
+                    <p style="margin-top: 20px; color: #888;">ibrahimelsharqawi5@gmail.com</p>
+                    <p style="color: #888;">+20 115 402 5770</p>
+                </div>
+            </div>
+            <div
+                style="margin-top: 4rem; border-top: 1px solid #333; padding-top: 2rem; text-align: center; color: #666;">
+                &copy; 2026 الشرقاوي. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <script src="js/hybrid-adapter_v2.js"></script>
+    <script src="js/data_v2.js?v=fix001"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let allProducts = [];
+        let filteredProducts = [];
+        let selectedColors = [];
+        let selectedSizes = [];
+        let selectedCategories = [];
+        let selectedCollections = [];
+        let minPrice = 0;
+        let maxPrice = Infinity;
+        let currentPage = 1;
+        const itemsPerPage = 12;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (typeof HybridSystem !== 'undefined') {
+                try {
+                    await HybridSystem.getProducts();
+                } catch (e) {
+                    console.warn("Product sync failed", e);
+                }
+            }
+
+            // Check for category parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryParam = urlParams.get('category');
+            if (categoryParam) {
+                selectedCategories = [categoryParam];
+            }
+
+            const offersParam = urlParams.get('offers');
+            if (offersParam === 'true') {
+                const settings = JSON.parse(localStorage.getItem('site_settings') || '{}');
+                const offerIds = settings.offerProductIds || [];
+                if (offerIds.length > 0) {
+                    window.offerFilterIds = offerIds.map(id => id.toString());
+                }
+            }
+
+            refreshAll();
+        });
+
+        function refreshAll() {
+            allProducts = db.getProducts();
+            initializeFilters();
+            applyFilters();
+        }
+
+        window.addEventListener('productsUpdated', refreshAll);
+
+        function initializeFilters() {
+            // Get unique colors - handle both string and array formats
+            const allColors = allProducts.flatMap(p => {
+                if (Array.isArray(p.color)) return p.color;
+                if (typeof p.color === 'string' && p.color.trim()) return [p.color.trim()];
+                return [];
+            });
+            const colors = [...new Set(allColors)].filter(c => c);
+            const colorContainer = document.getElementById('color-filters');
+            if (colorContainer) colorContainer.innerHTML = ''; // Clear first
+
+            colors.forEach(color => {
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'color-option';
+                if (selectedColors.includes(color)) colorDiv.classList.add('active'); // Maintain active state
+
+                const colorNames = {
+                    'Black': 'أسود',
+                    'White': 'أبيض',
+                    'Brown': 'بني',
+                    'Red': 'أحمر',
+                    'Blue': 'أزرق',
+                    'Grey': 'رمادي',
+                    'Green': 'أخضر',
+                    'Yellow': 'أصفر',
+                    'Navy': 'كحلي',
+                    'Beige': 'بيج'
+                };
+
+                const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+                let displayText = color;
+                if (lang === 'ar' && colorNames[color]) {
+                    displayText = colorNames[color];
+                }
+
+                colorDiv.textContent = displayText;
+                colorDiv.title = color;
+                colorDiv.onclick = () => toggleColor(color, colorDiv);
+                colorContainer.appendChild(colorDiv);
+            });
+
+            // Get unique sizes
+            const sizes = [...new Set(allProducts.flatMap(p => p.size || []))].sort((a, b) => a - b);
+            const sizeContainer = document.getElementById('size-filters');
+            if (sizeContainer) sizeContainer.innerHTML = ''; // Clear first
+
+            sizes.forEach(size => {
+                const sizeDiv = document.createElement('div');
+                sizeDiv.className = 'size-option';
+                if (selectedSizes.includes(size)) sizeDiv.classList.add('active'); // Maintain active state
+                sizeDiv.textContent = size;
+                sizeDiv.onclick = () => toggleSize(size, sizeDiv);
+                sizeContainer.appendChild(sizeDiv);
+            });
+
+            // Get unique categories (المجموعة الأساسية)
+            const categories = [...new Set(allProducts.map(p => p.category).filter(c => c))];
+            const catContainer = document.getElementById('category-filters');
+            if (catContainer) catContainer.innerHTML = ''; // Clear first
+
+            categories.forEach(cat => {
+                const catDiv = document.createElement('div');
+                catDiv.className = 'category-option';
+                const isActive = selectedCategories.includes(cat);
+                catDiv.style = `padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; background: ${isActive ? 'var(--color-primary)' : '#f0f0f0'}; color: ${isActive ? 'white' : '#333'};`;
+                catDiv.textContent = cat;
+                catDiv.onclick = () => toggleCategory(cat, catDiv);
+                catContainer.appendChild(catDiv);
+            });
+
+            // Get unique collections (مجموعات إضافية)
+            const collections = [...new Set(allProducts.flatMap(p => p.collections || []))].filter(c => c);
+            const colContainer = document.getElementById('collection-filters');
+            if (colContainer) colContainer.innerHTML = ''; // Clear first
+
+            collections.forEach(col => {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'collection-option';
+                const isActive = selectedCollections.includes(col);
+                colDiv.style = `padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; background: ${isActive ? 'var(--color-primary)' : '#f0f0f0'}; color: ${isActive ? 'white' : '#333'};`;
+                colDiv.textContent = col;
+                colDiv.onclick = () => toggleCollection(col, colDiv);
+                colContainer.appendChild(colDiv);
+            });
+        }
+
+        function toggleColor(color, element) {
+            if (selectedColors.includes(color)) {
+                selectedColors = selectedColors.filter(c => c !== color);
+                element.classList.remove('active');
+            } else {
+                selectedColors.push(color);
+                element.classList.add('active');
+            }
+        }
+
+        function toggleSize(size, element) {
+            if (selectedSizes.includes(size)) {
+                selectedSizes = selectedSizes.filter(s => s !== size);
+                element.classList.remove('active');
+            } else {
+                selectedSizes.push(size);
+                element.classList.add('active');
+            }
+        }
+
+        function toggleCategory(cat, element) {
+            if (selectedCategories.includes(cat)) {
+                selectedCategories = selectedCategories.filter(c => c !== cat);
+                element.style.background = '#f0f0f0';
+                element.style.color = '#333';
+            } else {
+                selectedCategories.push(cat);
+                element.style.background = 'var(--color-primary)';
+                element.style.color = 'white';
+            }
+        }
+
+        function toggleCollection(col, element) {
+            if (selectedCollections.includes(col)) {
+                selectedCollections = selectedCollections.filter(c => c !== col);
+                element.style.background = '#f0f0f0';
+                element.style.color = '#333';
+            } else {
+                selectedCollections.push(col);
+                element.style.background = 'var(--color-primary)';
+                element.style.color = 'white';
+            }
+        }
+
+        function openFilterModal() {
+            document.getElementById('filter-modal').classList.add('active');
+        }
+
+        function applyFilters() {
+            minPrice = parseInt(document.getElementById('min-price').value) || 0;
+            maxPrice = parseInt(document.getElementById('max-price').value) || Infinity;
+            const searchQuery = document.getElementById('store-search').value.toLowerCase().trim();
+
+            filteredProducts = allProducts.filter(p => {
+                // Filter out archived or hidden products from storefront
+                if (p.archived === true || p.isVisible === false) return false;
+
+                // Special Offer Filter (from URL)
+                if (window.offerFilterIds && !window.offerFilterIds.includes(p.id.toString())) return false;
+
+                // Search filter
+                if (searchQuery && !p.name.toLowerCase().includes(searchQuery)) return false;
+
+                // Price filter
+                if (p.price < minPrice || p.price > maxPrice) return false;
+
+                // Color filter
+                if (selectedColors.length > 0) {
+                    const pColors = Array.isArray(p.color) ? p.color : (p.color ? [p.color] : []);
+                    const hasColor = pColors.some(c => selectedColors.includes(c));
+                    if (!hasColor) return false;
+                }
+
+                // Size filter
+                if (selectedSizes.length > 0 && !(p.size || []).some(s => selectedSizes.includes(s))) return false;
+
+                // Category filter
+                if (selectedCategories.length > 0 && !selectedCategories.includes(p.category)) return false;
+
+                // Collection filter
+                if (selectedCollections.length > 0) {
+                    const hasCol = (p.collections || []).some(c => selectedCollections.includes(c));
+                    if (!hasCol) return false;
+                }
+
+                return true;
+            });
+
+            currentPage = 1;
+            renderProducts();
+        }
+
+        function closeFilterModal() {
+            document.getElementById('filter-modal').classList.remove('active');
+        }
+        function resetFilters() {
+            selectedColors = [];
+            selectedSizes = [];
+            selectedCategories = [];
+            selectedCollections = [];
+            minPrice = 0;
+            maxPrice = Infinity;
+            document.getElementById('min-price').value = '';
+            document.getElementById('max-price').value = '';
+            document.getElementById('store-search').value = '';
+            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.size-option').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.category-option').forEach(el => {
+                el.style.background = '#f0f0f0';
+                el.style.color = '#333';
+            });
+            document.querySelectorAll('.collection-option').forEach(el => {
+                el.style.background = '#f0f0f0';
+                el.style.color = '#333';
+            });
+            filteredProducts = allProducts;
+            currentPage = 1;
+            renderProducts();
+            closeFilterModal();
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('product-container');
+            container.innerHTML = '';
+            const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+            const currency = translations[lang]['currency'];
+
+            const offers = db.getSpecialOffers();
+            const isGlobalEnabled = offers && offers.globalDiscountEnabled;
+            const globalDiscountPercent = (isGlobalEnabled && offers.globalDiscountPercentage) ? parseFloat(offers.globalDiscountPercentage) : 0;
+            const globalDiscountText = offers.globalDiscountText || '';
+
+            if (filteredProducts.length === 0) {
+                container.innerHTML = `<p data-i18n="no_products" style="text-align: center; padding: 4rem; font-size: 1.2rem;">${translations[lang].no_products}</p>`;
+                document.getElementById('products-pagination').innerHTML = '';
+                return;
+            }
+
+            // Apply Sort Order (Manual arrangement from Admin)
+            filteredProducts.sort((a, b) => {
+                const orderA = (a.sortOrder !== undefined && a.sortOrder !== null) ? a.sortOrder : 1000000;
+                const orderB = (b.sortOrder !== undefined && b.sortOrder !== null) ? b.sortOrder : 1000000;
+                return orderA - orderB;
+            });
+
+            // Slice for pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const paginated = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+
+            const btnText = translations[lang]['view_details'];
+
+            paginated.forEach((p, index) => {
+                let currentPrice = p.price;
+                let oldPrice = p.oldPrice || null;
+                let discountPercent = 0;
+                let badgeLabel = lang === 'ar' ? 'خصم' : 'OFF';
+
+                if (p.oldPrice && parseFloat(p.oldPrice) > parseFloat(p.price)) {
+                    discountPercent = Math.round(((parseFloat(p.oldPrice) - parseFloat(p.price)) / parseFloat(p.oldPrice)) * 100);
+                }
+
+                if (globalDiscountPercent >= 0.5) {
+                    oldPrice = p.price;
+                    currentPrice = Math.max(0, parseFloat(p.price) - (parseFloat(p.price) * globalDiscountPercent) / 100);
+                    discountPercent = Math.round(globalDiscountPercent);
+                    if (globalDiscountText) badgeLabel = globalDiscountText;
+                }
+
+                const el = document.createElement('div');
+                el.className = 'product-card reveal';
+                el.style.transitionDelay = `${index * 0.05}s`;
+
+                const isOutOfStock = p.quantity <= 0;
+                if (isOutOfStock) {
+                    el.classList.add('out-of-stock');
+                    el.style.opacity = '0.7';
+                }
+                el.onclick = () => window.location.href = `product.html?id=${p.id}`;
+
+                const img1 = (p.images && p.images.length > 0) ? p.images[0] : (p.image || '');
+                const img2 = (p.images && p.images.length > 1) ? p.images[1] : img1;
+                const hasHover = img1 !== img2;
+
+                el.innerHTML = `
+                    <div class="product-img" style="position: relative;">
+                        <img src="${img1}" 
+                             alt="${p.name}" 
+                             style="${isOutOfStock ? 'filter: grayscale(0.5);' : ''} transition: transform 0.3s;"
+                             ${hasHover ? `onmouseover="this.src='${img2}'" onmouseout="this.src='${img1}'"` : ''}
+                        >
+                        ${isOutOfStock ? `
+                            <div class="sold-out-badge" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 5px; font-weight: 900; z-index: 10; width: 80%; text-align: center;">
+                                <div style="font-size: 1.2rem;">${translations[lang].sold_out}</div>
+                                <div style="font-size: 0.8rem; font-weight: 400; margin-top: 5px;">${translations[lang].available_soon}</div>
+                            </div>
+                        ` : (discountPercent > 0 ? `
+                            <div class="discount-badge" style="position: absolute; top: 12px; right: 12px; background: #ff4757; color: white; padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; z-index: 10; box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3); direction: ltr;">
+                                -${discountPercent}%
+                            </div>
+                        ` : '')}
+                    </div>
+                    <div class="product-info">
+                        <h3>${p.name}</h3>
+                        <span class="product-price" style="color: var(--color-primary);">
+                             ${oldPrice ? `<span style="text-decoration: line-through; color: #999; font-size: 0.9rem; margin-left: 8px;">${currency} ${oldPrice}</span>` : ''}
+                             <span style="font-weight: 800;">${currency} ${currentPrice}</span>
+                        </span>
+                        <div class="btn btn-secondary" data-i18n="view_details" style="width: 100%; margin-top: 1rem; border-radius: 10px;">${btnText}</div>
+                    </div>
+                 `;
+                container.appendChild(el);
+            });
+
+            renderPagination();
+            initScrollAnimations();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+            const container = document.getElementById('products-pagination');
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            // Prev
+            html += `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})"><i class="fas fa-chevron-right"></i></button>`;
+
+            // Pages
+            let start = Math.max(1, currentPage - 2);
+            let end = Math.min(totalPages, start + 4);
+            if (end === totalPages) start = Math.max(1, end - 4);
+
+            for (let i = start; i <= end; i++) {
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            }
+
+            // Next
+            html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})"><i class="fas fa-chevron-left"></i></button>`;
+
+            container.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderProducts();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.addEventListener('langChange', () => renderProducts(allProducts));
+    </script>
+</body>
+
+</html>
