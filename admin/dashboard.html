@@ -3974,8 +3974,17 @@
                     </div>
                     <div class="form-group">
                         <label>كود المنتج (SKU)</label>
-                        <input type="text" id="p-sku" placeholder="مثال: SKU-001" class="form-control"
-                            style="background: #f8f9fa;">
+                        <div style="position: relative;">
+                            <input type="text" id="p-sku" placeholder="مثال: SKU-001" class="form-control"
+                                style="background: #f8f9fa; padding-left: 40px;">
+                            <button type="button"
+                                onclick="copyToClipboard(document.getElementById('p-sku').value, this)"
+                                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #7f8c8d; cursor: pointer; transition: color 0.2s;"
+                                onmouseover="this.style.color='var(--primary-color)'"
+                                onmouseout="this.style.color='#7f8c8d'" title="نسخ الكود">
+                                <i class="far fa-copy"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

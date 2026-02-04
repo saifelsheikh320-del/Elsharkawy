@@ -757,6 +757,9 @@
                         ` : '')}
                     </div>
                     <div class="product-info">
+                        ${p.sku ? `<div style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 5px; font-family: monospace; display: flex; align-items: center; gap: 5px;">
+                            ${p.sku}
+                        </div>` : ''}
                         <h3>${p.name}</h3>
                         <span class="product-price" style="color: var(--color-primary);">
                              ${oldPrice ? `<span style="text-decoration: line-through; color: #999; font-size: 0.9rem; margin-left: 8px;">${currency} ${oldPrice}</span>` : ''}

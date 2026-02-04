@@ -16,6 +16,39 @@ const debouncedRefreshProducts = debounce(() => {
     if (document.getElementById('products-table')) refreshProducts();
 }, 250);
 
+// Copy utility for Admin
+function copyToClipboard(text, element) {
+    if (!text || text === '-' || text === 'null') return;
+
+    // Fallback if browser blocks clipboard
+    const doCopy = (txt) => {
+        return navigator.clipboard.writeText(txt).catch(() => {
+            const textArea = document.createElement("textarea");
+            textArea.value = txt;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try { document.execCommand('copy'); } catch (e) { }
+            document.body.removeChild(textArea);
+        });
+    };
+
+    doCopy(text).then(() => {
+        showToast(`تم نسخ الكود: ${text}`, 'success');
+
+        if (element) {
+            const originalColor = element.style.color;
+            const originalBg = element.style.background;
+            element.style.background = '#27ae60';
+            element.style.color = 'white';
+            setTimeout(() => {
+                element.style.background = originalBg;
+                element.style.color = originalColor;
+            }, 1000);
+        }
+    });
+}
+window.copyToClipboard = copyToClipboard;
+
 const debouncedRefreshDashboard = debounce(() => {
     if (document.getElementById('total-revenue')) refreshDashboard();
 }, 250);
@@ -1191,14 +1224,16 @@ function refreshProducts() {
             </td>
             <td><span class="product-name-cell">${p.name}</span></td>
             <td>
-                <span class="badge badge-secondary editable-badge" 
-                    contenteditable="true" 
-                    data-product-id="${p.id}" 
-                    data-field="sku"
-                    onblur="quickUpdateProduct('${p.id}', 'sku', this.innerText)"
-                    onkeydown="if(event.key==='Enter'){event.preventDefault(); this.blur();}"
-                    style="background:#eee; color:#333; font-family:monospace; cursor: text; min-width: 60px; display: inline-block;"
-                    title="اضغط للتعديل">${p.sku || '-'}</span>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <span class="badge badge-secondary editable-badge" 
+                        contenteditable="true" 
+                        data-product-id="${p.id}" 
+                        data-field="sku"
+                        onblur="quickUpdateProduct('${p.id}', 'sku', this.innerText)"
+                        onkeydown="if(event.key==='Enter'){event.preventDefault(); this.blur();}"
+                        style="background:#eee; color:#333; font-family:monospace; cursor: text; min-width: 60px; display: inline-block;"
+                        title="اضغط للتعديل">${p.sku || '-'}</span>
+                </div>
             </td>
             <td>
                 <span class="badge badge-price editable-badge" 
@@ -1758,10 +1793,17 @@ function viewOrder(id) {
         modal.style.zIndex = '10000';
 
         let items = order.items.map(item => {
+            const product = db.getProduct(item.id);
+            const displaySku = item.sku || (product ? product.sku : '');
+            let skuBadge = displaySku ? `<span onclick="copyToClipboard('${displaySku}', this)" class="badge" style="background: #f1f2f6; color: #2c3e50; font-family: monospace; font-size: 0.8rem; padding: 4px 10px; border: 1px solid #dfe6e9; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-right: auto; order: 2; cursor: pointer;" title="اضغط لنسخ الكود">${displaySku}</span>` : '';
+
             let variantInfo = '';
             if (item.selectedColor) variantInfo += ` [اللون: ${item.selectedColor}]`;
             if (item.selectedSize) variantInfo += ` [المقاس: ${item.selectedSize}]`;
-            return `<li style="padding: 5px 0;">${item.name} (${item.quantity}x)${variantInfo}</li>`;
+            return `<li style="padding: 12px 0; border-bottom: 1px solid #f1f2f6; display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <span style="order: 1;">${item.name} <strong style="color: var(--primary-color);">(${item.quantity}x)</strong> ${variantInfo}</span>
+                ${skuBadge}
+            </li>`;
         }).join('');
 
         let paymentProofHTML = '';
