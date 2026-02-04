@@ -39,6 +39,70 @@ const BostaIntegration = {
         return t.toString().replace(/[إأآا]/g, 'ا').replace(/[ىي]/g, 'ي').replace(/[ةه]/g, 'ة').toLowerCase().trim();
     },
 
+    getPackageDetails(items) {
+        // Standard Bosta Sizes from User Image
+        // Dimensions L*W (Height assumed 15 for boxes, 20 for bag)
+        const sizes = [
+            { name: 'SMALL', label: 'صندوق صغير', l: 35, w: 25, h: 10, extra: 0 },
+            { name: 'MEDIUM', label: 'صندوق وسط', l: 40, w: 35, h: 15, extra: 0 },
+            { name: 'LARGE', label: 'صندوق كبير', l: 50, w: 45, h: 25, extra: 5 },
+            { name: 'X_LARGE', label: 'صندوق كبير جداً', l: 60, w: 50, h: 30, extra: 10 },
+            { name: 'WHITE_BAG', label: 'الكيس الأبيض', l: 100, w: 50, h: 15, extra: 15 },
+            { name: 'LIGHT_BULKY', label: 'شحنة خفيفة ثقيلة', l: 150, w: 100, h: 50, extra: 100 }
+        ];
+
+        let totalVolume = 0;
+        let totalWeight = 0;
+        let maxL = 0, maxW = 0, maxH = 0;
+
+        items.forEach(item => {
+            const dims = item.dimensions || { length: 15, width: 15, height: 10 }; // Default if missing
+            const qty = item.quantity || 1;
+            totalVolume += (dims.length * dims.width * dims.height) * qty;
+            totalWeight += (parseFloat(item.weight) || 0.5) * qty;
+
+            // For max dimensions, we take the largest single item
+            maxL = Math.max(maxL, dims.length);
+            maxW = Math.max(maxW, dims.width);
+            maxH = Math.max(maxH, dims.height);
+        });
+
+        // Heuristic: If multiple items, add 10% volume for packing space
+        if (items.length > 1) totalVolume *= 1.1;
+
+        // Find smallest box that fits totalVolume and max dimensions
+        let selected = sizes[sizes.length - 1]; // Default to largest
+        for (const s of sizes) {
+            const boxVol = s.l * s.w * s.h;
+            // Check if volume fits AND if the largest item fits physically
+            // (Sort dimensions to allow rotation)
+            const boxDims = [s.l, s.w, s.h].sort((a, b) => b - a);
+            const itemDims = [maxL, maxW, maxH].sort((a, b) => b - a);
+
+            const fitsPhysically = itemDims[0] <= boxDims[0] && itemDims[1] <= boxDims[1] && itemDims[2] <= boxDims[2];
+
+            if (totalVolume <= boxVol && fitsPhysically) {
+                selected = s;
+                break;
+            }
+        }
+
+        let weightExtra = 0;
+        if (totalWeight > 20) {
+            weightExtra = Math.ceil(totalWeight - 20) * 5;
+        }
+
+        return {
+            size: selected.name,
+            label: selected.label,
+            dimensions: { length: selected.l, width: selected.w, height: selected.h },
+            extra: selected.extra,
+            totalWeight: totalWeight,
+            weightExtra: weightExtra,
+            totalExtra: selected.extra + weightExtra
+        };
+    },
+
     async createDelivery(order) {
         if (!this.isConfigured()) throw new Error('يرجى ضبط API Key أولاً');
         try {
@@ -53,41 +117,61 @@ const BostaIntegration = {
             let receiverName = (cust.name || 'عميل').trim();
             const firstLine = `محافظة ${provinceName} - ${[cityField, addressField].filter(p => p && p.trim().length > 1).join(' - ') || 'العنوان بالتفصيل'}`;
 
-            const totalItems = (order.items || []).length;
+            const totalItemsCount = (order.items || []).reduce((sum, item) => sum + (item.quantity || 1), 0);
 
             const pm = String(order.paymentMethod || '').toLowerCase();
-            // Boolean logic for COD: include variations and exclude obvious prepaid methods
-            const isCOD = pm === 'cod' || pm.includes('cash') || pm.includes('عند الاستلام') || (pm !== 'vodafone' && pm !== 'instapay' && pm !== 'prepaid');
+            const isElectronic = pm.includes('vodafone') || pm.includes('instapay') || pm.includes('prepaid') || pm.includes('باي');
+            const isCOD = !isElectronic;
 
             const totalVal = Math.round(Number(order.total)) || 0;
             const allowInsp = !!order.allowInspection;
 
-            const isLarge = totalItems >= 4;
-            const packageSize = isLarge ? 'صندوق كبير' : 'صندوق صغير';
-            const weight = order.totalWeight || (isLarge ? 1.5 : 0.5);
+            // DYNAMIC PACKAGE CALCULATION
+            const pkg = this.getPackageDetails(order.items || []);
+            const packageSizeLabel = pkg.label;
+
+            // --- BOSTA FINAL FIX STRATEGY ---
+            // Issue: Dashboard always showed "Small".
+            // Solution: The correct field is `specs.packageType` (not just `size` or `type`).
+            // Valid Values: "Small", "Medium", "Large", "Light Bulky", "Heavy Bulky".
+
+            const storeSize = pkg.size.toUpperCase();
+            let bPackageType = 'Small'; // Default
+            let bDims = { length: 35, width: 25, height: 10 };
+            let bWeight = 1.5;
+
+            // Mapping Store Sizes to Bosta 'packageType'
+            if (storeSize === 'MEDIUM') {
+                bPackageType = 'Medium';
+                bDims = { length: 40, width: 35, height: 15 };
+                bWeight = 4.5;
+            } else if (['LARGE', 'X_LARGE', 'VERY_LARGE'].includes(storeSize)) {
+                bPackageType = 'Large';
+                bDims = { length: 50, width: 45, height: 25 };
+                bWeight = 10;
+            } else if (['WHITE_BAG', 'LIGHT_BULKY'].includes(storeSize)) {
+                bPackageType = 'Light Bulky';
+                bDims = { length: 100, width: 50, height: 20 };
+                bWeight = 15;
+            }
 
             const payload = {
-                type: 10,
+                type: 10, // Shipment Type: Deliver
+                allowOpening: allowInsp, // Try 1
+                allowToOpenPackage: allowInsp, // Try 2 (Likely correct per SDKs)
                 specs: {
+                    packageType: bPackageType,
+                    size: bPackageType.toUpperCase(),
+                    weight: bWeight,
+                    dimensions: bDims,
+                    allowOpening: allowInsp, // Try 3
                     packageDetails: {
-                        description: `طلب #${order.id} - ${packageSize}`,
-                        itemsCount: totalItems,
-                        packaging: "Box",
-                        size: isLarge ? "LARGE" : "SMALL",
-                        dimensions: isLarge ? { width: 40, height: 40, length: 40 } : { width: 15, height: 15, length: 15 },
-                        weight: weight,
-                        value: totalVal,
-                        declaredValue: totalVal
-                    },
-                    allowOpening: allowInsp,
-                    isAllowOpening: allowInsp
+                        description: `طلب #${order.id} - ${packageSizeLabel}`,
+                        itemsCount: totalItemsCount,
+                        allowOpening: allowInsp // Try 4
+                    }
                 },
                 cod: isCOD ? totalVal : 0,
-                cashOnDelivery: isCOD ? totalVal : 0,
-                amount: totalVal,
-                value: totalVal,
-                allowOpening: allowInsp,
-                isAllowOpening: allowInsp,
                 businessReference: order.id,
                 dropOffAddress: {
                     city: provinceCode,
@@ -96,12 +180,15 @@ const BostaIntegration = {
                     buildingNumber: '1', floor: 'G', apartment: '1'
                 },
                 receiver: {
-                    firstName: (receiverName).split(' ')[0],
-                    lastName: (receiverName).split(' ').slice(1).join(' ') || '.',
+                    firstName: receiverName.split(' ')[0],
+                    lastName: receiverName.split(' ').slice(1).join(' ') || '.',
                     phone: (cust.phone || '').toString().replace(/\D/g, '').replace(/^2/, '')
                 },
-                notes: (order.notes || 'يرجى الاتصال قبل الوصول') + ` (${packageSize})`
+                notes: (order.notes || 'يرجى الاتصال قبل الوصول') + ` | الحجم: ${packageSizeLabel}` + (allowInsp ? ' | السماح بفتح الشحنة' : ''),
             };
+
+            console.log('🚀 [Bosta Fixed Payload] packageType:', bPackageType);
+            console.log('📦 Full Payload:', payload);
 
             const response = await fetch(`${this.config.baseUrl}/api/v2/deliveries`, {
                 method: 'POST',
@@ -110,6 +197,7 @@ const BostaIntegration = {
             });
 
             const result = await response.json();
+            console.log('✅ Bosta Final Response:', result);
             if (!response.ok) throw new Error(result.message || 'Bosta Error');
             return { success: true, trackingNumber: result.trackingNumber, deliveryId: result._id };
         } catch (e) {
@@ -155,8 +243,14 @@ const BostaIntegration = {
 
             const result = await response.json();
             if (!response.ok) {
-                if (result.message && result.message.includes('already exists')) return { success: true, alreadyExists: true };
-                return { success: false, message: result.message || `Status ${response.status}` };
+                const msg = result.message || '';
+                // Case 1: Pickup already exists for these deliveries
+                if (msg.includes('already exists')) return { success: true, alreadyExists: true };
+                // Case 2: One pickup per district per day limit reached
+                if (msg.includes('one pickup per district') || msg.includes('one pickup per day')) {
+                    return { success: true, alreadyScheduled: true };
+                }
+                return { success: false, message: msg || `Status ${response.status}` };
             }
             return { success: true, pickupId: result._id };
         } catch (e) {
@@ -194,4 +288,4 @@ const BostaIntegration = {
 };
 
 window.BostaIntegration = BostaIntegration;
-console.log("Bosta V28.0 FIXED READY.");
+console.log("Bosta V31.0 CLEAN-SPECS READY.");

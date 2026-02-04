@@ -504,10 +504,13 @@ class StoreDB {
                                 // NEW: Auto-request Pickup immediately
                                 try {
                                     const pResult = await BostaIntegration.createPickup([result.deliveryId]);
-                                    if (pResult.success && typeof showToast === 'function') {
-                                        showToast(`تم إرسال الطلب لبوسطة وطلب المندوب بنجاح`, 'success', 'شحنة مؤكدة');
+                                    if (pResult.success) {
+                                        if (pResult.alreadyScheduled) {
+                                            showToast(`تم إنشاء البوليصة وتحديث جدول الاستلام المجدول مسبقاً لهذا اليوم`, 'success', 'شحنة مؤكدة');
+                                        } else {
+                                            showToast(`تم إرسال الطلب لبوسطة وطلب المندوب بنجاح`, 'success', 'شحنة مؤكدة');
+                                        }
                                     } else if (!pResult.success && typeof showToast === 'function') {
-                                        // Show specifically why pickup failed
                                         showToast(`تم إنشاء البوليصة ولكن فشل طلب المندوب: ${pResult.message}`, 'warning', 'تنبيه الاستلام');
                                     }
                                 } catch (pError) {

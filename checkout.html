@@ -341,7 +341,7 @@
         <div class="container">
             <nav style="justify-content: center;">
                 <a href="index.html" class="logo">
-                    <img src="images/logo.png" alt="الشرقاوي" style="height: 75px; width: auto; max-height: 80px;">
+                    <img src="images/logo.png" alt="الشرقاوي" style="height: 70px; width: auto;">
                 </a>
             </nav>
         </div>
@@ -380,17 +380,10 @@
                                     <h3>اختر المحافظة</h3>
                                     <div style="width: 20px;"></div>
                                 </div>
-                                <!-- Search Box - Hidden by default -->
-                                <div class="dropdown-search" id="province-search-box" style="display: none;">
+                                <!-- Search Box - Permanently Visible -->
+                                <div class="dropdown-search" id="province-search-box">
                                     <input type="text" id="province-search" placeholder="ابحث عن محافظتك..."
                                         oninput="filterProvinces()" autocomplete="off">
-                                </div>
-                                <!-- Show Search Button -->
-                                <div style="padding: 10px 12px; border-bottom: 1px solid #f1f5f9;">
-                                    <button type="button" onclick="toggleSearchBox()" id="search-toggle-btn"
-                                        style="width: 100%; padding: 8px; background: #f0f5f4; border: 1px solid var(--color-primary); border-radius: 8px; color: var(--color-primary); font-weight: 600; cursor: pointer; font-family: 'Cairo', sans-serif; transition: all 0.2s;">
-                                        <i class="fas fa-search"></i> ابحث عن محافظتك
-                                    </button>
                                 </div>
                                 <div class="dropdown-options" id="province-options">
                                     <!-- Items populated via JS -->
@@ -399,6 +392,25 @@
                         </div>
                         <input type="text" id="province" required
                             style="position: absolute; opacity: 0; pointer-events: none; height: 1px;">
+                    </div>
+
+                    <!-- Inspection Option -->
+                    <div
+                        style="margin-top: 1rem; background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #eee; display: flex; align-items: center; gap: 12px; transition: all 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input type="checkbox" id="allow-inspection" onchange="calculateTotalWithShipping()"
+                                style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--color-primary);">
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="allow-inspection"
+                                style="cursor: pointer; display: block; font-weight: 700; color: #2c3e50; margin-bottom: 2px;">
+                                المعاينة عند الاستلام
+                                <span
+                                    style="font-size: 0.8rem; background: #eee; color: #555; padding: 2px 8px; border-radius: 4px; margin-right: 5px;">اختياري</span>
+                            </label>
+                            <div style="font-size: 0.85rem; color: #7f8c8d;">يضيف <span
+                                    style="color: #e74c3c; font-weight: 700;">8 ج.م</span> لسعر الشحن</div>
+                        </div>
                     </div>
                 </form>
 
@@ -484,34 +496,36 @@
                 </div>
 
                 <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 2rem;">
-                    <div
-                        style="display: flex; justify-content: space-between; font-size: 1.1rem; color: #666; margin-bottom: 0.8rem;">
-                        <span id="subtotal-label">إجمالي المنتجات:</span>
-                        <span id="subtotal">0 ج.م</span>
-                    </div>
-                    <div
-                        style="display: flex; justify-content: space-between; font-size: 1.1rem; color: #666; margin-bottom: 0.8rem;">
-                        <span>مصاريف الشحن:</span>
-                        <span id="shipping-cost">0 ج.م</span>
-                    </div>
-                    <div id="discount-row"
-                        style="display: none; justify-content: space-between; font-size: 1.1rem; color: #e74c3c; margin-bottom: 1.2rem; font-weight: 700;">
-                        <span>خصم الكوبون:</span>
-                        <span id="discount-amount">-0 ج.م</span>
-                    </div>
-                    <div
-                        style="display: flex; justify-content: space-between; font-size: 1.8rem; font-weight: 900; border-top: 2px solid var(--color-primary); padding-top: 15px; color: #2c3e50;">
-                        <span data-i18n="total">الإجمالي النهائى:</span>
-                        <span id="checkout-total">0 ج.م</span>
-                    </div>
-                    <button type="button" onclick="submitOrder()" class="btn btn-primary" id="btn-place-order"
-                        style="width: 100%; margin-top: 1.5rem; height: 60px; font-size: 1.3rem; font-weight: 900; border-radius: 12px; box-shadow: 0 4px 15px rgba(72, 107, 101, 0.3);"
-                        data-i18n="place_order">تأكيد
-                        طلب الشراء</button>
 
+                    <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 2rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; font-size: 1.1rem; color: #666; margin-bottom: 0.8rem;">
+                            <span id="subtotal-label">إجمالي المنتجات:</span>
+                            <span id="subtotal">0 ج.م</span>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; font-size: 1.1rem; color: #666; margin-bottom: 0.8rem;">
+                            <span>مصاريف الشحن:</span>
+                            <span id="shipping-cost">0 ج.م</span>
+                        </div>
+                        <div id="discount-row"
+                            style="display: none; justify-content: space-between; font-size: 1.1rem; color: #e74c3c; margin-bottom: 1.2rem; font-weight: 700;">
+                            <span>خصم الكوبون:</span>
+                            <span id="discount-amount">-0 ج.م</span>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; font-size: 1.8rem; font-weight: 900; border-top: 2px solid var(--color-primary); padding-top: 15px; color: #2c3e50;">
+                            <span data-i18n="total">الإجمالي النهائى:</span>
+                            <span id="checkout-total">0 ج.م</span>
+                        </div>
+                        <button type="button" onclick="submitOrder()" class="btn btn-primary" id="btn-place-order"
+                            style="width: 100%; margin-top: 1.5rem; height: 60px; font-size: 1.3rem; font-weight: 900; border-radius: 12px; box-shadow: 0 4px 15px rgba(72, 107, 101, 0.3);"
+                            data-i18n="place_order">تأكيد
+                            طلب الشراء</button>
+
+                    </div>
                 </div>
             </div>
-        </div>
     </main>
 
     <footer>
@@ -559,6 +573,7 @@
     <script src="js/email-service.js"></script>
     <script src="js/data_v2.js?v=fix001"></script>
     <script src="js/translations.js"></script>
+    <script src="js/bosta-integration.js"></script>
     <script src="js/main.js"></script>
     <script>
         // Check if customer is logged in
@@ -642,18 +657,11 @@
             if (isActive) {
                 if (parentReveal) parentReveal.classList.add('lifting');
 
-                // Reset search box to hidden state
-                const searchBox = document.getElementById('province-search-box');
-                const toggleBtn = document.getElementById('search-toggle-btn');
-                if (searchBox && toggleBtn) {
-                    searchBox.style.display = 'none';
-                    toggleBtn.innerHTML = '<i class="fas fa-search"></i> ابحث عن محافظتك';
-                    toggleBtn.style.background = '#f0f5f4';
-                    toggleBtn.style.borderColor = '#486b65';
-                    toggleBtn.style.color = '#486b65';
-                    document.getElementById('province-search').value = '';
-                    filterProvinces();
-                }
+                // Focus on search input when dropdown opens
+                setTimeout(() => {
+                    const searchInput = document.getElementById('province-search');
+                    if (searchInput) searchInput.focus();
+                }, 100);
             } else {
                 if (parentReveal) parentReveal.classList.remove('lifting');
             }
@@ -709,31 +717,7 @@
             }
         }
 
-        function toggleSearchBox() {
-            const searchBox = document.getElementById('province-search-box');
-            const toggleBtn = document.getElementById('search-toggle-btn');
 
-            if (searchBox.style.display === 'none') {
-                searchBox.style.display = 'block';
-                toggleBtn.innerHTML = '<i class="fas fa-times"></i> إخفاء البحث';
-                toggleBtn.style.background = '#fff5f5';
-                toggleBtn.style.borderColor = '#e74c3c';
-                toggleBtn.style.color = '#e74c3c';
-
-                // Focus on search input
-                setTimeout(() => document.getElementById('province-search').focus(), 100);
-            } else {
-                searchBox.style.display = 'none';
-                toggleBtn.innerHTML = '<i class="fas fa-search"></i> ابحث عن محافظتك';
-                toggleBtn.style.background = '#f0f5f4';
-                toggleBtn.style.borderColor = '#486b65';
-                toggleBtn.style.color = '#486b65';
-
-                // Clear search
-                document.getElementById('province-search').value = '';
-                filterProvinces();
-            }
-        }
 
         function selectProvince(city, rate) {
             const hiddenInput = document.getElementById('province');
@@ -778,7 +762,7 @@
             const cityName = hiddenInput.value;
             let baseShipping = 0;
             let sizeSurcharge = 0;
-            let inspectionFee = 0;
+            let inspectionFee = (document.getElementById('allow-inspection') && document.getElementById('allow-inspection').checked) ? 8 : 0;
             let codCommission = 0;
 
             if (cityName) {
@@ -789,11 +773,18 @@
                     baseShipping = areaRate.rate || 0;
                 }
 
-                const totalQty = (cart || []).length;
-                if (totalQty >= 4) {
-                    sizeSurcharge = 10;
-                } else if (totalQty > 1) {
-                    sizeSurcharge = 5;
+                if (typeof BostaIntegration !== 'undefined') {
+                    const pkg = BostaIntegration.getPackageDetails(cart);
+                    sizeSurcharge = pkg.totalExtra || 0;
+                    hiddenInput.dataset.packageDetails = JSON.stringify(pkg);
+                    console.log('📦 Bosta Package:', pkg.label, 'Extra:', pkg.totalExtra);
+                } else {
+                    const totalQty = (cart || []).length;
+                    if (totalQty >= 4) {
+                        sizeSurcharge = 10;
+                    } else if (totalQty > 1) {
+                        sizeSurcharge = 5;
+                    }
                 }
 
                 const currentTotal = subtotal + baseShipping + sizeSurcharge + inspectionFee;
@@ -1029,7 +1020,8 @@
                     total: Math.max(0, subtotal + shippingCost - discount),
                     paymentMethod: selectedPayment,
                     paymentProof: paymentProof,
-                    allowInspection: false
+                    packageDetails: hiddenInput.dataset.packageDetails ? JSON.parse(hiddenInput.dataset.packageDetails) : null,
+                    allowInspection: document.getElementById('allow-inspection') ? document.getElementById('allow-inspection').checked : false
                 };
 
                 // C. Prepare Email Content

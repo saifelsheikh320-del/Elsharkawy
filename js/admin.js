@@ -374,6 +374,21 @@ function showSection(sectionId) {
 }
 
 function initDashboard() {
+    const admin = db.getLoggedAdmin();
+    const perms = admin.permissions || [];
+    const isSuper = perms.includes('all');
+
+    if (!isSuper && !perms.includes('dashboard')) {
+        // If no dashboard permission, find first available
+        const sections = ['products', 'orders', 'customers', 'abandoned', 'shipping', 'discounts', 'seo', 'settings', 'stats', 'moderation'];
+        for (const s of sections) {
+            if (perms.includes(s) || (s === 'abandoned' && perms.includes('orders')) || (s === 'shipping' && perms.includes('settings'))) {
+                showSection(s);
+                return;
+            }
+        }
+    }
+
     showSection('dashboard');
     if (typeof refreshDashboard === 'function') refreshDashboard();
     if (typeof checkNotifications === 'function') checkNotifications();
@@ -551,23 +566,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Determine start section
     const admin = db.getLoggedAdmin();
     const perms = admin.permissions || [];
+    const isSuper = perms.includes('all');
     let startSection = 'dashboard';
 
-    // If not super admin and no stats permission, maybe redirect to first allowed section
-    if (!perms.includes('all') && !perms.includes('stats') && startSection === 'dashboard') {
+    // If not super admin and no dashboard permission, redirect to first allowed section
+    if (!isSuper && !perms.includes('dashboard')) {
         const map = {
+            'dashboard': 'dashboard',
             'products': 'products',
             'orders': 'orders',
             'customers': 'customers',
+            'abandoned': 'abandoned',
+            'shipping': 'shipping',
             'discounts': 'discounts',
+            'seo': 'seo',
             'settings': 'settings',
-            'staff': 'settings',
-            'shipping': 'settings'
+            'stats': 'stats',
+            'moderation': 'moderation'
         };
-        for (const p of perms) {
-            if (map[p]) {
-                startSection = map[p];
+
+        let found = false;
+        // Priority order for startup
+        const priority = ['dashboard', 'orders', 'products', 'customers', 'stats', 'seo', 'settings'];
+        for (const p of priority) {
+            if (perms.includes(p)) {
+                startSection = p;
+                found = true;
                 break;
+            }
+        }
+
+        if (!found) {
+            for (const p of perms) {
+                if (map[p]) {
+                    startSection = map[p];
+                    found = true;
+                    break;
+                }
             }
         }
     }
@@ -703,7 +738,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     quantity: globalQty,
                     category: catEl.value,
                     sku: document.getElementById('p-sku').value.trim() || '', // Product Code/SKU
-                    weight: 0.5, // Default Weight since UI is removed
+
                     color: colors,
                     size: sizes,
                     variants: variants,
@@ -711,6 +746,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     image: currentProductImages[0] || '',
                     description: (quill && quill.root) ? quill.root.innerHTML : '',
                     isVisible: isVisibleValue,
+                    dimensions: {
+                        length: parseFloat(document.getElementById('p-length').value) || 0,
+                        width: parseFloat(document.getElementById('p-width').value) || 0,
+                        height: parseFloat(document.getElementById('p-height').value) || 0
+                    },
+                    weight: parseFloat(document.getElementById('p-weight').value) || 0.5,
                     archived: false
                 };
 
@@ -889,15 +930,18 @@ function applyPermissions() {
     const isSuper = perms.includes('all');
 
     const menuMap = {
+        'dashboard': 'dashboard',
         'products': 'products',
         'orders': 'orders',
         'customers': 'customers',
         'settings': 'settings',
         'stats': 'stats',
-        'abandoned': 'orders',
+        'abandoned': 'abandoned',
         'discounts': 'discounts',
-        'staff': 'settings', // Staff management requires settings permission
-        'shipping': 'settings' // Shipping management requires settings permission
+        'staff': 'settings',
+        'shipping': 'shipping',
+        'seo': 'seo',
+        'moderation': 'moderation'
     };
 
     document.querySelectorAll('.menu-item').forEach(item => {
@@ -906,7 +950,7 @@ function applyPermissions() {
             const sectionMatch = onClick.match(/'([^']+)'/);
             if (!sectionMatch) return;
             const section = sectionMatch[1];
-            if (section === 'dashboard') return;
+            // if (section === 'dashboard') return; // Check dashboard permission normally now
 
             const reqPerm = menuMap[section];
             let shouldShow = isSuper || perms.includes(reqPerm);
@@ -947,18 +991,21 @@ function showSection(sectionId) {
     const isSuper = perms.includes('all');
 
     const permMap = {
+        'dashboard': 'dashboard',
         'products': 'products',
         'orders': 'orders',
         'customers': 'customers',
         'settings': 'settings',
         'stats': 'stats',
-        'abandoned': 'orders',
+        'abandoned': 'abandoned',
         'discounts': 'discounts',
         'staff': 'settings',
-        'shipping': 'settings'
+        'shipping': 'shipping',
+        'seo': 'seo',
+        'moderation': 'moderation'
     };
 
-    if (sectionId !== 'dashboard' && !isSuper && !perms.includes(permMap[sectionId])) {
+    if (!isSuper && !perms.includes(permMap[sectionId])) {
         showAlert('ليس لديك صلاحية للوصول لهذا القسم', 'error');
         return;
     }
@@ -1783,6 +1830,28 @@ function viewOrder(id) {
                     <p style="margin: 5px 0;"><strong>الحالة:</strong> <span style="color: ${getStatusColor(order.status)}; font-weight: bold;">${getStatusName(order.status)}</span></p>
                 </div>
 
+                ${order.packageDetails ? `
+                <div style="background: #eef2f7; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid #3498db;">
+                    <h4 style="color: #2980b9; margin-bottom: 10px;">
+                        <i class="fas fa-box-open"></i> تفاصيل التغليف (تلقائي)
+                    </h4>
+                    <p style="margin: 5px 0;"><strong>حجم الطرد:</strong> <span style="color: #2c3e50; font-weight: 800;">${order.packageDetails.label}</span></p>
+                    <p style="margin: 5px 0; font-size: 0.85rem; color: #666;">
+                        <strong>أبعاد الصندوق:</strong> ${order.packageDetails.dimensions.length} × ${order.packageDetails.dimensions.width} × ${order.packageDetails.dimensions.height} سم
+                    </p>
+                    <p style="margin: 5px 0; font-size: 0.85rem; color: #666;">
+                        <strong>إجمالي الوزن:</strong> ${order.packageDetails.totalWeight} كجم
+                    </p>
+                    ${order.packageDetails.extra > 0 ? `<p style="margin: 5px 0; color: #e67e22; font-weight: 700;">+ رسوم حجم إضافي: ${order.packageDetails.extra} ج.م</p>` : ''}
+                    ${order.packageDetails.weightExtra > 0 ? `<p style="margin: 5px 0; color: #e67e22; font-weight: 700;">+ رسوم وزن زائد (>20كجم): ${order.packageDetails.weightExtra} ج.م</p>` : ''}
+                    ${order.allowInspection ? `
+                    <div style="margin-top: 10px; padding: 8px 12px; background: #eafaf1; border-radius: 6px; border: 1px dashed #2ecc71; color: #27ae60; font-weight: 700; display: inline-block;">
+                        <i class="fas fa-search-plus"></i> تم طلب المعاينة عند الاستلام (+8 ج.م)
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
+
                 ${paymentProofHTML}
 
                 <div style="margin-top: 20px; text-align: center; display: flex; gap: 10px; justify-content: center;">
@@ -2035,6 +2104,14 @@ async function openProductModal(productId = null) {
             console.log('📝 Product isVisible value from database:', product.isVisible);
             console.log('📝 Calculated checkbox value:', isVisibleFromProduct);
             document.getElementById('p-visible').checked = isVisibleFromProduct;
+
+            // Load dimensions
+            const dims = product.dimensions || { length: 0, width: 0, height: 0 };
+            document.getElementById('p-length').value = dims.length || '';
+            document.getElementById('p-width').value = dims.width || '';
+            document.getElementById('p-height').value = dims.height || '';
+            document.getElementById('p-weight').value = product.weight || '';
+
             // Removed p-collections as per request
 
             if (quill) {
@@ -2185,7 +2262,7 @@ function addVariantRow(size = '', price = '', quantity = '', color = '') {
 
     const row = document.createElement('div');
     row.className = 'variant-row';
-    row.style = 'display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 15px; align-items: end; background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);';
+    // Styles moved to dashboard.html <style> section
 
     // Check if this is the FIRST variant row
     const isFirstRow = container.children.length === 0;
@@ -2209,7 +2286,7 @@ function addVariantRow(size = '', price = '', quantity = '', color = '') {
             <label class="small" style="font-weight:700; color:#444; margin-bottom:5px; display:block;">الكمية</label>
             <input type="number" class="form-control v-qty" value="${quantity}" placeholder="0" style="border-radius:8px; padding:10px;" ${syncQtyAttribute}>
         </div>
-        <button type="button" class="btn-delete" onclick="this.parentElement.remove(); updateTotalQtyFromVariants();" style="margin-bottom: 5px; height:42px; width:42px; border-radius:10px; border:none; background:#fff1f0; color:#f5222d; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+        <button type="button" class="btn-delete" onclick="this.parentElement.remove(); updateTotalQtyFromVariants();">
             <i class="fas fa-trash"></i>
         </button>
     `;

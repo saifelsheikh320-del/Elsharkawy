@@ -600,6 +600,83 @@
             background-color: #f1f5f9 !important;
         }
 
+        /* Variants Styling & Responsiveness */
+        .variant-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr auto;
+            gap: 12px;
+            margin-bottom: 15px;
+            align-items: end;
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .variant-row:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 650px) {
+            .variant-row {
+                grid-template-columns: 1fr 1fr;
+                /* 2 columns on mobile */
+                gap: 15px;
+                padding-bottom: 70px;
+                /* Space for the delete button at bottom */
+            }
+
+            .variant-row .form-group {
+                margin-bottom: 0 !important;
+            }
+
+            .variant-row .btn-delete {
+                position: absolute;
+                bottom: 15px;
+                left: 15px;
+                right: 15px;
+                width: calc(100% - 30px) !important;
+                height: 44px !important;
+                margin-bottom: 0 !important;
+                justify-content: center !important;
+                background: #fff1f0 !important;
+                border: 1px solid #ffa39e !important;
+                display: flex !important;
+                align-items: center;
+                border-radius: 10px;
+            }
+
+            .variant-row .btn-delete::after {
+                content: ' حذف هذا المقاس';
+                font-size: 0.9rem;
+                font-weight: 700;
+                margin-right: 8px;
+            }
+        }
+
+        .variant-row .btn-delete {
+            margin-bottom: 5px;
+            height: 42px;
+            width: 42px;
+            border-radius: 10px;
+            border: none;
+            background: #fff1f0;
+            color: #f5222d;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .variant-row .btn-delete:hover {
+            background: #ff4d4f;
+            color: white;
+        }
+
         .sortable-chosen {
             background-color: #fff !important;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -3691,10 +3768,35 @@
                         background: rgba(231, 76, 60, 0.1);
                         color: #e74c3c;
                     }
+
+                    .bg-seo {
+                        background: rgba(43, 203, 186, 0.1);
+                        color: #2bcbba;
+                    }
+
+                    .bg-dashboard {
+                        background: rgba(69, 170, 242, 0.1);
+                        color: #45aaf2;
+                    }
+
+                    .bg-shipping {
+                        background: rgba(253, 150, 68, 0.1);
+                        color: #fd9644;
+                    }
+
+                    .bg-abandoned {
+                        background: rgba(136, 84, 208, 0.1);
+                        color: #8854d0;
+                    }
                 </style>
                 <label style="font-weight: 800; display: block; margin-top: 1rem;"><i class="fas fa-shield-alt"
                         style="margin-left: 5px;"></i> تحديد الصلاحيات</label>
                 <div class="permissions-grid">
+                    <label class="perm-item">
+                        <input type="checkbox" value="dashboard">
+                        <div class="perm-icon bg-dashboard"><i class="fas fa-home"></i></div>
+                        <span class="perm-label">الرئيسية</span>
+                    </label>
                     <label class="perm-item">
                         <input type="checkbox" value="products">
                         <div class="perm-icon bg-products"><i class="fas fa-box"></i></div>
@@ -3724,6 +3826,22 @@
                         <input type="checkbox" value="settings">
                         <div class="perm-icon bg-settings"><i class="fas fa-cog"></i></div>
                         <span class="perm-label">الإعدادات</span>
+                    </label>
+
+                    <label class="perm-item">
+                        <input type="checkbox" value="seo">
+                        <div class="perm-icon bg-seo"><i class="fas fa-search"></i></div>
+                        <span class="perm-label">تحسين SEO</span>
+                    </label>
+                    <label class="perm-item">
+                        <input type="checkbox" value="shipping">
+                        <div class="perm-icon bg-shipping"><i class="fas fa-truck"></i></div>
+                        <span class="perm-label">الشحن</span>
+                    </label>
+                    <label class="perm-item">
+                        <input type="checkbox" value="abandoned">
+                        <div class="perm-icon bg-abandoned"><i class="fas fa-shopping-basket"></i></div>
+                        <span class="perm-label">السلّات المتروكة</span>
                     </label>
                     <label class="perm-item">
                         <input type="checkbox" value="moderation">
@@ -3858,6 +3976,26 @@
                         <label>كود المنتج (SKU)</label>
                         <input type="text" id="p-sku" placeholder="مثال: SKU-001" class="form-control"
                             style="background: #f8f9fa;">
+                    </div>
+                </div>
+
+                <div class="stats-grid"
+                    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; background: #f1f5f9; padding: 10px; border-radius: 10px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.8rem; font-weight: 800; color: #486b65;">الطول (سم)</label>
+                        <input type="number" id="p-length" placeholder="0" class="form-control" step="0.1">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.8rem; font-weight: 800; color: #486b65;">العرض (سم)</label>
+                        <input type="number" id="p-width" placeholder="0" class="form-control" step="0.1">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.8rem; font-weight: 800; color: #486b65;">الارتفاع (سم)</label>
+                        <input type="number" id="p-height" placeholder="0" class="form-control" step="0.1">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.8rem; font-weight: 800; color: #e67e22;">الوزن (كجم)</label>
+                        <input type="number" id="p-weight" placeholder="0.5" class="form-control" step="0.01">
                     </div>
                 </div>
 
