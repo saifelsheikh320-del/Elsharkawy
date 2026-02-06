@@ -1143,6 +1143,9 @@ function refreshDashboard() {
                             <button onclick="viewOrder('${o.id}')" class="btn-icon btn-edit" title="عرض">
                                 <i class="fas fa-eye"></i>
                             </button>
+                            <button onclick="openWhatsAppForOrder('${o.id}', '${(o.customer?.name || '').replace(/'/g, "\\'")}', '${o.customer?.phone || ''}')" class="btn-icon btn-whatsapp" title="تأكيد واتساب" style="background: rgba(37, 211, 102, 0.1); color: #25D366;">
+                                <i class="fab fa-whatsapp"></i>
+                            </button>
                             <button onclick="printShippingLabel('${o.id}')" class="btn-icon btn-print" title="بوليصة الشحن">
                                 <i class="fas fa-print"></i>
                             </button>
@@ -1676,6 +1679,9 @@ function refreshOrders() {
                 <div style="display: flex; gap: 5px; justify-content: center;">
                     <button onclick="viewOrder('${o.id}')" class="btn-icon btn-edit" title="عرض">
                         <i class="fas fa-eye"></i>
+                    </button>
+                    <button onclick="openWhatsAppForOrder('${o.id}', '${customerName}', '${o.customer?.phone || ''}')" class="btn-icon btn-whatsapp" title="تأكيد واتساب" style="background: rgba(37, 211, 102, 0.1); color: #25D366;">
+                        <i class="fab fa-whatsapp"></i>
                     </button>
                     <button onclick="printShippingLabel('${o.id}')" class="btn-icon btn-print" title="بوليصة الشحن">
                         <i class="fas fa-print"></i>
@@ -4643,5 +4649,61 @@ function loadBostaRates() {
     });
 }
 window.loadBostaRates = loadBostaRates;
+
+// WhatsApp Helper
+function openWhatsAppForOrder(orderId, customerName, phone) {
+    if (!phone) {
+        showToast('لا يوجد رقم هاتف للعميل', 'error');
+        return;
+    }
+
+    // 1. Fetch Order Details to get Items
+    let itemsList = "";
+    let total = "0";
+
+    if (typeof db !== 'undefined') {
+        const order = db.getOrders().find(o => o.id == orderId);
+        if (order) {
+            itemsList = order.items.map(i => {
+                let details = i.name;
+                if (i.quantity > 1) details += ` (${i.quantity} قطع)`;
+                if (i.selectedSize) details += ` [مقاس: ${i.selectedSize}]`;
+                if (i.selectedColor) details += ` [لون: ${i.selectedColor}]`;
+                return `- ${details}`;
+            }).join('\n');
+            total = order.total;
+        }
+    }
+
+    // 2. Clean Phone Number
+    let cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.startsWith('0')) {
+        cleanPhone = '2' + cleanPhone;
+    } else if (!cleanPhone.startsWith('20')) {
+        cleanPhone = '20' + cleanPhone;
+    }
+
+    const shortId = orderId.includes('-') ? orderId.split('-').pop() : orderId;
+    const lineBreak = '%0A';
+
+    // Build Message (Plain Text Only - No Emojis)
+    let finalMsg = '';
+    finalMsg += encodeURIComponent(`أهلاً بحضرتك يا ${customerName || 'فندم'}`) + lineBreak;
+    finalMsg += encodeURIComponent('معاك متجر الشرقاوي') + lineBreak + lineBreak;
+    finalMsg += encodeURIComponent(`بنأكد استلام طلبك رقم #${shortId}`) + lineBreak + lineBreak;
+
+    finalMsg += encodeURIComponent('*تفاصيل الطلب:*') + lineBreak;
+    finalMsg += encodeURIComponent(itemsList) + lineBreak + lineBreak;
+
+    finalMsg += encodeURIComponent(`*الإجمالي:* ${total} ج.م`) + lineBreak + lineBreak;
+
+    finalMsg += encodeURIComponent('من فضلك مراجعة البيانات، ولو تمام يا ريت ترد علينا بكلمة "تأكيد" عشان نبدأ نجهز الأوردر ونشحنه لحضرتك فوراً') + lineBreak + lineBreak;
+
+    finalMsg += encodeURIComponent('شكراً لثقتك فينا');
+
+    // Open WhatsApp
+    const url = `https://wa.me/${cleanPhone}?text=${finalMsg}`;
+    window.open(url, '_blank');
+}
 
 
