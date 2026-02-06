@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     navigationHighlight();
     injectLangSwitcher();
     injectMobileNav();
+    injectBottomNav();
     initAuth();
     applySiteSettings();
 
@@ -241,13 +242,13 @@ function initAuth() {
         if (shopLinkLi) {
             const ordersLi = document.createElement('li');
             ordersLi.id = 'my-orders-li';
-            ordersLi.innerHTML = `<a href="track-orders" data-i18n="my_orders">${t.my_orders}</a>`;
+            ordersLi.innerHTML = `<a href="track-orders.html" data-i18n="my_orders">${t.my_orders}</a>`;
             shopLinkLi.after(ordersLi);
         }
 
-        authLinkContainer.innerHTML = `<a href="#" onclick="handleLogout(event)">${t.logout} (${customer.name})</a>`;
+        authLinkContainer.innerHTML = `<a href="account.html">${t.my_account} (${customer.name})</a>`;
     } else {
-        authLinkContainer.innerHTML = `<a href="login" data-i18n="login">${t.login}</a>`;
+        authLinkContainer.innerHTML = `<a href="login.html" data-i18n="login">${t.login}</a>`;
     }
 }
 
@@ -325,6 +326,16 @@ function injectConfirmModal() {
             <h3 id="confirm-title" style="margin-bottom: 15px; color: #2c3e50; font-size: 1.4rem;">تأكيد الإجراء</h3>
             <p id="confirm-message" style="margin-bottom: 20px; color: #555; font-size: 1.15rem; line-height: 1.6; font-weight: 800;">Message text here</p>
             <input type="number" id="confirm-input" style="display: none; width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #ddd; margin-bottom: 20px; font-family: inherit; font-size: 1rem; text-align: center; outline: none; transition: border-color 0.3s;" placeholder="...">
+            <div id="password-reset-inputs" style="display: none; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+                <div style="position: relative;">
+                    <input type="password" id="new-password-input" style="width: 100%; padding: 12px 40px 12px 15px; border-radius: 8px; border: 2px solid #ddd; font-family: inherit; font-size: 1rem; outline: none; text-align: right;" placeholder="كلمة المرور الجديدة">
+                    <i class="fas fa-eye" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #7f8c8d;" onclick="togglePassword('new-password-input', this)"></i>
+                </div>
+                <div style="position: relative;">
+                    <input type="password" id="confirm-password-input" style="width: 100%; padding: 12px 40px 12px 15px; border-radius: 8px; border: 2px solid #ddd; font-family: inherit; font-size: 1rem; outline: none; text-align: right;" placeholder="تأكيد كلمة المرور">
+                    <i class="fas fa-eye" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #7f8c8d;" onclick="togglePassword('confirm-password-input', this)"></i>
+                </div>
+            </div>
             <div style="display: flex; gap: 15px; justify-content: center;">
                 <button id="confirm-yes" style="
                     background: #2c3e50; 
@@ -548,6 +559,111 @@ window.showPrompt = function (message, defaultValue = '') {
     });
 };
 
+window.showPasswordResetPrompt = function () {
+    return new Promise((resolve) => {
+        injectConfirmModal();
+        const modal = document.getElementById('custom-confirm-modal');
+        const content = modal.querySelector('.confirm-content');
+        const msgEl = modal.querySelector('#confirm-message');
+        const inputsContainer = modal.querySelector('#password-reset-inputs');
+        const pass1 = modal.querySelector('#new-password-input');
+        const pass2 = modal.querySelector('#confirm-password-input');
+        const btnYes = modal.querySelector('#confirm-yes');
+        const btnNo = modal.querySelector('#confirm-no');
+        const iconContainer = modal.querySelector('.confirm-content > div:first-child');
+
+        const lang = localStorage.getItem('elsharkawy_lang') || 'ar';
+        const t = {
+            title: lang === 'ar' ? 'تغيير كلمة المرور' : 'Change Password',
+            msg: lang === 'ar' ? 'يرجى إدخال كلمة المرور الجديدة وتأكيدها' : 'Please enter and confirm your new password',
+            yes: lang === 'ar' ? 'تحديث' : 'Update',
+            no: lang === 'ar' ? 'إلغاء' : 'Cancel'
+        };
+
+        if (iconContainer) {
+            iconContainer.innerHTML = '<i class="fas fa-key"></i>';
+            iconContainer.style.background = '#e8f5e9';
+            iconContainer.style.color = '#4caf50';
+        }
+
+        modal.querySelector('#confirm-title').innerText = t.title;
+        btnYes.innerText = t.yes;
+        btnNo.innerText = t.no;
+        msgEl.innerText = t.msg;
+
+        inputsContainer.style.display = 'flex';
+        pass1.value = '';
+        pass2.value = '';
+        pass1.type = 'password';
+        pass2.type = 'password';
+
+        // Reset eye icons
+        inputsContainer.querySelectorAll('.fa-eye-slash').forEach(icon => {
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        });
+
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => {
+            modal.style.opacity = '1';
+            content.style.transform = 'scale(1)';
+            setTimeout(() => pass1.focus(), 300);
+        });
+
+        // Add Enter key support for both fields
+        const onEnter = (e) => {
+            if (e.key === 'Enter') {
+                if (e.target === pass1) pass2.focus();
+                else if (e.target === pass2) handleResponse(true);
+            }
+        };
+        pass1.onkeyup = onEnter;
+        pass2.onkeyup = onEnter;
+
+        const handleResponse = (result) => {
+            const p1 = pass1.value;
+            const p2 = pass2.value;
+
+            if (result) {
+                if (p1.length < 6) {
+                    showToast(lang === 'ar' ? 'كلمة المرور قصيرة جداً' : 'Password too short', 'error');
+                    return;
+                }
+                if (p1 !== p2) {
+                    showToast(lang === 'ar' ? 'كلمات المرور غير متطابقة' : 'Passwords do not match', 'error');
+                    return;
+                }
+            }
+
+            inputsContainer.style.display = 'none';
+            closeConfirm();
+            resolve(result ? p1 : null);
+        };
+
+        const newYes = btnYes.cloneNode(true);
+        const newNo = btnNo.cloneNode(true);
+        btnYes.parentNode.replaceChild(newYes, btnYes);
+        btnNo.parentNode.replaceChild(newNo, btnNo);
+
+        newYes.onclick = () => handleResponse(true);
+        newNo.onclick = () => handleResponse(false);
+    });
+};
+
+function togglePassword(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
 function closeConfirm() {
     const modal = document.getElementById('custom-confirm-modal');
     const content = modal.querySelector('.confirm-content');
@@ -622,7 +738,8 @@ function injectLangSwitcher() {
     const navIcons = document.querySelector('.nav-icons');
     const navLinks = document.querySelector('.nav-links');
 
-    // 1. Desktop Switcher (next to cart)
+    // 1. Desktop Switcher (next to cart) - Disabled as requested
+    /*
     if (navIcons) {
         const btnDesktop = document.createElement('button');
         btnDesktop.className = 'btn btn-secondary hide-mobile';
@@ -640,6 +757,7 @@ function injectLangSwitcher() {
         };
         navIcons.insertBefore(btnDesktop, navIcons.firstChild);
     }
+    */
 
     // 2. Mobile Switcher (inside 3-lines menu)
     if (navLinks) {
@@ -673,18 +791,152 @@ function updateAllSwitcherButtons(lang) {
 
 function injectMobileNav() {
     const nav = document.querySelector('nav');
-    if (nav && !document.querySelector('.mobile-menu-btn')) {
-        const btn = document.createElement('button');
+    if (!nav) return;
+
+    // 1. Handle Hamburger Button
+    let btn = document.querySelector('.mobile-menu-btn');
+    if (!btn) {
+        btn = document.createElement('button');
         btn.className = 'mobile-menu-btn';
         btn.innerHTML = '<span></span><span></span><span></span>';
-        btn.style.display = 'none'; // Hidden by default, shown by CSS media query
-
-        btn.onclick = () => {
-            nav.classList.toggle('active');
-            btn.classList.toggle('open');
-        };
-
         nav.insertBefore(btn, nav.firstChild);
+    }
+
+    btn.onclick = (e) => {
+        e.stopPropagation();
+        toggleSidebar(true);
+    };
+
+    // 2. Inject Sidebar Overlay & Nav
+    if (!document.querySelector('.sidebar-nav')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        overlay.onclick = () => toggleSidebar(false);
+
+        const sidebar = document.createElement('div');
+        sidebar.className = 'sidebar-nav';
+
+        sidebar.innerHTML = `
+            <div class="sidebar-header">
+                <img src="images/logo.png" alt="الشرقاوي" class="sidebar-logo">
+                <div class="sidebar-close" onclick="toggleSidebar(false)">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="sidebar-body">
+                <ul class="sidebar-links">
+                    <li><a href="index.html" onclick="toggleSidebar(false)"><i class="fas fa-home"></i> <span data-i18n="home">الرئيسية</span></a></li>
+                    <li><a href="products.html" onclick="toggleSidebar(false)"><i class="fas fa-store"></i> <span data-i18n="shop">المتجر</span></a></li>
+                    <li class="sidebar-dropdown">
+                        <div class="dropdown-trigger" onclick="toggleSidebarDropdown(this)">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <i class="fas fa-file-alt"></i>
+                                <span data-i18n="policies">السياسات</span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <ul class="dropdown-content">
+                            <li><a href="policies.html#terms" onclick="toggleSidebar(false)">الشروط والأحكام</a></li>
+                            <li><a href="policies.html#shipping" onclick="toggleSidebar(false)">سياسة الشحن</a></li>
+                            <li><a href="policies.html#refund" onclick="toggleSidebar(false)">سياسة الاسترجاع</a></li>
+                            <li><a href="policies.html#privacy" onclick="toggleSidebar(false)">سياسة الخصوصية</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="sidebar-footer">
+                <div class="sidebar-auth" id="sidebar-auth-container" style="margin-bottom: 20px;">
+                    <!-- Auth injected here -->
+                </div>
+                <div class="sidebar-social" style="margin-bottom: 20px;">
+                    <a href="https://www.facebook.com/profile.php?id=61579631342353" target="_blank"><i class="fab fa-facebook"></i></a>
+                    <a href="https://www.instagram.com/elsharkawyfurnitureaccessories?igsh=MXRxdzZtNHd0cGV5Ng==" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://wa.me/201154025770" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                </div>
+                <button class="btn btn-secondary sidebar-lang-btn" style="width: 100%; height: 45px; border-radius: 10px; font-weight: 700; font-size: 0.9rem;">
+                    ${currentLang === 'ar' ? 'English' : 'عربي'}
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(sidebar);
+
+        // Sidebar Lang Toggle
+        const langBtn = sidebar.querySelector('.sidebar-lang-btn');
+        langBtn.onclick = () => {
+            const newLang = currentLang === 'ar' ? 'en' : 'ar';
+            setLanguage(newLang);
+            langBtn.innerText = newLang === 'ar' ? 'English' : 'عربي';
+            toggleSidebar(false);
+        };
+    }
+}
+
+window.toggleSidebar = function (show) {
+    const nav = document.querySelector('nav');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const sidebar = document.querySelector('.sidebar-nav');
+
+    if (nav) nav.classList.toggle('active', show);
+    if (overlay) overlay.classList.toggle('active', show);
+    if (sidebar) sidebar.classList.toggle('active', show);
+
+    // Hide WhatsApp Float
+    const waFloat = document.querySelector('.whatsapp-float');
+    if (waFloat) {
+        waFloat.style.opacity = show ? '0' : '1';
+        waFloat.style.pointerEvents = show ? 'none' : 'auto';
+    }
+
+    document.body.style.overflow = show ? 'hidden' : '';
+
+    // Auth Update in Sidebar
+    if (show) updateSidebarAuth();
+};
+
+window.toggleSidebarDropdown = function (trigger) {
+    const parent = trigger.parentElement;
+    const content = parent.querySelector('.dropdown-content');
+    const isShowing = content.classList.contains('show');
+
+    // Close others
+    document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
+    document.querySelectorAll('.dropdown-trigger').forEach(t => t.classList.remove('active'));
+
+    if (!isShowing) {
+        content.classList.add('show');
+        trigger.classList.add('active');
+    }
+};
+
+function updateSidebarAuth() {
+    const container = document.getElementById('sidebar-auth-container');
+    if (!container) return;
+
+    const customer = db.getCustomer();
+    const lang = currentLang;
+
+    if (customer && customer.name) {
+        container.innerHTML = `
+            <div onclick="window.location.href='account.html'" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8f9fa; border-radius: 12px; cursor: pointer;">
+                <div style="width: 40px; height: 40px; background: var(--color-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div style="flex: 1;">
+                    <p style="font-size: 0.8rem; color: #777; margin: 0;">${lang === 'ar' ? 'أهلاً بك' : 'Welcome'}</p>
+                    <p style="font-size: 1rem; font-weight: 800; color: var(--text-color); margin: 0;">${customer.name}</p>
+                </div>
+                <i class="fas fa-chevron-left" style="font-size: 0.8rem; color: #ccc;"></i>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <button class="btn btn-primary" onclick="window.location.href='login.html'" style="width: 100%; height: 50px; border-radius: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fas fa-sign-in-alt"></i>
+                <span data-i18n="my_account">${lang === 'ar' ? 'حسابي' : 'My Account'}</span>
+            </button>
+        `;
     }
 }
 
@@ -909,5 +1161,124 @@ window.closeAnnouncementBar = function () {
         }
     }
 };
+
+// =========================================
+// Mobile Bottom Navigation Logic
+// =========================================
+
+function injectBottomNav() {
+    // Don't inject on admin pages
+    if (window.location.pathname.includes('admin')) return;
+
+    // Only inject if not already present
+    if (document.querySelector('.bottom-nav')) return;
+
+    const nav = document.createElement('div');
+    nav.className = 'bottom-nav';
+    nav.innerHTML = `
+        <a href="index.html" class="nav-item" data-page="index">
+            <div class="nav-indicator"></div>
+            <i class="fas fa-home"></i>
+            <span data-i18n="home">الرئيسية</span>
+        </a>
+        <a href="products.html" class="nav-item" data-page="products">
+            <div class="nav-indicator"></div>
+            <i class="fas fa-store"></i>
+            <span data-i18n="shop">المتجر</span>
+        </a>
+        <a href="cart.html" class="nav-item" data-page="cart" style="position: relative;">
+            <div class="nav-indicator"></div>
+            <i class="fas fa-shopping-bag"></i>
+            <span data-i18n="cart_title">السلة</span>
+            <span class="bottom-cart-badge" style="display: none;">0</span>
+        </a>
+        <a href="track-orders.html" class="nav-item" data-page="track-orders">
+            <div class="nav-indicator"></div>
+            <i class="fas fa-box"></i>
+            <span data-i18n="my_orders">طلباتي</span>
+        </a>
+        <a href="#" class="nav-item" id="bottom-account-btn">
+            <div class="nav-indicator"></div>
+            <i class="fas fa-user"></i>
+            <span data-i18n="my_account">حسابي</span>
+        </a>
+    `;
+
+    // Add Spacer to prevent footer overlap
+    const spacer = document.createElement('div');
+    spacer.className = 'bottom-nav-spacer';
+    document.body.appendChild(spacer);
+
+    document.body.appendChild(nav);
+
+    // Active State Logic
+    const currentPath = window.location.pathname;
+    const page = currentPath.split('/').pop().replace('.html', '') || 'index';
+
+    // Simple matching
+    nav.querySelectorAll('.nav-item').forEach(item => {
+        const href = item.getAttribute('href');
+        if (href && (href === page + '.html' || href === page || (page === 'index' && href === 'index.html'))) {
+            item.classList.add('active');
+        } else if (page === 'product' && href === 'products.html') {
+            // Keep 'products' active if viewing single product
+            item.classList.add('active');
+        }
+    });
+
+    // Account Logic
+    const accountBtn = nav.querySelector('#bottom-account-btn');
+    if (accountBtn) {
+        accountBtn.onclick = (e) => {
+            e.preventDefault();
+            if (typeof db !== 'undefined' && db.isCustomerLoggedIn && db.isCustomerLoggedIn()) {
+                window.location.href = 'account.html';
+            } else {
+                window.location.href = 'login.html';
+            }
+        };
+
+        // Highlight if on account or login page
+        if (page === 'account' || page === 'login') {
+            accountBtn.classList.add('active');
+        }
+    }
+
+    // Check if on track-orders
+    if (page === 'track-orders') {
+        const trackLink = nav.querySelector('a[href="track-orders.html"]');
+        if (trackLink) trackLink.classList.add('active');
+    }
+
+    // Initial Badge Update
+    updateBottomCartBadge();
+
+    // Listen for cart updates
+    window.addEventListener('cartUpdated', updateBottomCartBadge);
+}
+
+function updateBottomCartBadge() {
+    if (typeof db === 'undefined' || !db.getCart) return;
+    const cart = db.getCart();
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const badge = document.querySelector('.bottom-cart-badge');
+    if (badge) {
+        badge.innerText = count;
+
+        if (count > 0) {
+            badge.style.display = 'flex';
+            // Add minimal bounce animation on update
+            badge.animate([
+                { transform: 'scale(1)' },
+                { transform: 'scale(1.2)' },
+                { transform: 'scale(1)' }
+            ], {
+                duration: 200
+            });
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
 
 

@@ -600,7 +600,32 @@ class StoreDB {
     }
 
     async cancelOrder(orderId) {
-        return await this.deleteOrder(orderId);
+        let orders = this.getOrders();
+        const orderIndex = orders.findIndex(o => o.id === orderId);
+
+        if (orderIndex > -1) {
+            const order = orders[orderIndex];
+
+            // Update status instead of deleting
+            order.status = 'cancelled_by_customer';
+
+            // Cancel Bosta shipment if exists (copied logic from deleteOrder)
+            if (order.bostaDeliveryId) {
+                try {
+                    if (typeof BostaIntegration !== 'undefined') {
+                        await BostaIntegration.cancelDelivery(order.bostaDeliveryId);
+                        console.log('🗑️ Bosta Delivery Cancelled due to customer cancellation');
+                    }
+                } catch (error) {
+                    console.error('Bosta Cancel Error during cancellation:', error);
+                }
+            }
+
+            localStorage.setItem('orders', JSON.stringify(orders));
+            this.updateCloud('orders');
+            return true;
+        }
+        return false;
     }
 
     getCart() {
@@ -856,7 +881,9 @@ class StoreDB {
             localStorage.setItem('customer_token', JSON.stringify({
                 id: customer.id,
                 name: customer.name,
-                email: customer.email
+                email: customer.email,
+                phone: customer.phone,
+                createdAt: customer.createdAt
             }));
             return { success: true, customer };
         }
@@ -873,6 +900,22 @@ class StoreDB {
 
     logoutCustomer() {
         localStorage.removeItem('customer_token');
+    }
+
+    updateCustomerPassword(newPassword) {
+        const customer = this.getCustomer();
+        if (!customer) return false;
+
+        let customers = JSON.parse(localStorage.getItem('customers') || '[]');
+        const index = customers.findIndex(c => c.id === customer.id || c.email === customer.email);
+
+        if (index !== -1) {
+            customers[index].password = newPassword;
+            localStorage.setItem('customers', JSON.stringify(customers));
+            this.updateCloud('customers');
+            return true;
+        }
+        return false;
     }
 
     getCustomerOrders(email) {

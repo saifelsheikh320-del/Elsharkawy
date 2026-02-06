@@ -17,7 +17,108 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="css/style.css">
     <style>
+        /* Bottom Navigation Styling Embedded for Login Page */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #ffffff;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            display: none;
+            justify-content: space-around;
+            align-items: flex-end;
+            padding: 0;
+            height: 70px;
+            z-index: 99999;
+        }
+
+        @media (max-width: 768px) {
+            .bottom-nav {
+                display: flex;
+            }
+
+            .whatsapp-float {
+                bottom: 80px;
+            }
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #95a5a6;
+            font-size: 0.75rem;
+            position: relative;
+            width: 20%;
+            height: 100%;
+            padding-bottom: 5px;
+        }
+
+        .nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            color: #95a5a6;
+        }
+
+        .nav-indicator {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 4px;
+            background-color: #486b65;
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            color: #486b65;
+        }
+
+        .nav-item.active i {
+            color: #486b65;
+        }
+
+        .nav-item.active .nav-indicator {
+            opacity: 1;
+        }
+
+        .nav-item.active span {
+            font-weight: 700;
+            color: #486b65;
+        }
+
+        .bottom-cart-badge {
+            position: absolute;
+            top: 10px;
+            right: 25%;
+            background: #e74c3c;
+            color: white;
+            font-size: 0.65rem;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            border: 1px solid white;
+            z-index: 2;
+        }
+
+        body.rtl .bottom-cart-badge {
+            right: auto;
+            left: 25%;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -62,16 +163,17 @@
 
         .login-container {
             background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 450px;
+            max-width: 380px;
         }
 
         .logo {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            /* Reduced from 30px */
         }
 
         .logo h1 {
@@ -87,7 +189,8 @@
 
         .tabs {
             display: flex;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            /* Reduced from 30px */
             border-bottom: 2px solid #ecf0f1;
         }
 
@@ -129,7 +232,8 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            /* Reduced from 20px */
         }
 
         .form-group label {
@@ -141,12 +245,14 @@
 
         .form-group input {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
+            padding: 12px 18px;
+            border: 2px solid #f0f2f5;
+            border-radius: 12px;
+            /* More rounded as requested */
             font-size: 1rem;
             font-family: 'Cairo', sans-serif;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            background: #fafafa;
         }
 
         .form-group input:focus {
@@ -160,12 +266,13 @@
             background: #486b65;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
+            /* More rounded as requested */
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
             font-family: 'Cairo', sans-serif;
-            transition: background 0.3s;
+            transition: all 0.3s;
         }
 
         .btn-submit:hover {
@@ -191,7 +298,7 @@
             position: absolute;
             left: 15px;
             /* Adjust for RTL */
-            top: 50%;
+            top: 45%;
             transform: translateY(-50%);
             cursor: pointer;
             color: #7f8c8d;
@@ -213,18 +320,62 @@
             padding-left: 40px;
             /* Space for icon in LTR */
         }
+
+        /* login page specific header adjustment */
+        header .logo {
+            margin-top: 20px !important;
+        }
+
+        @media (max-width: 768px) {
+            .login-logo {
+                display: none;
+            }
+        }
+
+        /* Hide header on desktop for cleaner login page */
+        @media (min-width: 769px) {
+            header {
+                display: none;
+            }
+
+            body {
+                padding-top: 0;
+                /* Remove top padding */
+            }
+        }
     </style>
     <!-- SMTP.js Library for SendPulse -->
     <script src="https://smtpjs.com/v3/smtp.js"></script>
     <!-- Web3Forms Email Service (No Business Email Required!) -->
 </head>
 
-<body>
-    <div class="login-container">
-        <div class="logo">
+<body class="rtl">
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">
+                    <img src="images/logo.png" alt="الشرقاوي">
+                </a>
+                <ul class="nav-links">
+                    <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
+                    <li><a href="products.html" data-i18n="shop">المتجر</a></li>
+                    <li id="auth-link"><a href="login.html" data-i18n="login">تسجيل الدخول</a></li>
+                </ul>
+                <div class="nav-icons">
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="login-container" style="margin-top: 40px;">
+        <div class="logo" style="margin-top: 5px;">
             <img src="images/logo.png" alt="الشرقاوي" class="login-logo"
-                style="height: 120px; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-            <p>سجل دخولك للمتابعة</p>
+                style="height: 100px; margin-bottom: 20px; border-radius: 50%; box-shadow: 0 8px 20px rgba(0,0,0,0.1); border: 4px solid #f8f9fa;">
+            <p style="font-weight: 700; color: #2c3e50; font-size: 1rem;">سجل دخولك للمتابعة</p>
         </div>
 
         <div class="tabs">
@@ -280,8 +431,8 @@
             </form>
         </div>
 
-        <div class="admin-link">
-            <p style="color: #7f8c8d; font-size: 0.9rem;">جميع الحقوق محفوظة © 2026 الشرقاوي</p>
+        <div class="admin-link" style="margin-top: 15px; text-align: center;">
+            <p style="color: #999; font-size: 0.8rem;">جميع الحقوق محفوظة © 2026 الشرقاوي</p>
         </div>
     </div>
 

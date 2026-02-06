@@ -251,12 +251,12 @@
         <div class="container">
             <nav>
                 <a href="index.html" class="logo">
-                    <img src="images/logo.png" alt="الشرقاوي" style="height: 70px; width: auto;">
+                    <img src="images/logo.png" alt="الشرقاوي">
                 </a>
                 <ul class="nav-links">
                     <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
                     <li><a href="products.html" data-i18n="shop">المتجر</a></li>
-                    <li id="auth-link"><a href="login.html" data-i18n="login">دخول</a></li>
+                    <li id="auth-link"><a href="login.html" data-i18n="login">تسجيل الدخول</a></li>
                 </ul>
                 <div class="nav-icons">
                     <a href="cart.html" class="cart-icon">
@@ -367,6 +367,7 @@
         </div>
     </div>
 
+    </main>
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -757,9 +758,6 @@
                         ` : '')}
                     </div>
                     <div class="product-info">
-                        ${p.sku ? `<div style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 5px; font-family: monospace; display: flex; align-items: center; gap: 5px;">
-                            ${p.sku}
-                        </div>` : ''}
                         <h3>${p.name}</h3>
                         <span class="product-price" style="color: var(--color-primary);">
                              ${oldPrice ? `<span style="text-decoration: line-through; color: #999; font-size: 0.9rem; margin-left: 8px;">${currency} ${oldPrice}</span>` : ''}

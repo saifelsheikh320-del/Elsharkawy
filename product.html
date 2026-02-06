@@ -47,13 +47,6 @@
     </noscript>
     <!-- End Meta Pixel Code -->
     <style>
-        @media (max-width: 768px) {
-            .whatsapp-float {
-                bottom: 90px !important;
-                /* Move up to avoid sticky bar */
-            }
-        }
-
         .logo {
             display: flex;
             align-items: center;
@@ -381,12 +374,12 @@
         <div class="container">
             <nav>
                 <a href="index.html" class="logo">
-                    <img src="images/logo.png" alt="الشرقاوي" style="height: 70px; width: auto;">
+                    <img src="images/logo.png" alt="الشرقاوي">
                 </a>
                 <ul class="nav-links">
                     <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
                     <li><a href="products.html" data-i18n="shop">المتجر</a></li>
-                    <li id="auth-link"><a href="login.html" data-i18n="login">دخول</a></li>
+                    <li id="auth-link"><a href="login.html" data-i18n="login">تسجيل الدخول</a></li>
                 </ul>
                 <div class="nav-icons">
                     <a href="cart.html" class="cart-icon">
@@ -429,7 +422,6 @@
             </div>
         </section>
     </main>
-
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -681,9 +673,6 @@
                     ${images.length > 1 ? `<div class="thumbnail-gallery">${thumbsHTML}</div>` : ''}
                 </div>
                 <div class="detail-info reveal delay-200">
-                    ${product.sku ? `<div style="font-size: 0.9rem; color: #7f8c8d; margin-bottom: 8px; font-family: monospace; display: flex; align-items: center; gap: 8px; width: fit-content;">
-                        كود المنتج: ${product.sku}
-                    </div>` : ''}
                     <h1 style="font-size: 2rem;">${product.name}</h1>
                     <span class="detail-price" style="color: var(--color-primary); font-weight: bold; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         ${(product.oldPrice && parseFloat(product.oldPrice) > parseFloat(product.price)) ? `
@@ -738,13 +727,19 @@
             window.addEventListener('scroll', () => {
                 const mainButtons = document.getElementById('main-action-buttons');
                 const stickyBar = document.getElementById('sticky-bar');
+                const whatsappBtn = document.querySelector('.whatsapp-float'); // Select WhatsApp button
+                const isDesktop = window.innerWidth > 768; // Check if desktop
+
                 if (mainButtons && stickyBar) {
                     const rect = mainButtons.getBoundingClientRect();
                     // Show bar if main buttons are above the viewport (scrolled past)
                     if (rect.bottom < 0) {
                         stickyBar.classList.add('visible');
+                        // Only hide WhatsApp on desktop
+                        if (whatsappBtn && isDesktop) whatsappBtn.style.display = 'none';
                     } else {
                         stickyBar.classList.remove('visible');
+                        if (whatsappBtn) whatsappBtn.style.display = 'flex'; // Always show when bar is hidden
                     }
                 }
             });

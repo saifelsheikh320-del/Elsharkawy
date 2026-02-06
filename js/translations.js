@@ -4,8 +4,10 @@
         home: "الرئيسية",
         shop: "المتجر",
         login: "تسجيل الدخول",
+        my_account: "حسابي",
         logout: "تسجيل الخروج",
         cart_title: "حقيبة التسوق",
+        policies: "السياسات",
 
         // Home
         hero_title: "أناقة منزلك<br><span style='color: var(--color-primary);'>اختيارك يميز أثاثك</span>",
@@ -103,14 +105,17 @@
         status_confirmed: "مؤكد",
         status_shipped: "تم الشحن",
         status_delivered: "تم التوصيل",
-        status_archived: "مؤرشف"
+        status_archived: "مؤرشف",
+        menu_title: "القائمة"
     },
     en: {
         home: "Home",
         shop: "Shop",
         login: "Login",
+        my_account: "My Account",
         logout: "Logout",
         cart_title: "Shopping Cart",
+        policies: "Policies",
         hero_title: "Defy Gravity<br><span style='color: var(--color-primary);'>Define Style</span>",
         hero_desc: "Discover the latest collection of premium streetwear tailored for the modern aesthetic. Zero gravity comfort.",
         shop_collection: "Shop Collection",
@@ -192,7 +197,8 @@
         status_confirmed: "Confirmed",
         status_shipped: "Shipped",
         status_delivered: "Delivered",
-        status_archived: "Archived"
+        status_archived: "Archived",
+        menu_title: "Menu"
     }
 };
 

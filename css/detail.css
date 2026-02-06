@@ -178,7 +178,8 @@
     cursor: not-allowed;
     border-style: dashed;
     position: relative;
-    pointer-events: none; /* Disable clicking */
+    pointer-events: none;
+    /* Disable clicking */
 }
 
 .size-option.out-of-stock::after {
@@ -207,7 +208,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    z-index: 2000;
+    z-index: 100000;
+    /* Increased to be above bottom-nav (99999) */
     transform: translateY(100%);
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border-top: 1px solid rgba(0, 0, 0, 0.05);
@@ -273,4 +275,3 @@
         padding: 12px 5px;
     }
 }
-

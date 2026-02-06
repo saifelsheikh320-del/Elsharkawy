@@ -106,7 +106,7 @@
         <div class="container">
             <nav>
                 <a href="index.html" class="logo">
-                    <img src="images/logo.png" alt="الشرقاوي" style="height: 75px; width: auto; max-height: 80px;">
+                    <img src="images/logo.png" alt="الشرقاوي">
                 </a>
                 <ul class="nav-links">
                     <li><a href="index.html" data-i18n="home">الرئيسية</a></li>
@@ -176,7 +176,17 @@
             }
 
             if (!db.isCustomerLoggedIn()) {
-                window.location.href = 'login.html';
+                // Instead of redirecting, show a friendly login prompt
+                container.innerHTML = `
+                    <div class="no-orders">
+                        <i class="fas fa-user-lock" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                        <p>يرجى تسجيل الدخول لعرض قائمة طلباتك السابقة</p>
+                        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 1.5rem;">
+                            <a href="login.html" class="btn btn-primary">تسجيل الدخول</a>
+                            <a href="index.html" class="btn btn-secondary">الرئيسية</a>
+                        </div>
+                    </div>
+                `;
                 return;
             }
 
@@ -186,9 +196,12 @@
         });
 
         function renderOrders(orders, container, lang, t, isPublic = false) {
-            if (orders.length > 0) {
+            // Filter out orders cancelled by customer so they don't see them
+            const visibleOrders = orders.filter(o => o.status !== 'cancelled_by_customer');
+
+            if (visibleOrders.length > 0) {
                 container.innerHTML = '';
-                orders.forEach(order => {
+                visibleOrders.forEach(order => {
                     const card = document.createElement('div');
                     card.className = 'order-card reveal';
 

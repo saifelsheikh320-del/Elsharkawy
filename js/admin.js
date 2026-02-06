@@ -283,6 +283,7 @@ const ORDER_STATUSES = [
     { id: 'Confirmed', label: '✅ مؤكد', color: '#3498db', icon: 'fas fa-check-circle' },
     { id: 'Shipped', label: '🚚 تم الشحن', color: '#9b59b6', icon: 'fas fa-shipping-fast' },
     { id: 'Delivered', label: '📦 تم التوصيل', color: '#27ae60', icon: 'fas fa-check-double' },
+    { id: 'cancelled_by_customer', label: '🚫 ملغي من العميل', color: '#e74c3c', icon: 'fas fa-user-times' },
     { id: 'Archived', label: '📁 مؤرشف', color: '#95a5a6', icon: 'fas fa-archive' }
 ];
 
@@ -1770,7 +1771,7 @@ async function adminArchiveOrder(id) {
 
 async function adminDeleteOrder(id) {
     if (await showConfirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟ لا يمكن التراجع.')) {
-        await db.cancelOrder(id);
+        await db.deleteOrder(id);
         refreshOrders();
         showToast('تم حذف الطلب نهائياً بنجاح', 'success');
     }
